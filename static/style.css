@@ -1,0 +1,5 @@
+body { font-family: Arial, sans-serif; margin: 20px; color: #111; }
+h1, h2, h3 { margin: 10px 0; }
+.item-row { margin-bottom: 8px; }
+.flashes { color: red; }
+button { margin: 6px; }
