@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .stocks-management-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    .management-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .management-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .management-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .stocks-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    @media (max-width: 992px) {
+        .stocks-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .update-form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .update-form-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-title i {
+        color: #667eea;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .form-select, .form-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        font-weight: 500;
+    }
+
+    .form-select:focus, .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .btn-update {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1.25rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-update::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-update:hover::before {
+        left: 100%;
+    }
+
+    .btn-update:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .stocks-list-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stocks-list-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #43e97b, #38f9d7);
+    }
+
+    .stocks-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .stocks-title i {
+        color: #27ae60;
+    }
+
+    .stocks-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .stock-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+    }
+
+    .stock-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        background: white;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #2c3e50;
+        flex: 1;
+    }
+
+    .stock-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stock-qty {
+        font-size: 1.2rem;
+        font-weight: 700;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .stock-high {
+        background: rgba(39, 174, 96, 0.1);
+        color: #27ae60;
+        border: 2px solid rgba(39, 174, 96, 0.2);
+    }
+
+    .stock-medium {
+        background: rgba(243, 156, 18, 0.1);
+        color: #f39c12;
+        border: 2px solid rgba(243, 156, 18, 0.2);
+    }
+
+    .stock-low {
+        background: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+        border: 2px solid rgba(231, 76, 60, 0.2);
+    }
+
+    .stock-zero {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+        border: 2px solid rgba(108, 117, 125, 0.2);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border-top: 4px solid #667eea;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .flash-messages {
+        margin-bottom: 2rem;
+    }
+
+    .flash-message {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .flash-success {
+        background: rgba(39, 174, 96, 0.1);
+        color: #27ae60;
+        border-left: 4px solid #27ae60;
+    }
+
+    .flash-error {
+        background: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+        border-left: 4px solid #e74c3c;
+    }
+</style>
+
+<section class="stocks-management-section">
+    <div class="container">
+        <div class="management-header">
+            <h1 class="management-title">Управление остатками</h1>
+            <p class="management-subtitle">Обновление и отслеживание товарных остатков на складе</p>
+        </div>
+
+        <!-- Flash сообщения -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message flash-success">
+                            <i class="fas fa-check-circle"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Статистика -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-number">{{ products|length }}</div>
+                <div class="stat-label">Всего товаров</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {% set total_stock = products|sum(attribute='stock_qty') %}
+                    {{ total_stock }}
+                </div>
+                <div class="stat-label">Общий остаток</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {% set in_stock = products|selectattr('stock_qty', 'gt', 0)|list|length %}
+                    {{ in_stock }}
+                </div>
+                <div class="stat-label">Товаров в наличии</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {% set out_of_stock = products|selectattr('stock_qty', 'equalto', 0)|list|length %}
+                    {{ out_of_stock }}
+                </div>
+                <div class="stat-label">Нет в наличии</div>
+            </div>
+        </div>
+
+        <div class="stocks-container">
+            <!-- Форма обновления остатков -->
+            <div class="update-form-card">
+                <h3 class="form-title">
+                    <i class="fas fa-sync-alt"></i>
+                    Обновление остатков
+                </h3>
+
+                <form method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="product_id">
+                            <i class="fas fa-cube me-2"></i>Выберите товар
+                        </label>
+                        <select id="product_id" name="product_id" class="form-select" required>
+                            <option value="">-- Выберите товар --</option>
+                            {% for p in products %}
+                                <option value="{{ p.id }}">{{ p.title }} - {{ p.price }} ₽</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="qty">
+                            <i class="fas fa-boxes me-2"></i>Количество на складе
+                        </label>
+                        <input type="number"
+                               id="qty"
+                               name="qty"
+                               class="form-input"
+                               placeholder="Введите количество"
+                               min="0"
+                               required>
+                    </div>
+
+                    <button type="submit" class="btn-update">
+                        <i class="fas fa-save me-2"></i>
+                        Обновить остаток
+                    </button>
+                </form>
+            </div>
+
+            <!-- Список текущих остатков -->
+            <div class="stocks-list-card">
+                <h3 class="stocks-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Текущие остатки
+                </h3>
+
+                {% if products %}
+                    <div class="stocks-grid">
+                        {% for p in products %}
+                            {% set stock_qty = stocks[p.id].qty if p.id in stocks else 0 %}
+                            {% set stock_class = 'stock-high' if stock_qty > 10 else 'stock-medium' if stock_qty > 0 else 'stock-zero' %}
+
+                            <div class="stock-item">
+                                <div class="product-name">{{ p.title }}</div>
+                                <div class="stock-info">
+                                    <div class="stock-qty {{ stock_class }}">
+                                        {{ stock_qty }} шт.
+                                    </div>
+                                    <div class="product-price">
+                                        {{ p.price }} ₽
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h4>Товары не найдены</h4>
+                        <p>Добавьте товары в каталог для управления остатками</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productSelect = document.getElementById('product_id');
+        const qtyInput = document.getElementById('qty');
+
+        // Автозаполнение текущего количества при выборе товара
+        productSelect.addEventListener('change', function() {
+            const selectedProduct = this.value;
+            if (selectedProduct) {
+                // Здесь можно добавить AJAX запрос для получения текущего количества
+                // или использовать data-атрибуты
+                qtyInput.focus();
+            }
+        });
+
+        // Валидация ввода количества
+        qtyInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            e.target.value = value;
+        });
+
+        // Подсветка выбранного товара в списке
+        productSelect.addEventListener('change', function() {
+            // Убираем подсветку у всех
+            document.querySelectorAll('.stock-item').forEach(item => {
+                item.style.background = '#f8f9fa';
+            });
+
+            // Подсвечиваем выбранный
+            if (this.value) {
+                const selectedItem = document.querySelector(`[data-product-id="${this.value}"]`);
+                if (selectedItem) {
+                    selectedItem.style.background = 'rgba(102, 126, 234, 0.1)';
+                    selectedItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Все заказы</h3>
+{% for o in orders %}
+  <div class="card">
+    <strong>{{ o.id }}</strong> — {{ o.status }} — {{ o.created_at }}
+    <div>
+      <a class="btn" href="{{ url_for('admin.approve_order', order_id=o.id) }}">Одобрить</a>
+    </div>
+  </div>
+{% else %}
+  <p>Нет заказов</p>
+{% endfor %}
+{% endblock %}

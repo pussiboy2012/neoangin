@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>История заказов</h3>
+{% if orders %}
+  {% for o in orders %}
+    <div class="card">
+      <strong>Заказ {{ o["id"] }}</strong> — {{ o["status"] }} — {{ o["created_at"] }}
+      <ul>
+        {% for it in o["items"] %}
+          <li>{{ it["title"] }} x{{ it["qty"] }} ({{ it["price"] }})</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>Заказов нет</p>
+{% endif %}
+{% endblock %}

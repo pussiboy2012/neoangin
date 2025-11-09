@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .catalog-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 3rem;
+    }
+
+    .product-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+        height: 200px;
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-icon {
+        font-size: 3rem;
+        opacity: 0.7;
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .stock-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .stock-in {
+        background: rgba(46, 204, 113, 0.1);
+        color: #27ae60;
+        border: 1px solid rgba(46, 204, 113, 0.2);
+    }
+
+    .stock-out {
+        background: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+
+    .stock-low {
+        background: rgba(243, 156, 18, 0.1);
+        color: #f39c12;
+        border: 1px solid rgba(243, 156, 18, 0.2);
+    }
+
+    .btn-product {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-product:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-product-outline {
+        background: transparent;
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+
+    .btn-product-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+
+    .filter-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+
+    .category-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .category-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        background: white;
+        color: #6c757d;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .category-btn:hover,
+    .category-btn.active {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+
+<!-- Герой секция каталога -->
+<section class="catalog-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3">Каталог товаров</h1>
+                <p class="lead mb-0">Широкий выбор качественных красок для любых целей</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="text-white-50">
+                    <i class="fas fa-paint-brush me-2"></i>
+                    <span>{{ products|length }} товаров</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Фильтры -->
+    <div class="filter-section">
+        <h5 class="filter-title"><i class="fas fa-filter me-2"></i>Категории</h5>
+        <div class="category-filter">
+            <a href="{{ url_for('buyer.catalog') }}" class="category-btn {{ 'active' if not request.args.get('category') }}">
+                Все товары
+            </a>
+            <a href="{{ url_for('buyer.catalog') }}?category=interior" class="category-btn {{ 'active' if request.args.get('category') == 'interior' }}">
+                Интерьерные
+            </a>
+            <a href="{{ url_for('buyer.catalog') }}?category=exterior" class="category-btn {{ 'active' if request.args.get('category') == 'exterior' }}">
+                Фасадные
+            </a>
+            <a href="{{ url_for('buyer.catalog') }}?category=art" class="category-btn {{ 'active' if request.args.get('category') == 'art' }}">
+                Художественные
+            </a>
+        </div>
+    </div>
+
+    <!-- Сетка товаров -->
+    {% if products %}
+        <div class="row g-4">
+            {% for p in products %}
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="card product-card h-100">
+                    <div class="product-image">
+                        <i class="fas fa-paint-bucket product-icon" style="color: {{ ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'] | random }};"></i>
+                        {% if p.get('is_new') %}
+                        <span class="product-badge">Новинка</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ p.title }}</h5>
+                        <p class="card-text text-muted small flex-grow-1">
+                            {{ p.description[:100] }}{% if p.description|length > 100 %}...{% endif %}
+                        </p>
+
+                        <div class="product-price">
+                            {{ p.price }} ₽
+                        </div>
+
+                        <div class="mb-3">
+                            {% set stock_qty = stocks[p.id].qty if stocks and p.id in stocks else (stocks.get(p.id).qty if stocks and stocks.get(p.id) else 0) %}
+                            {% if stock_qty > 10 %}
+                                <span class="stock-badge stock-in">
+                                    <i class="fas fa-check-circle me-1"></i>В наличии
+                                </span>
+                            {% elif stock_qty > 0 %}
+                                <span class="stock-badge stock-low">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Мало
+                                </span>
+                            {% else %}
+                                <span class="stock-badge stock-out">
+                                    <i class="fas fa-times-circle me-1"></i>Нет в наличии
+                                </span>
+                            {% endif %}
+
+                            {% if stock_qty > 0 %}
+                                <small class="text-muted ms-2">Остаток: {{ stock_qty }} шт.</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto">
+                            <a href="{{ url_for('buyer.product_detail', product_id=p.id) }}" class="btn-product">
+                                <i class="fas fa-eye me-2"></i>Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Состояние пустого каталога -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-paint-brush"></i>
+            </div>
+            <h4 class="mb-3">Товары не найдены</h4>
+            <p class="text-muted mb-4">Попробуйте изменить параметры фильтрации или зайдите позже</p>
+            <a href="{{ url_for('buyer.catalog') }}" class="btn btn-primary">
+                <i class="fas fa-sync-alt me-2"></i>Сбросить фильтры
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

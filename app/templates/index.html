@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .hero-section {
+        background:
+            radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
+            var(--primary-gradient);
+        color: white;
+        padding: 120px 0;
+        position: relative;
+        overflow: hidden;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.9) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        margin-bottom: 2.5rem;
+        line-height: 1.6;
+    }
+
+    .btn-hero {
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0.5rem;
+    }
+
+    .btn-primary-hero {
+        background: rgba(255, 255, 255, 0.95);
+        color: #667eea;
+        box-shadow: 0 8px 30px rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-primary-hero:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+        color: #764ba2;
+    }
+
+    .btn-outline-hero {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-outline-hero:hover {
+        background: white;
+        color: #667eea;
+        border-color: white;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Enhanced Category Cards */
+    .category-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        background: white;
+        position: relative;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        z-index: 1;
+    }
+
+    .category-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+
+    .category-image {
+        height: 220px;
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-icon {
+        font-size: 4rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+    }
+
+    .color-swatches {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+
+    .color-swatch {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .color-swatch:hover {
+        transform: scale(1.2) rotate(10deg);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .color-swatch::after {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        background: var(--primary-gradient) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .color-swatch:hover::after {
+        opacity: 1;
+    }
+
+    .btn-category {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-category:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    /* Enhanced Features Section */
+    .features-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .features-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 90% 80%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    }
+
+    .feature-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .feature-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .feature-description {
+        color: #6c757d;
+        line-height: 1.6;
+    }
+
+    /* Enhanced Products Section */
+    .products-section {
+        background: white;
+    }
+
+    .product-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        background: white;
+        overflow: hidden;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+        height: 120px;
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .product-icon {
+        font-size: 2.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .product-price {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-catalog {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 1rem 2.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-catalog::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s;
+    }
+
+    .btn-catalog:hover::before {
+        left: 100%;
+    }
+
+    .btn-catalog:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 3rem;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .btn-hero {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<!-- Enhanced Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-star"></i>
+                    Премиум качество с 2024 года
+                </div>
+                <h1 class="hero-title">Создайте идеальное пространство с нашими красками</h1>
+                <p class="hero-subtitle">Более 5000 оттенков премиальных красок для интерьера, экстерьера и творчества. Профессиональное качество по доступным ценам.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{{ url_for('buyer.catalog') }}" class="btn-hero btn-primary-hero">
+                        <i class="fas fa-shopping-basket"></i>
+                        Исследовать каталог
+                    </a>
+                    <a href="{{ url_for('buyer.stock') }}" class="btn-hero btn-outline-hero">
+                        <i class="fas fa-boxes"></i>
+                        Товары в наличии
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Популярные категории</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card category-card h-100">
+                    <div class="category-image">
+                        <i class="fas fa-home category-icon"></i>
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <h4 class="card-title fw-bold mb-3">Интерьерные краски</h4>
+                        <p class="card-text text-muted mb-4">Водоэмульсионные, акриловые, латексные краски для стен и потолков с идеальной матовой и глянцевой отделкой</p>
+                        <div class="color-swatches">
+                            <span class="color-swatch" style="background: #ff6b6b;"></span>
+                            <span class="color-swatch" style="background: #4ecdc4;"></span>
+                            <span class="color-swatch" style="background: #45b7d1;"></span>
+                            <span class="color-swatch" style="background: #f9ca24;"></span>
+                        </div>
+                        <a href="{{ url_for('buyer.catalog') }}?category=interior" class="btn-category mt-3">
+                            <i class="fas fa-palette me-2"></i>Смотреть коллекцию
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card category-card h-100">
+                    <div class="category-image">
+                        <i class="fas fa-building category-icon"></i>
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <h4 class="card-title fw-bold mb-3">Фасадные краски</h4>
+                        <p class="card-text text-muted mb-4">Устойчивые к ультрафиолету и погодным условиям краски для долговечной защиты и красоты вашего фасада</p>
+                        <div class="color-swatches">
+                            <span class="color-swatch" style="background: #2c3e50;"></span>
+                            <span class="color-swatch" style="background: #7f8c8d;"></span>
+                            <span class="color-swatch" style="background: #d35400;"></span>
+                            <span class="color-swatch" style="background: #27ae60;"></span>
+                        </div>
+                        <a href="{{ url_for('buyer.catalog') }}?category=exterior" class="btn-category mt-3">
+                            <i class="fas fa-palette me-2"></i>Смотреть коллекцию
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card category-card h-100">
+                    <div class="category-image">
+                        <i class="fas fa-paint-brush category-icon"></i>
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <h4 class="card-title fw-bold mb-3">Художественные краски</h4>
+                        <p class="card-text text-muted mb-4">Профессиональные акриловые, масляные и акварельные краски для художников и творческих проектов</p>
+                        <div class="color-swatches">
+                            <span class="color-swatch" style="background: #e74c3c;"></span>
+                            <span class="color-swatch" style="background: #9b59b6;"></span>
+                            <span class="color-swatch" style="background: #3498db;"></span>
+                            <span class="color-swatch" style="background: #2ecc71;"></span>
+                        </div>
+                        <a href="{{ url_for('buyer.catalog') }}?category=art" class="btn-category mt-3">
+                            <i class="fas fa-palette me-2"></i>Смотреть коллекцию
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <h2 class="section-title">Почему выбирают нас</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h4 class="feature-title">5000+ оттенков</h4>
+                    <p class="feature-description">Самая широкая палитра цветов на рынке с точной колеровкой</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h4 class="feature-title">Быстрая доставка</h4>
+                    <p class="feature-description">Доставка за 1-2 дня по всему городу и области</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h4 class="feature-title">Гарантия качества</h4>
+                    <p class="feature-description">Все товары сертифицированы и протестированы в лабораториях</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <h4 class="feature-title">Выгодные цены</h4>
+                    <p class="feature-description">Регулярные акции и специальные условия для постоянных клиентов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Products Section -->
+<section class="products-section py-5">
+    <div class="container">
+        <h2 class="section-title">Популярные товары</h2>
+        <div class="row g-4">
+            {% if products %}
+                {% for product in products[:6] %}
+                <div class="col-md-4 col-lg-2">
+                    <div class="card product-card h-100">
+                        <div class="product-image">
+                            <i class="fas fa-paint-bucket product-icon"></i>
+                        </div>
+                        <div class="card-body text-center p-3">
+                            <h6 class="card-title fw-bold mb-2">{{ product.title }}</h6>
+                            <div class="product-price">{{ product.price }} ₽</div>
+                            <a href="{{ url_for('buyer.product_detail', product_id=product.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <div class="empty-state">
+                        <i class="fas fa-paint-brush fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Товары скоро появятся</h5>
+                        <p class="text-muted">Мы активно пополняем наш каталог</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{{ url_for('buyer.catalog') }}" class="btn-catalog">
+                <i class="fas fa-shopping-basket me-2"></i>Открыть полный каталог
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .create-product-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        padding: 3rem;
+        position: relative;
+        overflow: hidden;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        background-size: 200% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .form-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .form-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        font-weight: 500;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .form-input::placeholder {
+        color: #adb5bd;
+        font-weight: 400;
+    }
+
+    .input-icon {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .form-group:focus-within .input-icon {
+        color: #667eea;
+    }
+
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1.25rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-submit:active {
+        transform: translateY(-1px);
+    }
+
+    .form-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .form-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .form-footer a:hover {
+        color: #764ba2;
+    }
+
+    /* Анимация появления формы */
+    .form-container {
+        animation: formSlideIn 0.6s ease-out;
+    }
+
+    @keyframes formSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Стили для валидации */
+    .form-input:invalid:not(:focus):not(:placeholder-shown) {
+        border-color: #e74c3c;
+        background: rgba(231, 76, 60, 0.02);
+    }
+
+    .form-input:valid:not(:focus):not(:placeholder-shown) {
+        border-color: #27ae60;
+        background: rgba(39, 174, 96, 0.02);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 576px) {
+        .form-container {
+            margin: 1rem;
+            padding: 2rem 1.5rem;
+        }
+
+        .form-title {
+            font-size: 1.75rem;
+        }
+
+        .form-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<section class="create-product-section">
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <div class="form-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <h1 class="form-title">Создание товара</h1>
+                <p class="form-subtitle">Добавьте новый товар в каталог магазина</p>
+            </div>
+
+            <form method="post">
+                <div class="form-group">
+                    <label class="form-label" for="title">
+                        <i class="fas fa-tag me-2"></i>Название товара
+                    </label>
+                    <input type="text"
+                           id="title"
+                           name="title"
+                           class="form-input"
+                           placeholder="Введите название товара"
+                           required>
+                    <i class="fas fa-pen input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="price">
+                        <i class="fas fa-ruble-sign me-2"></i>Цена
+                    </label>
+                    <input type="number"
+                           id="price"
+                           name="price"
+                           class="form-input"
+                           placeholder="Укажите цену в рублях"
+                           min="0"
+                           step="0.01"
+                           required>
+                    <i class="fas fa-money-bill-wave input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="qty">
+                        <i class="fas fa-boxes me-2"></i>Количество на складе
+                    </label>
+                    <input type="number"
+                           id="qty"
+                           name="qty"
+                           class="form-input"
+                           placeholder="Укажите начальное количество"
+                           min="0"
+                           required>
+                    <i class="fas fa-warehouse input-icon"></i>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Создать товар
+                </button>
+            </form>
+
+            <div class="form-footer">
+                <a href="{{ url_for('admin.admin_index') }}">
+                    <i class="fas fa-arrow-left me-2"></i>Вернуться в админ-панель
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Добавляем маску для цены
+    document.addEventListener('DOMContentLoaded', function() {
+        const priceInput = document.getElementById('price');
+        const qtyInput = document.getElementById('qty');
+
+        // Форматирование цены при вводе
+        priceInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d.]/g, '');
+            let parts = value.split('.');
+
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+
+            if (parts[1] && parts[1].length > 2) {
+                value = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+
+            e.target.value = value;
+        });
+
+        // Валидация количества
+        qtyInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            e.target.value = value;
+        });
+
+        // Анимация при фокусе
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    });
+</script>
+{% endblock %}

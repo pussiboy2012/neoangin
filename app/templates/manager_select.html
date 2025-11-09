@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Менеджер — выбор заказчика</h3>
+<form method="post">
+  <select name="customer_id">
+    {% for c in customers %}
+      <option value="{{ c.id }}" {% if selected==c.id %}selected{% endif %}>{{ c.username }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Показать заказы</button>
+</form>
+
+{% if orders %}
+  <h4>Заказы клиента</h4>
+  {% for o in orders %}
+    <div class="card">
+      <strong>{{ o.id }}</strong> — {{ o.status }} — {{ o.created_at }}
+    </div>
+  {% endfor %}
+{% endif %}
+{% endblock %}

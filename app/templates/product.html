@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ product.title }}</h3>
+<p>Цена: {{ product.price }}</p>
+<p>В наличии: {{ stock.qty }}</p>
+<form method="post" action="{{ url_for('buyer.add_to_cart', product_id=product.id) }}">
+  <input name="qty" type="number" value="1" min="1">
+  <button type="submit">Добавить в корзину</button>
+</form>
+{% endblock %}
