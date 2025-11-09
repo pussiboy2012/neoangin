@@ -1,0 +1,21 @@
+{
+  "id": "o_30fa5006",
+  "user_id": "u_8b6eef21",
+  "items": [
+    {
+      "product_id": "p_029e2902",
+      "title": "ебать что за краска",
+      "qty": 1,
+      "price": 500.0
+    },
+    {
+      "product_id": "p_3cdfdb77",
+      "title": "краска алкидная ахуенная",
+      "qty": 1,
+      "price": 500.0
+    }
+  ],
+  "total": 1000.0,
+  "status": "approved",
+  "created_at": "2025-11-09T15:24:22.252142"
+}
