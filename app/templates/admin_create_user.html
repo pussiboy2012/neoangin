@@ -1,0 +1,629 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .users-management-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    .management-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .management-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .management-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .tabs-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .tabs-header {
+        display: flex;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 0;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 1.5rem 2rem;
+        background: none;
+        border: none;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .tab-btn::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 3px;
+        background: white;
+        transition: width 0.3s ease;
+    }
+
+    .tab-btn.active::after {
+        width: 80%;
+    }
+
+    .tab-btn:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
+    .tab-content {
+        display: none;
+        padding: 3rem;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Стили для списка пользователей */
+    .users-grid {
+        display: grid;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .user-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+    }
+
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-username {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .user-details {
+        display: flex;
+        gap: 1.5rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .user-role {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .role-buyer { background: rgba(52, 152, 219, 0.1); color: #3498db; }
+    .role-manager { background: rgba(243, 156, 18, 0.1); color: #f39c12; }
+    .role-admin { background: rgba(231, 76, 60, 0.1); color: #e74c3c; }
+
+    .user-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-edit {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+    }
+
+    .btn-edit:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete {
+        background: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+    }
+
+    .btn-delete:hover {
+        background: #e74c3c;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Стили для формы (из предыдущего примера) */
+    .form-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 1.25rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Модальное окно для редактирования */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+
+    .modal-close:hover {
+        color: #e74c3c;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border-top: 4px solid #667eea;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .tabs-header {
+            flex-direction: column;
+        }
+
+        .user-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .user-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .management-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<section class="users-management-section">
+    <div class="container">
+        <div class="management-header">
+            <h1 class="management-title">Управление пользователями</h1>
+            <p class="management-subtitle">Создание, просмотр и редактирование пользователей системы</p>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-number">{{ users|length }}</div>
+                <div class="stat-label">Всего пользователей</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ users|selectattr('role', 'equalto', 'buyer')|list|length }}</div>
+                <div class="stat-label">Покупателей</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ users|selectattr('role', 'equalto', 'manager')|list|length }}</div>
+                <div class="stat-label">Менеджеров</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</div>
+                <div class="stat-label">Администраторов</div>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('view-users')">
+                    <i class="fas fa-users"></i>Просмотр пользователей
+                </button>
+                <button class="tab-btn" onclick="switchTab('create-user')">
+                    <i class="fas fa-user-plus"></i>Создать пользователя
+                </button>
+            </div>
+
+            <!-- Вкладка просмотра пользователей -->
+            <div id="view-users" class="tab-content active">
+                <h3 style="margin-bottom: 1.5rem;">Список пользователей</h3>
+
+                {% if users %}
+                <div class="users-grid">
+                    {% for user in users %}
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="user-username">{{ user.username }}</div>
+                            <div class="user-details">
+                                <span>ID: {{ user.id }}</span>
+                                <span>Создан: {{ user.created_at[:10] if user.created_at else 'N/A' }}</span>
+                            </div>
+                        </div>
+                        <div class="user-role role-{{ user.role }}">
+                            {% if user.role == 'buyer' %}Покупатель
+                            {% elif user.role == 'manager' %}Менеджер
+                            {% elif user.role == 'admin' %}Администратор
+                            {% else %}{{ user.role }}{% endif %}
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn-action btn-edit" onclick="openEditModal('{{ user.id }}', '{{ user.username }}', '{{ user.role }}')">
+                                <i class="fas fa-edit"></i>Редактировать
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deleteUser('{{ user.id }}', '{{ user.username }}')">
+                                <i class="fas fa-trash"></i>Удалить
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4>Пользователи не найдены</h4>
+                    <p>Создайте первого пользователя, нажав на вкладку "Создать пользователя"</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Вкладка создания пользователя -->
+            <div id="create-user" class="tab-content">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h3 class="form-title">Создание нового пользователя</h3>
+                        <p>Заполните информацию о новом пользователе системы</p>
+                    </div>
+
+                    <form method="post">
+                        <div class="form-group">
+                            <label class="form-label" for="username">Логин пользователя</label>
+                            <input type="text" id="username" name="username" class="form-input" placeholder="Введите уникальный логин" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="password">Пароль</label>
+                            <input type="password" id="password" name="password" class="form-input" placeholder="Создайте надежный пароль" required minlength="6">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="role">Роль пользователя</label>
+                            <select id="role" name="role" class="form-select" required>
+                                <option value="buyer">Покупатель</option>
+                                <option value="manager">Менеджер</option>
+                                <option value="admin">Администратор</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-user-plus me-2"></i>Создать пользователя
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно редактирования -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        <h3 style="margin-bottom: 1.5rem;">Редактирование пользователя</h3>
+
+        <form id="editForm" method="post">
+            <input type="hidden" id="edit_user_id" name="user_id">
+
+            <div class="form-group">
+                <label class="form-label" for="edit_username">Логин пользователя</label>
+                <input type="text" id="edit_username" name="username" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="edit_password">Новый пароль (оставьте пустым, чтобы не менять)</label>
+                <input type="password" id="edit_password" name="password" class="form-input" placeholder="Оставьте пустым для сохранения старого пароля">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="edit_role">Роль пользователя</label>
+                <select id="edit_role" name="role" class="form-select" required>
+                    <option value="buyer">Покупатель</option>
+                    <option value="manager">Менеджер</option>
+                    <option value="admin">Администратор</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="button" class="btn-submit" style="flex: 1; background: #6c757d;" onclick="closeEditModal()">
+                    Отмена
+                </button>
+                <button type="submit" class="btn-submit" style="flex: 2;">
+                    <i class="fas fa-save me-2"></i>Сохранить изменения
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Переключение вкладок
+    function switchTab(tabName) {
+        // Скрыть все вкладки
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Убрать активный класс со всех кнопок
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Показать выбранную вкладку
+        document.getElementById(tabName).classList.add('active');
+
+        // Активировать кнопку
+        event.target.classList.add('active');
+    }
+
+    // Модальное окно редактирования
+    function openEditModal(userId, username, role) {
+        document.getElementById('edit_user_id').value = userId;
+        document.getElementById('edit_username').value = username;
+        document.getElementById('edit_role').value = role;
+        document.getElementById('edit_password').value = '';
+
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+
+    // Удаление пользователя
+    function deleteUser(userId, username) {
+        if (confirm(`Вы уверены, что хотите удалить пользователя "${username}"?`)) {
+            // Здесь будет AJAX запрос или форма для удаления
+            fetch('{{ url_for("admin.delete_user") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при удалении пользователя: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при удалении пользователя');
+            });
+        }
+    }
+
+    // Закрытие модального окна при клике вне его
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditModal();
+        }
+    });
+
+    // Обработка формы редактирования
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('{{ url_for("admin.update_user") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при обновлении пользователя: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при обновлении пользователя');
+        });
+    });
+</script>
+{% endblock %}

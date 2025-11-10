@@ -1,0 +1,15 @@
+{
+  "id": "o_51812bdc",
+  "user_id": "admin",
+  "items": [
+    {
+      "product_id": "p_50ea05e5",
+      "title": "гоша габоз",
+      "qty": 1,
+      "price": 100.0
+    }
+  ],
+  "total": 100.0,
+  "status": "approved",
+  "created_at": "2025-11-09T15:29:30.551729"
+}

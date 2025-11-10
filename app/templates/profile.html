@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Личный кабинет</h3>
+<p>Пользователь: {{ user.username }}</p>
+<p>Роль: {{ user.role }}</p>
+<p><a href="{{ url_for('buyer.orders') }}">Мои заказы</a></p>
+{% endblock %}
