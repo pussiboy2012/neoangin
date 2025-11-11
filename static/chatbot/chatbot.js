@@ -15,7 +15,10 @@ class ChatBot {
     createWidget() {
            const widgetHTML = `
         <div class="chatbot-widget">
-            <button class="chatbot-button">💬</button>
+            <button class="chatbot-button"><svg xmlns="http://www.w3.org/2000/svg" width="35" height="30" fill="currentColor" class="bi bi-chat-left-dots" viewBox="0 0 16 16">
+  <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+  <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+</svg></button>
             <div class="chatbot-container">
                 <div class="chatbot-header">
                     <div class="chatbot-title">🤖 Помощник по краскам</div>
@@ -68,7 +71,18 @@ class ChatBot {
         // Авто-высота textarea
         this.elements.input.addEventListener('input', () => {
             this.elements.input.style.height = 'auto';
-            this.elements.input.style.height = Math.min(this.elements.input.scrollHeight, 120) + 'px';
+            const newHeight = Math.min(this.elements.input.scrollHeight, 120);
+            this.elements.input.style.height = newHeight + 'px';
+            // Показывать скроллбар только если высота превышает двойную исходную (45px * 2 = 90px)
+            if (newHeight > 90) {
+                this.elements.input.style.overflowY = 'auto';
+                this.elements.input.style.paddingBottom = '50px'; // Отступ для скроллбара выше кнопки
+                this.elements.input.style.paddingRight = '70px'; // Дополнительный отступ для скроллбара, чтобы не заходил на бордер радиус
+            } else {
+                this.elements.input.style.overflowY = 'hidden';
+                this.elements.input.style.paddingBottom = '12px'; // Исходный отступ
+                this.elements.input.style.paddingRight = '60px'; // Исходный отступ
+            }
         });
 
         // Сохраняем историю при закрытии страницы
