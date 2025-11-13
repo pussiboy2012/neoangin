@@ -44,10 +44,11 @@
         <div class="row g-4">
             {% for p in products %}
             <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="card product-card h-100">
+                <div class="card product-card figma-glass h-100">
                     <div class="product-image">
                         <i class="fas fa-paint-bucket product-icon" style="color: {{ ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'] | random }};"></i>
                         {% if p.get('is_new') %}
+                        
                         <span class="product-badge">Новинка</span>
                         {% endif %}
                     </div>
