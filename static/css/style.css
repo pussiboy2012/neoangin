@@ -1651,7 +1651,6 @@ footer {
     overflow-y: auto;
     background: var(--bg-secondary-dark);
 }
-
 .chatbot-messages::-webkit-scrollbar {
     width: 10px;
 }
@@ -1832,7 +1831,6 @@ footer {
         font-size: 20px;
     }
 }
-
 .chatbot-header {
     background: linear-gradient(135deg, #eA7720 0%, #b64652 51%, #f59B17 100%);
     color: white;

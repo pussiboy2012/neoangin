@@ -1,9 +1,145 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>Вход</h3>
-<form method="post">
-  <div><input name="username" placeholder="Логин" required></div>
-  <div><input name="password" placeholder="Пароль" type="password" required></div>
-  <div><button type="submit">Войти</button></div>
-</form>
+<div class="login-container">
+    <div class="login-card">
+        <h3 class="login-title">Вход в систему</h3>
+        <form method="post" class="login-form">
+            <div class="input-group">
+                <input name="username" placeholder="Логин" required class="form-input">
+                <span class="input-icon">👤</span>
+            </div>
+            <div class="input-group">
+                <input name="password" placeholder="Пароль" type="password" required class="form-input">
+                <span class="input-icon">🔒</span>
+            </div>
+            <button type="submit" class="submit-btn">Войти</button>
+        </form>
+        <div class="login-footer">
+            <p class="register-link">Нет аккаунта? <a href="{{ url_for('buyer.register') }}" class="link">Зарегистрироваться</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+}
+
+.login-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-group {
+    position: relative;
+}
+
+.form-input {
+    width: 100%;
+    padding: 15px 45px 15px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+.input-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e5e9;
+}
+
+.forgot-link {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+
+    .login-title {
+        font-size: 20px;
+    }
+
+    .form-input {
+        padding: 12px 40px 12px 12px;
+    }
+}
+</style>
 {% endblock %}

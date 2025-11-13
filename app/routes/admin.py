@@ -67,15 +67,50 @@ def create_user():
 @bp.route("/stocks", methods=["GET", "POST"])
 def stocks():
     products = list_json(PRODUCTS)
+
+    # Подготавливаем данные для шаблона
+    stocks_data = {}
+    total_stock = 0
+    in_stock_count = 0
+    out_of_stock_count = 0
+
+    for product in products:
+        product_id = product["id"]
+        stock_file = Path(STOCKS) / f"{product_id}.json"
+
+        if stock_file.exists():
+            stock_data = read_json(stock_file)
+            stock_qty = stock_data.get("qty", 0) if stock_data else 0
+        else:
+            stock_qty = 0
+
+        # Сохраняем остатки
+        stocks_data[product_id] = {"qty": stock_qty}
+
+        # Добавляем stock_qty к продукту для статистики
+        product["stock_qty"] = stock_qty
+
+        # Считаем статистику
+        total_stock += stock_qty
+        if stock_qty > 0:
+            in_stock_count += 1
+        else:
+            out_of_stock_count += 1
+
     if request.method == "POST":
         pid = request.form["product_id"]
         qty = int(request.form.get("qty", 0))
         write_json(Path(STOCKS) / f"{pid}.json", {"product_id": pid, "qty": qty})
         flash("Остаток обновлён")
         return redirect(url_for("admin.stocks"))
-    stocks = {p["id"]: read_json(Path(STOCKS) / f"{p['id']}.json") or {"qty": 0} for p in products}
-    return render_template("admin_stocks.html", products=products, stocks=stocks)
 
+
+    return render_template("admin_stocks.html",
+                           products=products,
+                           stocks=stocks_data,
+                           total_stock=total_stock,
+                           in_stock_count=in_stock_count,
+                           out_of_stock_count=out_of_stock_count)
 
 @bp.route("/orders")
 def admin_orders():

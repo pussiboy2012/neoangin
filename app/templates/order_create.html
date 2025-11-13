@@ -1,8 +1,427 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>Подтверждение заказа</h3>
-<form method="post">
-  <p>Отправить текущую корзину на модерацию?</p>
-  <button type="submit">Отправить</button>
-</form>
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <!-- Заголовок -->
+        <div class="confirmation-header">
+            <div class="confirmation-icon">📦</div>
+            <h1 class="confirmation-title">Подтверждение заказа</h1>
+            <p class="confirmation-subtitle">Проверьте детали перед отправкой</p>
+        </div>
+
+        <!-- Детали заказа -->
+        <div class="order-summary">
+            <h3 class="summary-title">Содержание заказа</h3>
+            <div class="order-items">
+                {% for it in items %}
+                <div class="order-item">
+                    <span class="item-name">{{ it.product.title }}</span>
+                    <span class="item-details">{{ it.qty }} × {{ it.product.price }} ₽</span>
+                    <span class="item-total">{{ it.sum }} ₽</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="order-total">
+                <span class="total-label">Общая сумма:</span>
+                <span class="total-amount">{{ total }} ₽</span>
+            </div>
+        </div>
+
+        <!-- Информация о процессе -->
+        <div class="process-info">
+            <h4>Что будет дальше?</h4>
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="step-icon">📨</div>
+                    <div class="step-content">
+                        <strong>Отправка на модерацию</strong>
+                        <p>Ваш заказ будет проверен менеджером</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-icon">✅</div>
+                    <div class="step-content">
+                        <strong>Подтверждение</strong>
+                        <p>Мы свяжемся с вами для уточнения деталей</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-icon">🚚</div>
+                    <div class="step-content">
+                        <strong>Доставка</strong>
+                        <p>Быстрая доставка в удобное для вас время</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма подтверждения -->
+        <form method="post" class="confirmation-form">
+            <div class="form-actions">
+                <button type="submit" class="confirm-btn">
+                    <span class="btn-icon">📤</span>
+                    <span class="btn-text">Отправить заказ на модерацию</span>
+                </button>
+                <a href="{{ url_for('buyer.cart') }}" class="back-btn">
+                    <span class="btn-icon">↩️</span>
+                    <span class="btn-text">Вернуться в корзину</span>
+                </a>
+            </div>
+
+            <div class="security-notice">
+                <div class="security-icon">🛡️</div>
+                <div class="security-text">
+                    Ваши данные защищены. После отправки заказа наш менеджер свяжется с вами в течение 15 минут.
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.confirmation-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.confirmation-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 50px;
+    margin: 20px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.confirmation-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.confirmation-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.confirmation-title {
+    color: #2d3748;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+}
+
+.confirmation-subtitle {
+    color: #718096;
+    font-size: 18px;
+    margin: 0;
+}
+
+.order-summary {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 2px solid #e2e8f0;
+}
+
+.summary-title {
+    color: #2d3748;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover {
+    transform: translateX(5px);
+    border-color: #667eea;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #2d3748;
+    flex: 1;
+}
+
+.item-details {
+    color: #718096;
+    font-size: 14px;
+    margin: 0 20px;
+}
+
+.item-total {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 16px;
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #667eea;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.total-label {
+    color: #2d3748;
+}
+
+.total-amount {
+    color: #667eea;
+    font-size: 24px;
+}
+
+.process-info {
+    margin-bottom: 40px;
+}
+
+.process-info h4 {
+    color: #2d3748;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.process-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.step-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.step-content strong {
+    color: #2d3748;
+    font-size: 16px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.step-content p {
+    color: #718096;
+    margin: 0;
+    font-size: 14px;
+}
+
+.confirmation-form {
+    border-top: 2px solid #e2e8f0;
+    padding-top: 30px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.confirm-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    border: none;
+    padding: 20px 30px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-width: 300px;
+}
+
+.confirm-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(72, 187, 120, 0.4);
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 30px;
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
+    color: #718096;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.back-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.security-notice {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f0fff4;
+    border-radius: 12px;
+    border: 1px solid #c6f6d5;
+}
+
+.security-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.security-text {
+    color: #22543d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.confirmation-card {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.order-item {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.process-step {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .confirmation-container {
+        padding: 10px;
+    }
+
+    .confirmation-card {
+        padding: 30px 20px;
+        border-radius: 20px;
+    }
+
+    .confirmation-title {
+        font-size: 28px;
+    }
+
+    .confirmation-icon {
+        font-size: 60px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .confirm-btn,
+    .back-btn {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .order-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .item-details {
+        margin: 0;
+    }
+
+    .process-step {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .security-notice {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .confirmation-title {
+        font-size: 24px;
+    }
+
+    .order-summary {
+        padding: 20px;
+    }
+
+    .order-total {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
+</style>
 {% endblock %}

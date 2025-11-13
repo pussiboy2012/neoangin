@@ -1,18 +1,577 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>История заказов</h3>
-{% if orders %}
-  {% for o in orders %}
-    <div class="card">
-      <strong>Заказ {{ o["id"] }}</strong> — {{ o["status"] }} — {{ o["created_at"] }}
-      <ul>
-        {% for it in o["items"] %}
-          <li>{{ it["title"] }} x{{ it["qty"] }} ({{ it["price"] }})</li>
-        {% endfor %}
-      </ul>
+<div class="orders-container">
+    <div class="orders-header">
+        <h1 class="orders-title">📋 История заказов</h1>
+        <p class="orders-subtitle">Все ваши заказы в одном месте</p>
     </div>
-  {% endfor %}
-{% else %}
-  <p>Заказов нет</p>
-{% endif %}
+
+    {% if orders %}
+    <div class="orders-list">
+        {% for o in orders %}
+        <div class="order-card">
+            <!-- Заголовок заказа -->
+            <div class="order-header">
+                <div class="order-info">
+                    <h3 class="order-id">Заказ #{{ o["id"].split('_')[1]|upper }}</h3>
+                    <div class="order-meta">
+                        <span class="order-date">{{ o["created_at"][:10] }}</span>
+                        <span class="order-time">{{ o["created_at"][11:16] }}</span>
+                    </div>
+                </div>
+                <div class="order-status {{ o['status'] }}">
+                    {% if o['status'] == 'pending_moderation' %}
+                    ⏳ На модерации
+                    {% elif o['status'] == 'approved' %}
+                    ✅ Подтвержден
+                    {% elif o['status'] == 'rejected' %}
+                    ❌ Отклонен
+                    {% elif o['status'] == 'completed' %}
+                    🎉 Завершен
+                    {% elif o['status'] == 'shipped' %}
+                    🚚 Отправлен
+                    {% else %}
+                    {{ o['status'] }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Список товаров -->
+            <div class="order-items">
+                <h4 class="items-title">Состав заказа:</h4>
+                <div class="items-list">
+                    {% for it in o["items"] %}
+                    <div class="order-item">
+                        <div class="item-info">
+                            <span class="item-name">{{ it["title"] }}</span>
+                            <span class="item-price">{{ it["price"] }} ₽/шт</span>
+                        </div>
+                        <div class="item-quantity">
+                            <span class="quantity">x{{ it["qty"] }}</span>
+                            <span class="item-total">{{ it["price"] * it["qty"] }} ₽</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Итоговая информация -->
+            <div class="order-footer">
+                <div class="order-total">
+                    <span class="total-label">Общая сумма:</span>
+                    <span class="total-amount">{{ o["total"] }} ₽</span>
+                </div>
+                <div class="order-actions">
+                    <button class="action-btn reorder-btn" data-order-id="{{ o['id'] }}">
+                        🔄 Повторить заказ
+                    </button>
+                    <button class="action-btn details-btn">
+                        📊 Детали
+                    </button>
+                </div>
+            </div>
+
+            <!-- Прогресс заказа -->
+            <div class="order-progress">
+                <div class="progress-steps">
+                    <div class="progress-step {% if o['status'] in ['pending_moderation', 'approved', 'shipped', 'completed'] %}completed{% endif %}">
+                        <div class="step-icon">📝</div>
+                        <span class="step-text">Оформлен</span>
+                    </div>
+                    <div class="progress-step {% if o['status'] in ['approved', 'shipped', 'completed'] %}completed{% endif %}">
+                        <div class="step-icon">✅</div>
+                        <span class="step-text">Подтвержден</span>
+                    </div>
+                    <div class="progress-step {% if o['status'] in ['shipped', 'completed'] %}completed{% endif %}">
+                        <div class="step-icon">🚚</div>
+                        <span class="step-text">Отправлен</span>
+                    </div>
+                    <div class="progress-step {% if o['status'] == 'completed' %}completed{% endif %}">
+                        <div class="step-icon">🎉</div>
+                        <span class="step-text">Завершен</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Пустая история заказов -->
+    <div class="empty-orders">
+        <div class="empty-icon">📦</div>
+        <h2>У вас пока нет заказов</h2>
+        <p>Сделайте свой первый заказ и он появится здесь</p>
+        <a href="{{ url_for('buyer.index') }}" class="shop-btn">
+            🛍️ Начать покупки
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.orders-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.orders-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.orders-title {
+    color: #ffffff;
+    font-size: 38px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+}
+
+.orders-subtitle {
+    color: #ffffff;
+    font-size: 20px;
+    margin: 0;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.order-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 25px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.order-info {
+    flex: 1;
+}
+
+.order-id {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.order-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.order-date {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.order-time {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.order-status {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 140px;
+}
+
+.order-status.pending_moderation {
+    background: rgba(246, 173, 85, 0.9);
+    color: #744210;
+}
+
+.order-status.approved {
+    background: rgba(72, 187, 120, 0.9);
+    color: #22543d;
+}
+
+.order-status.shipped {
+    background: rgba(102, 126, 234, 0.9);
+    color: white;
+}
+
+.order-status.completed {
+    background: rgba(139, 69, 255, 0.9);
+    color: white;
+}
+
+.order-status.rejected {
+    background: rgba(245, 101, 101, 0.9);
+    color: #742a2a;
+}
+
+.order-items {
+    padding: 25px 30px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.items-title {
+    color: #2d3748;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+}
+
+.items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover {
+    background: #edf2f7;
+    transform: translateX(5px);
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 15px;
+}
+
+.item-price {
+    color: #718096;
+    font-size: 13px;
+}
+
+.item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.quantity {
+    color: #4a5568;
+    font-weight: 500;
+    background: white;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.item-total {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 16px;
+    min-width: 80px;
+    text-align: right;
+}
+
+.order-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    background: #f8fafc;
+}
+
+.order-total {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.total-label {
+    color: #4a5568;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.total-amount {
+    color: #2d3748;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.order-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+    color: #4a5568;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.reorder-btn:hover {
+    border-color: #48bb78;
+    color: #48bb78;
+}
+
+.details-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.order-progress {
+    padding: 20px 30px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+}
+
+.progress-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.progress-step.completed {
+    opacity: 1;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.progress-step.completed .step-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.step-text {
+    font-size: 12px;
+    color: #718096;
+    font-weight: 500;
+}
+
+.progress-step.completed .step-text {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.empty-icon {
+    font-size: 80px;
+    margin-bottom: 30px;
+    opacity: 0.5;
+}
+
+.empty-orders h2 {
+    color: #2d3748;
+    font-size: 28px;
+    margin: 0 0 15px 0;
+}
+
+.empty-orders p {
+    color: #718096;
+    font-size: 18px;
+    margin: 0 0 30px 0;
+}
+
+.shop-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 32px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.shop-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.order-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.empty-orders {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .orders-container {
+        padding: 15px;
+    }
+
+    .orders-title {
+        font-size: 28px;
+    }
+
+    .order-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .order-status {
+        align-self: flex-start;
+    }
+
+    .order-footer {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+    }
+
+    .order-total {
+        justify-content: space-between;
+    }
+
+    .order-actions {
+        justify-content: center;
+    }
+
+    .progress-steps {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .order-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .item-quantity {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .orders-title {
+        font-size: 24px;
+    }
+
+    .order-header,
+    .order-items,
+    .order-footer,
+    .order-progress {
+        padding: 20px;
+    }
+
+    .progress-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .empty-orders {
+        padding: 40px 20px;
+    }
+
+    .empty-icon {
+        font-size: 60px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Функция для повтора заказа
+    document.querySelectorAll('.reorder-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            if (confirm('Добавить товары из этого заказа в корзину?')) {
+                // Здесь можно добавить логику для повтора заказа
+                alert('Товары добавлены в корзину!');
+            }
+        });
+    });
+
+    // Функция для просмотра деталей заказа
+    document.querySelectorAll('.details-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            alert('Детали заказа будут показаны здесь');
+        });
+    });
+});
+</script>
 {% endblock %}

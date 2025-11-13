@@ -98,36 +98,82 @@ def remove_from_cart(product_id):
     return redirect(url_for("buyer.cart"))
 
 # ---- order ----
-@bp.route("/order/create", methods=["GET","POST"])
+@bp.route("/order/create", methods=["GET", "POST"])
 @login_required()
 def create_order():
+    cart = session.get("cart", {})
+
+    if not cart:
+        flash("Корзина пуста")
+        return redirect(url_for("buyer.cart"))
+
+    # Подготовка данных для отображения
+    items = []
+    total = 0
+    for pid, qty in cart.items():
+        p = read_json(Path(PRODUCTS) / f"{pid}.json")
+        if p:
+            price = p.get("price", 0)
+            items.append({
+                "product": p,
+                "qty": qty,
+                "sum": price * qty
+            })
+            total += price * qty
+
     if request.method == "POST":
-        cart = session.get("cart", {})
-        if not cart:
-            flash("Корзина пуста")
-            return redirect(url_for("buyer.cart"))
+        # Создание заказа
         order_id = gen_id("o_")
-        items = []
-        total = 0
+        order_items = []
         for pid, qty in cart.items():
-            p = read_json(Path(PRODUCTS)/f"{pid}.json")
-            price = p.get("price",0) if p else 0
-            items.append({"product_id": pid, "title": p.get("title") if p else "?", "qty": qty, "price": price})
-            total += price*qty
+            p = read_json(Path(PRODUCTS) / f"{pid}.json")
+            price = p.get("price", 0) if p else 0
+            order_items.append({
+                "product_id": pid,
+                "title": p.get("title") if p else "?",
+                "qty": qty,
+                "price": price
+            })
+
         order = {
             "id": order_id,
             "user_id": session["user"]["id"],
-            "items": items,
+            "items": order_items,
             "total": total,
             "status": "pending_moderation",
             "created_at": datetime.utcnow().isoformat()
         }
         write_json(Path(ORDERS) / f"{order_id}.json", order)
-        # clear cart
+
+        # Очистка корзины
         session["cart"] = {}
+        session.modified = True
+
         flash("Заказ отправлен на модерацию")
         return redirect(url_for("buyer.orders"))
-    return render_template("order_create.html")
+
+    # GET запрос - показываем страницу подтверждения
+    return render_template("order_create.html", items=items, total=total)
+
+@bp.route('/update_cart', methods=['POST'])
+def update_cart():
+    product_id = request.form.get('product_id')
+    change = int(request.form.get('change', 0))
+
+    cart = session.get('cart', {})
+
+    if product_id in cart:
+        new_qty = cart[product_id] + change
+        if new_qty > 0:
+            cart[product_id] = new_qty
+        else:
+            # Если количество стало 0 или меньше, удаляем товар
+            cart.pop(product_id, None)
+
+        session['cart'] = cart
+        session.modified = True
+
+    return redirect(url_for('buyer.cart'))
 
 @bp.route("/orders")
 @login_required()
