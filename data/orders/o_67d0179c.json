@@ -1,0 +1,27 @@
+{
+  "id": "o_67d0179c",
+  "user_id": "admin",
+  "items": [
+    {
+      "product_id": "p_029e2902",
+      "title": "ебать что за краска",
+      "qty": 4,
+      "price": 500.0
+    },
+    {
+      "product_id": "p_d6405a50",
+      "title": "украинская шалава, ой общительная",
+      "qty": 6,
+      "price": 5.0
+    },
+    {
+      "product_id": "p_de3c2f9d",
+      "title": "хуй в масле",
+      "qty": 2,
+      "price": 456.0
+    }
+  ],
+  "total": 2942.0,
+  "status": "pending_moderation",
+  "created_at": "2025-11-13T15:57:32.784032"
+}
