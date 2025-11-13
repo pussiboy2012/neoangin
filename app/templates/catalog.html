@@ -2,23 +2,6 @@
 {% block content %}
 
 <!-- Герой секция каталога -->
-<section class="catalog-hero">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h1 class="display-5 fw-bold mb-3">Каталог товаров</h1>
-                <p class="lead mb-0">Широкий выбор качественных красок для любых целей</p>
-            </div>
-            <div class="col-lg-4 text-lg-end">
-                <div class="text-white-50">
-                    <i class="fas fa-paint-brush me-2"></i>
-                    <span>{{ products|length }} товаров</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <div class="container">
     <!-- Фильтры -->
     <div class="filter-section">
@@ -46,7 +29,7 @@
             <div class="col-xl-3 col-lg-4 col-md-6">
                 <div class="card product-card figma-glass h-100">
                     <div class="product-image">
-                        <i class="fas fa-paint-bucket product-icon" style="color: {{ ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'] | random }};"></i>
+                        <img style="border-radius: 20px;" src="../../static/images/product.svg" alt="">
                         {% if p.get('is_new') %}
                         
                         <span class="product-badge">Новинка</span>
@@ -55,7 +38,7 @@
 
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ p.title }}</h5>
-                        <p class="card-text text-muted small flex-grow-1">
+                        <p class="card-text small flex-grow-1">
                             {{ p.description[:100] }}{% if p.description|length > 100 %}...{% endif %}
                         </p>
 
@@ -80,7 +63,7 @@
                             {% endif %}
 
                             {% if stock_qty > 0 %}
-                                <small class="text-muted ms-2">Остаток: {{ stock_qty }} шт.</small>
+                                <small class="ms-2">Остаток: {{ stock_qty }} шт.</small>
                             {% endif %}
                         </div>
 
@@ -101,7 +84,7 @@
                 <i class="fas fa-paint-brush"></i>
             </div>
             <h4 class="mb-3">Товары не найдены</h4>
-            <p class="text-muted mb-4">Попробуйте изменить параметры фильтрации или зайдите позже</p>
+            <p class="mb-4">Попробуйте изменить параметры фильтрации или зайдите позже</p>
             <a href="{{ url_for('buyer.catalog') }}" class="btn btn-primary">
                 <i class="fas fa-sync-alt me-2"></i>Сбросить фильтры
             </a>

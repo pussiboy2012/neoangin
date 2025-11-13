@@ -462,34 +462,74 @@ body {
    =========================================== */
 
 footer {
-    background: var(--text-dark);
+    background: #0c0c0c;
     margin-top: auto;
+    padding: 0;
 }
-
-.footer-content {
+.footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-around;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.footer-column {
+    background: #0c0c0c;
+    display: flex;
+    flex: 1;
+    align-items: flex-start;
+    flex-direction: column;
     flex-wrap: wrap;
     gap: 2rem;
+    padding: 0;
 }
-
-.footer-brand {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
+.footer-title{
+    font-size: 25px;
+    margin: 0;
+}
+.footer-link{
+    font-size: 15px;
     text-decoration: none;
+    color: #c2c2c2;
 }
-
-.footer-contact {
-    text-align: right;
+.footer-link:hover{
+    color: white;
+    transform: translateY(-2px);
 }
-
-.footer-contact p {
-    margin: 0.25rem 0;
-    color: rgba(255, 255, 255, 0.8);
+p.footer-link{
+margin: 0;
 }
-
+p.footer-link:hover{
+    transform: none;
+}
+.footer-info{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+    gap: 10rem;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.footer-company{
+    display: block;
+    flex: 1;
+}
+.footer-links{
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+.footer-info-primary{
+    font-weight: normal;
+    font-size: 15px;
+    margin: 0;
+}
+.footer-info-secondary{
+    font-weight: normal;
+    font-size: 10px;
+    margin: 0;
+}
 
 /* ===========================================
    Hero Sections
@@ -953,6 +993,12 @@ footer {
     margin-bottom: 10px;
     border-radius: 6px;
 }
+.card-title{
+    color: white;
+}
+.text-muted{
+    color: white;
+}
 
 .category-card {
     border: none;
@@ -1109,7 +1155,6 @@ footer {
 
 .product-image {
     height: 200px;
-    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1283,6 +1328,9 @@ footer {
     .stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
+    .footer{
+        flex-direction: column;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1298,6 +1346,12 @@ footer {
         flex-direction: column;
         text-align: center;
         gap: 1rem;
+    }
+    .footer-info{
+        flex-direction: column;
+    }
+    .footer-links{
+        flex-direction: column;
     }
     .category-card {
         margin-bottom: 2rem;
@@ -1583,8 +1637,8 @@ footer {
 }
 
 .chatbot-button {
-    width: 60px;
-    height: 60px;
+    width: 36px;
+    height: 36px;
     background: linear-gradient(135deg, #eA7720 0%, #b64652 51%, #f59B17 100%);
     border-radius: 50%;
     display: flex;
