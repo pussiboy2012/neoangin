@@ -1,3 +1,4 @@
+import datetime
 import os
 from flask import Flask
 from .utils import ensure_data_dirs
@@ -26,5 +27,36 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix="/admin")
     # УБЕРИТЕ ПРЕФИКС для обратной совместимости
     app.register_blueprint(chatbot_bp)  # Без url_prefix
+
+    # Добавляем кастомные фильтры
+    @app.template_filter('format_chat_time')
+    def format_chat_time(value):
+        """Форматирует время для чата: ЧЧ:ММ"""
+        if not value:
+            return ''
+        try:
+            # Если это ISO строка
+            if 'T' in value:
+                dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            else:
+                # Если это уже отформатированное время
+                return value
+            return dt.strftime('%H:%M')
+        except:
+            return value
+
+    @app.template_filter('format_chat_date')
+    def format_chat_date(value):
+        """Форматирует дату для разделителей: ДД.ММ.ГГГГ"""
+        if not value:
+            return ''
+        try:
+            if 'T' in value:
+                dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+                return dt.strftime('%d.%m.%Y')
+            else:
+                return value
+        except:
+            return value
 
     return app
