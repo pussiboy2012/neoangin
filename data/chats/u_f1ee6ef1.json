@@ -194,10 +194,66 @@
       "type": "text",
       "timestamp": "2025-11-14T22:50:57.957343",
       "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_99d2550f",
+      "role": "manager",
+      "content": "как какать ?",
+      "type": "text",
+      "timestamp": "2025-11-14T22:54:48.394631",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_1784a415",
+      "role": "manager",
+      "content": "привет",
+      "type": "text",
+      "timestamp": "2025-11-14T23:02:36.914487",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_f977007f",
+      "role": "manager",
+      "content": "привет",
+      "type": "text",
+      "timestamp": "2025-11-14T23:13:17.396002",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_6c82b4fe",
+      "role": "manager",
+      "content": "вжух",
+      "type": "text",
+      "timestamp": "2025-11-14T23:20:28.154904",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_30ddd72a",
+      "role": "manager",
+      "content": "Сас",
+      "type": "text",
+      "timestamp": "2025-11-14T23:23:45.930356",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_76a20538",
+      "role": "manager",
+      "content": "Сас",
+      "type": "text",
+      "timestamp": "2025-11-14T23:30:20.617357",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_de594dfe",
+      "role": "manager",
+      "content": "привет",
+      "type": "text",
+      "timestamp": "2025-11-14T23:32:39.148086",
+      "sender_name": "Менеджер"
     }
   ],
-  "bot_enabled": false,
+  "bot_enabled": true,
   "assigned_manager": null,
   "status": "active",
-  "last_activity": "2025-11-14T22:50:57.957367"
+  "last_activity": "2025-11-14T23:32:39.148097"
 }

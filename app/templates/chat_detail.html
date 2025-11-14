@@ -287,6 +287,7 @@
         display: flex;
         align-items: center;
         gap: 4px;
+        padding-left: 12px;
     }
 
     /* Текст сообщения */
@@ -401,6 +402,38 @@
             padding: 15px;
         }
     }
+
+    /* Разделитель дат */
+.date-divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.date-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #dee2e6 50%, transparent 100%);
+}
+
+.date-text {
+    background: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 </style>
 
 <div class="chat-detail-container">
@@ -431,7 +464,8 @@
 <div class="chat-messages" id="messagesContainer">
     {% if chat.messages %}
         {% for message in chat.messages %}
-        <div class="message-wrapper {% if message.role == 'user' %}user-message{% else %}other-message{% endif %}">
+        <div class="message-wrapper {% if message.role == 'user' %}user-message{% else %}other-message{% endif %}"
+             data-timestamp="{{ message.timestamp }}">
             <div class="message-bubble {% if message.role == 'user' %}user-bubble{% elif message.role == 'bot' %}bot-bubble{% else %}manager-bubble{% endif %}">
                 <!-- Аватар отправителя -->
                 <div class="message-avatar">
@@ -464,7 +498,6 @@
                             {% endif %}
                         </span>
                         <span class="message-time">
-                            <i class="far fa-clock"></i>
                             {{ message.timestamp }}
                         </span>
                     </div>
@@ -513,6 +546,62 @@
 // Глобальные переменные
 let isUserTyping = false;
 let refreshInterval;
+
+// Функция для форматирования времени в существующих сообщениях
+// Функция для форматирования времени и добавления разделителей дат в существующих сообщениях
+function formatExistingMessages() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageWrappers = messagesContainer.querySelectorAll('.message-wrapper[data-timestamp]');
+
+    if (messageWrappers.length === 0) return;
+
+    let currentDate = null;
+    const messagesArray = Array.from(messageWrappers);
+
+    // Сначала удаляем все существующие разделители дат
+    const existingDividers = messagesContainer.querySelectorAll('.date-divider');
+    existingDividers.forEach(divider => divider.remove());
+
+    // Проходим по всем сообщениям и добавляем разделители
+    messagesArray.forEach((wrapper, index) => {
+        const timestamp = wrapper.getAttribute('data-timestamp');
+        const timeElement = wrapper.querySelector('.message-time');
+
+        if (timestamp && timeElement) {
+            const messageDate = formatMessageDate(timestamp);
+            const messageTime = formatMessageTime(timestamp);
+
+            // Обновляем время
+            timeElement.textContent = messageTime;
+
+            // Добавляем разделитель даты если изменилась дата
+            if (messageDate !== currentDate) {
+                currentDate = messageDate;
+
+                // Создаем и вставляем разделитель даты
+                const dateDivider = createDateDivider(currentDate);
+
+                if (index === 0) {
+                    // Если это первое сообщение, вставляем разделитель перед ним
+                    messagesContainer.insertBefore(dateDivider, wrapper);
+                } else {
+                    // Вставляем разделитель перед текущим сообщением
+                    wrapper.parentNode.insertBefore(dateDivider, wrapper);
+                }
+            }
+        }
+    });
+
+    scrollToBottom();
+}
+
+// Функция создания разделителя даты
+function createDateDivider(date) {
+    const divider = document.createElement('div');
+    divider.className = 'date-divider';
+    divider.innerHTML = `<span class="date-text">${date}</span>`;
+    return divider;
+}
 
 // Автопрокрутка к последнему сообщению
 function scrollToBottom() {
@@ -564,42 +653,91 @@ function renderMessages(messages) {
         return;
     }
 
-    messagesContainer.innerHTML = messages.map(message => `
-        <div class="message-wrapper ${message.role === 'user' ? 'user-message' : 'other-message'}">
-            <div class="message-bubble ${getBubbleClass(message.role)}">
-                <!-- Аватар отправителя -->
-                <div class="message-avatar">
-                    ${getAvatarHTML(message.role)}
+    let currentDate = null;
+    let html = '';
+
+    messages.forEach(message => {
+        const messageDate = formatMessageDate(message.timestamp);
+        const messageTime = formatMessageTime(message.timestamp);
+
+        // Добавляем разделитель даты если изменилась дата
+        if (messageDate !== currentDate) {
+            currentDate = messageDate;
+            html += `
+                <div class="date-divider">
+                    <span class="date-text">${currentDate}</span>
                 </div>
+            `;
+        }
 
-                <!-- Содержимое сообщения -->
-                <div class="message-content">
-                    <!-- Заголовок с именем и временем -->
-                    <div class="message-header">
-                        <span class="sender-name">
-                            ${getSenderName(message.role)}
-                        </span>
-                        <span class="message-time">
-                            <i class="far fa-clock"></i>
-                            ${message.timestamp}
-                        </span>
+        html += `
+            <div class="message-wrapper ${message.role === 'user' ? 'user-message' : 'other-message'}" data-timestamp="${message.timestamp}">
+                <div class="message-bubble ${getBubbleClass(message.role)}">
+                    <div class="message-avatar">
+                        ${getAvatarHTML(message.role)}
                     </div>
-
-                    <!-- Текст сообщения -->
-                    <div class="message-text">
-                        ${escapeHtml(message.content || message.text || '')}
-                    </div>
-
-                    <!-- Статус сообщения -->
-                    <div class="message-status">
-                        ${message.role === 'user' ? '<i class="fas fa-check-double delivered"></i>' : ''}
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="sender-name">
+                                ${getSenderName(message.role)}
+                            </span>
+                            <span class="message-time">
+                                ${messageTime}
+                            </span>
+                        </div>
+                        <div class="message-text">
+                            ${escapeHtml(message.content || message.text || '')}
+                        </div>
+                        <div class="message-status">
+                            ${message.role === 'user' ? '<i class="fas fa-check-double delivered"></i>' : ''}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    });
 
+    messagesContainer.innerHTML = html;
     scrollToBottom();
+}
+
+// Новые функции для форматирования даты и времени
+function formatMessageTime(timestamp) {
+    if (!timestamp) return '';
+
+    try {
+        // Если это ISO строка
+        if (timestamp.includes('T')) {
+            const dt = new Date(timestamp);
+            return dt.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+        // Если уже отформатировано, возвращаем как есть
+        return timestamp;
+    } catch (e) {
+        return timestamp;
+    }
+}
+
+function formatMessageDate(timestamp) {
+    if (!timestamp) return '';
+
+    try {
+        if (timestamp.includes('T')) {
+            const dt = new Date(timestamp);
+            return dt.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        return timestamp.split(' ')[0]; // Берем только дату если уже отформатировано
+    } catch (e) {
+        return timestamp;
+    }
 }
 
 // Вспомогательные функции
@@ -731,8 +869,9 @@ function startAutoRefresh() {
 
 // Прокрутка при загрузке
 document.addEventListener('DOMContentLoaded', function() {
+    formatExistingMessages(); // ФОРМАТИРУЕМ СУЩЕСТВУЮЩИЕ СООБЩЕНИЯ
     scrollToBottom();
-    startAutoRefresh(); // Запускаем автообновление при загрузке
+    startAutoRefresh();
 });
 
 // Останавливаем автообновление при уходе со страницы
