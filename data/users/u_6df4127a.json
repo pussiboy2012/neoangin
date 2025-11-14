@@ -1,0 +1,12 @@
+{
+  "id": "u_6df4127a",
+  "username": "bobby@company.com",
+  "email": "bobby@company.com",
+  "full_name": "bobby",
+  "inn": "4825111598",
+  "phone": "88005553535",
+  "password": "a01f78d15fc747b17b02db63fc4c8afe0ba78c065e3c783ca8fa3240a26e498b",
+  "role": "buyer",
+  "created_at": "2025-11-14T13:19:28.581665",
+  "company_verified": false
+}

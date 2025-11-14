@@ -41,16 +41,18 @@
                 <h4 class="items-title">Состав заказа:</h4>
                 <div class="items-list">
                     {% for it in o["items"] %}
-                    <div class="order-item">
-                        <div class="item-info">
-                            <span class="item-name">{{ it["title"] }}</span>
-                            <span class="item-price">{{ it["price"] }} ₽/шт</span>
+                    <a href="{{ url_for('buyer.product_detail', product_id=it['product_id']) }}" class="order-item-link">
+                        <div class="order-item">
+                            <div class="item-info">
+                                <span class="item-name">{{ it["title"] }}</span>
+                                <span class="item-price">{{ it["price"] }} ₽/шт</span>
+                            </div>
+                            <div class="item-quantity">
+                                <span class="quantity">x{{ it["qty"] }}</span>
+                                <span class="item-total">{{ it["price"] * it["qty"] }} ₽</span>
+                            </div>
                         </div>
-                        <div class="item-quantity">
-                            <span class="quantity">x{{ it["qty"] }}</span>
-                            <span class="item-total">{{ it["price"] * it["qty"] }} ₽</span>
-                        </div>
-                    </div>
+                    </a>
                     {% endfor %}
                 </div>
             </div>
@@ -62,9 +64,9 @@
                     <span class="total-amount">{{ o["total"] }} ₽</span>
                 </div>
                 <div class="order-actions">
-                    <button class="action-btn reorder-btn" data-order-id="{{ o['id'] }}">
-                        🔄 Повторить заказ
-                    </button>
+                    <a href="{{ url_for('buyer.catalog') }}" class="action-btn shop-btn">
+                        🛍️ За покупками
+                    </a>
                     <button class="action-btn details-btn">
                         📊 Детали
                     </button>
@@ -101,7 +103,7 @@
         <div class="empty-icon">📦</div>
         <h2>У вас пока нет заказов</h2>
         <p>Сделайте свой первый заказ и он появится здесь</p>
-        <a href="{{ url_for('buyer.index') }}" class="shop-btn">
+        <a href="{{ url_for('buyer.catalog') }}" class="shop-btn">
             🛍️ Начать покупки
         </a>
     </div>
@@ -151,9 +153,9 @@
     transition: all 0.3s ease;
 }
 
+/* Убрал дергание карточки при наведении */
 .order-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
 }
 
 .order-header {
@@ -243,7 +245,14 @@
 .items-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+}
+
+/* Ссылка для товара */
+.order-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
 .order-item {
@@ -254,11 +263,16 @@
     background: #f8fafc;
     border-radius: 12px;
     transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
 }
 
+/* Дергание только для товаров */
 .order-item:hover {
     background: #edf2f7;
-    transform: translateX(5px);
+    transform: translateX(8px);
+    border-color: #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
 }
 
 .item-info {
@@ -272,6 +286,11 @@
     font-weight: 600;
     color: #2d3748;
     font-size: 15px;
+    transition: color 0.3s ease;
+}
+
+.order-item:hover .item-name {
+    color: #667eea;
 }
 
 .item-price {
@@ -292,6 +311,13 @@
     padding: 4px 12px;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover .quantity {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
 }
 
 .item-total {
@@ -300,6 +326,12 @@
     font-size: 16px;
     min-width: 80px;
     text-align: right;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover .item-total {
+    color: #5a6fd8;
+    transform: scale(1.05);
 }
 
 .order-footer {
@@ -334,7 +366,7 @@
 }
 
 .action-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     background: white;
@@ -343,6 +375,10 @@
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .action-btn:hover {
@@ -350,9 +386,18 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.reorder-btn:hover {
-    border-color: #48bb78;
-    color: #48bb78;
+/* Стиль для кнопки "За покупками" */
+.shop-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+}
+
+.shop-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6b46c1 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
 .details-btn:hover {
@@ -550,26 +595,39 @@
     .empty-icon {
         font-size: 60px;
     }
+
+    .order-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        text-align: center;
+        justify-content: center;
+    }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Функция для повтора заказа
-    document.querySelectorAll('.reorder-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const orderId = this.getAttribute('data-order-id');
-            if (confirm('Добавить товары из этого заказа в корзину?')) {
-                // Здесь можно добавить логику для повтора заказа
-                alert('Товары добавлены в корзину!');
-            }
-        });
-    });
-
     // Функция для просмотра деталей заказа
     document.querySelectorAll('.details-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            alert('Детали заказа будут показаны здесь');
+            // Находим родительскую карточку заказа
+            const orderCard = this.closest('.order-card');
+            const orderId = orderCard.querySelector('.order-id').textContent;
+
+            alert(`Детали заказа ${orderId}\n\nЗдесь можно показать:\n• Контактные данные\n• Адрес доставки\n• Трек-номер\n• Историю статусов`);
+        });
+    });
+
+    // Добавляем интерактивность для товаров
+    document.querySelectorAll('.order-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            // Плавная анимация при клике
+            this.style.transform = 'translateX(4px) scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
         });
     });
 });

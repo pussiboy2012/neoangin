@@ -12,9 +12,7 @@
             <!-- Левая колонка - изображение товара -->
             <div class="product-image-section">
                 <div class="product-image">
-                    <img src="https://via.placeholder.com/400x400/4a5568/ffffff?text=Алкидная+Краска"
-                         alt="{{ product.title }}"
-                         class="image-preview">
+                    <img  class="product-image-product" src="../../static/images/products.svg" alt="{{ product.title }}">
                 </div>
                 <div class="image-thumbnails">
                     <div class="thumbnail active" style="background: #4a5568;"></div>
@@ -62,35 +60,6 @@
 
                 <!-- Форма добавления в корзину -->
                 <form method="post" action="{{ url_for('buyer.add_to_cart', product_id=product.id) }}" class="cart-form">
-                    <div class="volume-selection">
-                        <label class="volume-label">Объем:</label>
-                        <div class="volume-options">
-                            <label class="volume-option active">
-                                <input type="radio" name="volume" value="1" checked>
-                                <span class="option-content">
-                                    <span class="option-size">1 л</span>
-                                    <span class="option-price">500 ₽</span>
-                                </span>
-                            </label>
-                            <label class="volume-option">
-                                <input type="radio" name="volume" value="5">
-                                <span class="option-content">
-                                    <span class="option-size">5 л</span>
-                                    <span class="option-price">2 250 ₽</span>
-                                    <span class="option-save">Экономия 250 ₽</span>
-                                </span>
-                            </label>
-                            <label class="volume-option">
-                                <input type="radio" name="volume" value="10">
-                                <span class="option-content">
-                                    <span class="option-size">10 л</span>
-                                    <span class="option-price">4 000 ₽</span>
-                                    <span class="option-save">Экономия 1 000 ₽</span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
                     <div class="quantity-section">
                         <label class="quantity-label">Количество:</label>
                         <div class="quantity-controls">
@@ -575,6 +544,7 @@
 .product-description {
     border-top: 2px solid #e2e8f0;
     padding-top: 40px;
+    heigh: auto;
 }
 
 .description-title {

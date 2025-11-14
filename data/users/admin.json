@@ -1,7 +1,13 @@
 {
   "id": "admin",
   "username": "admin",
-  "password": "admin",
+  "password": "ec15ee661bae11d73b969d34588b653d9a3be3203f61eb433f42d935362f5ed1",
+  "salt": "2a8e7d9ed249ff7f",
   "role": "admin",
-  "created_at": "2025-11-09T15:18:25.446809"
+  "email": "admin@company.com",
+  "full_name": "Системный администратор",
+  "phone": "+70000000000",
+  "created_at": "2025-11-14T12:32:49.455033",
+  "is_active": true,
+  "last_login": null
 }
