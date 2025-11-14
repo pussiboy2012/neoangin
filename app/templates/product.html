@@ -2,9 +2,15 @@
 {% block content %}
 <div class="product-container">
     <div class="product-card">
-        <!-- Заголовок товара -->
+        <!-- Заголовок товара с кнопкой назад -->
         <div class="product-header">
-            <div class="category-badge">{{ product.category }}</div>
+            <div class="header-top">
+                <a href="javascript:history.back()" class="back-btn">
+                    <span class="back-icon">←</span>
+                    <span class="back-text">Назад</span>
+                </a>
+                <div class="category-badge">{{ product.category }}</div>
+            </div>
             <h1 class="product-title">{{ product.title }}</h1>
         </div>
 
@@ -12,9 +18,7 @@
             <!-- Левая колонка - изображение товара -->
             <div class="product-image-section">
                 <div class="product-image">
-                    <img src="https://via.placeholder.com/400x400/4a5568/ffffff?text=Алкидная+Краска"
-                         alt="{{ product.title }}"
-                         class="image-preview">
+                    <img class="product-image-product" src="../../static/images/products.svg" alt="{{ product.title }}">
                 </div>
                 <div class="image-thumbnails">
                     <div class="thumbnail active" style="background: #4a5568;"></div>
@@ -62,35 +66,6 @@
 
                 <!-- Форма добавления в корзину -->
                 <form method="post" action="{{ url_for('buyer.add_to_cart', product_id=product.id) }}" class="cart-form">
-                    <div class="volume-selection">
-                        <label class="volume-label">Объем:</label>
-                        <div class="volume-options">
-                            <label class="volume-option active">
-                                <input type="radio" name="volume" value="1" checked>
-                                <span class="option-content">
-                                    <span class="option-size">1 л</span>
-                                    <span class="option-price">500 ₽</span>
-                                </span>
-                            </label>
-                            <label class="volume-option">
-                                <input type="radio" name="volume" value="5">
-                                <span class="option-content">
-                                    <span class="option-size">5 л</span>
-                                    <span class="option-price">2 250 ₽</span>
-                                    <span class="option-save">Экономия 250 ₽</span>
-                                </span>
-                            </label>
-                            <label class="volume-option">
-                                <input type="radio" name="volume" value="10">
-                                <span class="option-content">
-                                    <span class="option-size">10 л</span>
-                                    <span class="option-price">4 000 ₽</span>
-                                    <span class="option-save">Экономия 1 000 ₽</span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
                     <div class="quantity-section">
                         <label class="quantity-label">Количество:</label>
                         <div class="quantity-controls">
@@ -182,6 +157,52 @@
     margin-bottom: 30px;
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 20px;
+    position: relative;
+}
+
+/* Стили для кнопки "Назад" */
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.back-btn:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6b46c1 100%);
+}
+
+.back-icon {
+    font-size: 18px;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.back-btn:hover .back-icon {
+    transform: translateX(-3px);
+}
+
+.back-text {
+    font-size: 14px;
 }
 
 .category-badge {
@@ -192,7 +213,6 @@
     border-radius: 20px;
     font-size: 14px;
     font-weight: 600;
-    margin-bottom: 15px;
 }
 
 .product-title {
@@ -575,6 +595,7 @@
 .product-description {
     border-top: 2px solid #e2e8f0;
     padding-top: 40px;
+    height: auto;
 }
 
 .description-title {
@@ -698,6 +719,15 @@
     .areas-grid {
         grid-template-columns: 1fr 1fr;
     }
+
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .back-btn {
+        align-self: flex-start;
+    }
 }
 
 @media (max-width: 480px) {
@@ -708,6 +738,11 @@
     .option-content {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .back-btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 
@@ -729,6 +764,10 @@
 
 .volume-option, .spec-item, .area-item {
     animation: fadeIn 0.6s ease-out;
+}
+
+.back-btn {
+    animation: fadeIn 0.6s ease-out 0.2s both;
 }
 </style>
 
@@ -768,6 +807,18 @@ document.addEventListener('DOMContentLoaded', function() {
         let value = parseInt(this.value);
         if (value < 1) this.value = 1;
         if (value > maxQty) this.value = maxQty;
+    });
+
+    // Дополнительная функциональность для кнопки "Назад"
+    const backBtn = document.querySelector('.back-btn');
+
+    // Добавляем альтернативное поведение если история пуста
+    backBtn.addEventListener('click', function(e) {
+        // Если в истории только одна страница (текущая), перенаправляем в каталог
+        if (window.history.length <= 1) {
+            e.preventDefault();
+            window.location.href = "{{ url_for('buyer.catalog') }}";
+        }
     });
 });
 </script>

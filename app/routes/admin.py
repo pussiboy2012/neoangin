@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from ..utils import PRODUCTS, STOCKS, ORDERS, USERS, read_json, write_json, gen_id, get_user_by_username, list_json
 from pathlib import Path
 from datetime import datetime
+from ..utils import get_all_chats, get_chat, add_message_to_chat, toggle_bot_for_chat, assign_manager_to_chat, create_chat
+from ..chatbot import chatbot
 
 bp = Blueprint("admin", __name__, template_folder="../templates")
 
@@ -235,3 +237,75 @@ def get_user(user_id):
             return jsonify({"success": False, "error": "Пользователь не найден"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
+
+@bp.route('/chats')
+def admin_chats():
+    """Страница со списком всех чатов"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return redirect(url_for('buyer.login'))
+
+    chats = get_all_chats()
+    return render_template('chats.html', chats=chats)
+
+
+@bp.route('/chat/<user_id>')
+def admin_chat_detail(user_id):
+    """Детальная страница чата"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return redirect(url_for('buyer.login'))
+
+    chat = get_chat(user_id)
+    if not chat:
+        # Создаем чат если его нет
+        user_data = read_json(Path(USERS) / f"{user_id}.json")
+        user_name = user_data.get('full_name', 'Покупатель') if user_data else 'Покупатель'
+        chat = create_chat(user_id, user_name)
+
+    return render_template('chat_detail.html', chat=chat)
+
+
+@bp.route('/api/chat/<user_id>/message', methods=['POST'])
+def send_manager_message(user_id):
+    """Отправка сообщения от менеджера"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    message = request.json.get('message', '').strip()
+    if not message:
+        return jsonify({'error': 'Пустое сообщение'}), 400
+
+    # Сохраняем сообщение менеджера
+    add_message_to_chat(user_id, "manager", message)
+
+    return jsonify({'success': True})
+
+
+@bp.route('/api/chat/<user_id>/toggle_bot', methods=['POST'])
+def toggle_chat_bot(user_id):
+    """Включение/выключение бота для чата"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    enabled = request.json.get('enabled', False)
+    success = toggle_bot_for_chat(user_id, enabled)
+
+    if success:
+        return jsonify({'success': True, 'bot_enabled': enabled})
+    else:
+        return jsonify({'error': 'Чат не найден'}), 404
+
+
+@bp.route('/api/chat/<user_id>/assign', methods=['POST'])
+def assign_chat_manager(user_id):
+    """Назначение менеджера на чат"""
+    if session.get('user', {}).get('role') not in ['admin']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    manager_id = request.json.get('manager_id')
+    success = assign_manager_to_chat(user_id, manager_id)
+
+    if success:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'error': 'Чат не найден'}), 404

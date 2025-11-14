@@ -1,0 +1,15 @@
+{
+  "id": "o_5c0fe14b",
+  "user_id": "u_25b629c9",
+  "items": [
+    {
+      "product_id": "p_de3c2f9d",
+      "title": "хуй в масле",
+      "qty": 5,
+      "price": 456.0
+    }
+  ],
+  "total": 2280.0,
+  "status": "pending_moderation",
+  "created_at": "2025-11-14T15:35:16.194262"
+}

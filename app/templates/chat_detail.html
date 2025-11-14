@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .chat-detail-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        height: calc(100vh - 200px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+    .chat-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .chat-messages {
+        flex: 1;
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        overflow-y: auto;
+        margin-bottom: 1rem;
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        max-width: 70%;
+    }
+
+    .message.user {
+        background: #e3f2fd;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+    }
+
+    .message.bot {
+        background: #f3e5f5;
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+    }
+
+    .message.manager {
+        background: #e8f5e8;
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+        border-left: 4px solid #4caf50;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .message-sender {
+        font-weight: bold;
+    }
+
+    .message-time {
+        color: #7f8c8d;
+        font-size: 0.8rem;
+    }
+
+    .message-text {
+        line-height: 1.4;
+    }
+
+    .chat-input-form {
+        display: flex;
+        gap: 1rem;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .message-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        resize: none;
+        height: 60px;
+    }
+
+    .message-input:focus {
+        outline: none;
+        border-color: #3498db;
+    }
+
+    .send-btn {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0 2rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .send-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.4);
+    }
+
+    .bot-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .bot-toggle.active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .back-btn {
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class="chat-detail-container">
+    <!-- Заголовок чата -->
+    <div class="chat-header">
+        <div class="user-info">
+            <a href="{{ url_for('admin.admin_chats') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="user-avatar">
+                {{ chat.user_name[0]|upper }}
+            </div>
+            <div>
+                <h4 class="mb-1">{{ chat.user_name }}</h4>
+                <div class="text-muted">Чат с покупателем</div>
+            </div>
+        </div>
+        <div class="chat-actions">
+            <div class="bot-toggle {% if chat.bot_enabled %}active{% endif %}" 
+                 onclick="toggleBot('{{ chat.user_id }}', this)">
+                <i class="fas fa-robot"></i>
+                <span>{% if chat.bot_enabled %}Бот включен{% else %}Бот выключен{% endif %}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div class="chat-messages" id="messagesContainer">
+        {% if chat.messages %}
+            {% for message in chat.messages %}
+            <div class="message {{ message.sender }}">
+                <div class="message-header">
+                    <span class="message-sender">
+                        {% if message.sender == 'user' %}👤 Покупатель{% endif %}
+                        {% if message.sender == 'bot' %}🤖 Бот{% endif %}
+                        {% if message.sender == 'manager' %}👨‍💼 Менеджер{% endif %}
+                    </span>
+                    <span class="message-time">{{ message.timestamp }}</span>
+                </div>
+                <div class="message-text">{{ message.text }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-comments fa-2x mb-3"></i>
+                <p>Нет сообщений</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Форма отправки сообщения -->
+    <form class="chat-input-form" id="messageForm">
+        <textarea 
+            class="message-input" 
+            placeholder="Введите сообщение..." 
+            id="messageInput"
+            required></textarea>
+        <button type="submit" class="send-btn">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </form>
+</div>
+
+<script>
+// Автопрокрутка к последнему сообщению
+function scrollToBottom() {
+    const container = document.getElementById('messagesContainer');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Отправка сообщения
+document.getElementById('messageForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    try {
+        const response = await fetch(`/admin/api/chat/{{ chat.user_id }}/message`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (response.ok) {
+            messageInput.value = '';
+            location.reload(); // Просто перезагружаем страницу для простоты
+        } else {
+            alert('Ошибка отправки сообщения');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка отправки сообщения');
+    }
+});
+
+// Переключение бота
+async function toggleBot(userId, element) {
+    const enabled = !element.classList.contains('active');
+    
+    try {
+        const response = await fetch(`/admin/api/chat/${userId}/toggle_bot`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ enabled: enabled })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                element.classList.toggle('active');
+                const span = element.querySelector('span');
+                span.textContent = enabled ? 'Бот включен' : 'Бот выключен';
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка переключения бота');
+    }
+}
+
+// Прокрутка при загрузке
+document.addEventListener('DOMContentLoaded', scrollToBottom);
+
+// Автообновление каждые 10 секунд
+setInterval(() => {
+    location.reload();
+}, 10000);
+</script>
+{% endblock %}
