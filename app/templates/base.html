@@ -72,17 +72,19 @@
         </div>
 
         <!-- Mobile Menu Button -->
+         <div class="mobile-menu">
+          <a href="{{ url_for('buyer.index') }}" class="nav-brand">
+            <img src="../../static/images/LOGO.svg" alt="">
+          </a>
         <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
           <i class="fas fa-bars"></i>
         </button>
+        </div>
       </div>
 
       <!-- Mobile Navigation -->
       <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-links">
-          <a href="{{ url_for('buyer.index') }}" class="mobile-nav-link {{ 'active' if request.endpoint == 'buyer.index' }}" onclick="closeMobileMenu()">
-            <i class="fas fa-home"></i>Главная
-          </a>
           <a href="{{ url_for('buyer.catalog') }}" class="mobile-nav-link {{ 'active' if request.endpoint == 'buyer.catalog' }}" onclick="closeMobileMenu()">
             <i class="fas fa-shopping-basket"></i>Каталог
           </a>

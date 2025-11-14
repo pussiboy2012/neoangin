@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!-- Герой секция каталога -->
+<script src="../../static/js/catalog.js"></script>
 <div class="container">
     <!-- Фильтры -->
     <div class="filter-section">
@@ -27,9 +27,9 @@
         <div class="row g-4">
             {% for p in products %}
             <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="card product-card figma-glass h-100">
+                <div class="card product-card figma-glass h-100" onclick="location.href='{{ url_for('buyer.product_detail', product_id=p.id) }}';">
                     <div class="product-image">
-                        <img style="border-radius: 20px;" src="../../static/images/product.svg" alt="">
+                        <img  class="product-image" style="border-radius: 20px;" src="../../static/images/product.svg" alt="">
                         {% if p.get('is_new') %}
                         
                         <span class="product-badge">Новинка</span>
@@ -42,36 +42,6 @@
                             {{ p.description[:100] }}{% if p.description|length > 100 %}...{% endif %}
                         </p>
 
-                        <div class="product-price">
-                            {{ p.price }} ₽
-                        </div>
-
-                        <div class="mb-3">
-                            {% set stock_qty = stocks[p.id].qty if stocks and p.id in stocks else (stocks.get(p.id).qty if stocks and stocks.get(p.id) else 0) %}
-                            {% if stock_qty > 10 %}
-                                <span class="stock-badge stock-in">
-                                    <i class="fas fa-check-circle me-1"></i>В наличии
-                                </span>
-                            {% elif stock_qty > 0 %}
-                                <span class="stock-badge stock-low">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>Мало
-                                </span>
-                            {% else %}
-                                <span class="stock-badge stock-out">
-                                    <i class="fas fa-times-circle me-1"></i>Нет в наличии
-                                </span>
-                            {% endif %}
-
-                            {% if stock_qty > 0 %}
-                                <small class="ms-2">Остаток: {{ stock_qty }} шт.</small>
-                            {% endif %}
-                        </div>
-
-                        <div class="mt-auto">
-                            <a href="{{ url_for('buyer.product_detail', product_id=p.id) }}" class="btn-product">
-                                <i class="fas fa-eye me-2"></i>Подробнее
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
