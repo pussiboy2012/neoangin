@@ -22,6 +22,18 @@
         align-items: center;
     }
 
+    .chat-header {
+        display: flex;
+        justify-content: space-between;  /* Исправлено: between -> space-between */
+        align-items: center;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;  /* Исправлено: between -> space-between */
+        align-items: center;
+    }
+
     .user-info {
         display: flex;
         align-items: center;
@@ -45,16 +57,6 @@
         display: flex;
         gap: 1rem;
         align-items: center;
-    }
-
-    .chat-messages {
-        flex: 1;
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        overflow-y: auto;
-        margin-bottom: 1rem;
     }
 
     .message {
@@ -82,6 +84,7 @@
         border-bottom-left-radius: 4px;
         border-left: 4px solid #4caf50;
     }
+
 
     .message-header {
         display: flex;
@@ -170,6 +173,234 @@
         align-items: center;
         gap: 0.5rem;
     }
+    .chat-messages {
+        flex: 1;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        padding: 20px;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+    }
+
+    /* Обертка сообщения */
+    .message-wrapper {
+        display: flex;
+        max-width: 85%;
+        animation: messageAppear 0.3s ease-out;
+    }
+
+    @keyframes messageAppear {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Сообщения пользователя (справа) */
+    .user-message {
+        margin-left: auto;
+    }
+
+    /* Сообщения бота и менеджера (слева) */
+    .other-message {
+        margin-right: auto;
+    }
+
+    /* Базовый стиль пузыря сообщения */
+    .message-bubble {
+        display: flex;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: relative;
+        transition: all 0.3s ease;
+        max-width: 100%;
+    }
+
+    .message-bubble:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Аватары */
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .user-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .bot-avatar {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .manager-avatar {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    /* Контент сообщения */
+    .message-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Заголовок сообщения */
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .sender-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+
+    .message-time {
+        font-size: 12px;
+        color: #7f8c8d;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Текст сообщения */
+    .message-text {
+        line-height: 1.5;
+        color: #2c3e50;
+        word-wrap: break-word;
+        font-size: 14px;
+    }
+
+    /* Статус сообщения */
+    .message-status {
+        text-align: right;
+        margin-top: 8px;
+    }
+
+    .delivered {
+        color: #27ae60;
+        font-size: 12px;
+    }
+
+    /* Стили для разных типов сообщений */
+    .user-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 6px;
+    }
+
+    .user-bubble .sender-name,
+    .user-bubble .message-time,
+    .user-bubble .message-text {
+        color: white;
+    }
+
+    .user-bubble .message-time {
+        opacity: 0.8;
+    }
+
+    .bot-bubble {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-bottom-left-radius: 6px;
+    }
+
+    .manager-bubble {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 1px solid #90caf9;
+        border-bottom-left-radius: 6px;
+    }
+
+    /* Состояние пустого чата */
+    .empty-chat-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .empty-chat-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-chat-state h4 {
+        margin-bottom: 12px;
+        color: #495057;
+        font-weight: 600;
+    }
+
+    .empty-chat-state p {
+        font-size: 14px;
+        opacity: 0.7;
+    }
+
+    /* Скроллбар */
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .message-wrapper {
+            max-width: 95%;
+        }
+
+        .message-bubble {
+            padding: 12px;
+            gap: 8px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        .chat-messages {
+            padding: 15px;
+        }
+    }
 </style>
 
 <div class="chat-detail-container">
@@ -196,29 +427,74 @@
         </div>
     </div>
 
-    <!-- Сообщения -->
-    <div class="chat-messages" id="messagesContainer">
-        {% if chat.messages %}
-            {% for message in chat.messages %}
-            <div class="message {{ message.sender }}">
-                <div class="message-header">
-                    <span class="message-sender">
-                        {% if message.sender == 'user' %}👤 Покупатель{% endif %}
-                        {% if message.sender == 'bot' %}🤖 Бот{% endif %}
-                        {% if message.sender == 'manager' %}👨‍💼 Менеджер{% endif %}
-                    </span>
-                    <span class="message-time">{{ message.timestamp }}</span>
+<!-- Сообщения -->
+<div class="chat-messages" id="messagesContainer">
+    {% if chat.messages %}
+        {% for message in chat.messages %}
+        <div class="message-wrapper {% if message.role == 'user' %}user-message{% else %}other-message{% endif %}">
+            <div class="message-bubble {% if message.role == 'user' %}user-bubble{% elif message.role == 'bot' %}bot-bubble{% else %}manager-bubble{% endif %}">
+                <!-- Аватар отправителя -->
+                <div class="message-avatar">
+                    {% if message.role == 'user' %}
+                        <div class="avatar user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% elif message.role == 'bot' %}
+                        <div class="avatar bot-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                    {% else %}
+                        <div class="avatar manager-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="message-text">{{ message.text }}</div>
+
+                <!-- Содержимое сообщения -->
+                <div class="message-content">
+                    <!-- Заголовок с именем и временем -->
+                    <div class="message-header">
+                        <span class="sender-name">
+                            {% if message.role == 'user' %}
+                                Покупатель
+                            {% elif message.role == 'bot' %}
+                                AI Помощник
+                            {% else %}
+                                Менеджер
+                            {% endif %}
+                        </span>
+                        <span class="message-time">
+                            <i class="far fa-clock"></i>
+                            {{ message.timestamp }}
+                        </span>
+                    </div>
+
+                    <!-- Текст сообщения -->
+                    <div class="message-text">
+                        {{ message.content }}
+                    </div>
+
+                    <!-- Статус сообщения -->
+                    <div class="message-status">
+                        {% if message.role == 'user' %}
+                            <i class="fas fa-check-double delivered"></i>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="text-center text-muted py-4">
-                <i class="fas fa-comments fa-2x mb-3"></i>
-                <p>Нет сообщений</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Состояние пустого чата -->
+        <div class="empty-chat-state">
+            <div class="empty-chat-icon">
+                <i class="fas fa-comments"></i>
             </div>
-        {% endif %}
-    </div>
+            <h4>Начните общение</h4>
+            <p>Отправьте первое сообщение покупателю</p>
+        </div>
+    {% endif %}
+</div>
 
     <!-- Форма отправки сообщения -->
     <form class="chat-input-form" id="messageForm">
@@ -234,21 +510,145 @@
 </div>
 
 <script>
+// Глобальные переменные
+let isUserTyping = false;
+let refreshInterval;
+
 // Автопрокрутка к последнему сообщению
 function scrollToBottom() {
     const container = document.getElementById('messagesContainer');
     container.scrollTop = container.scrollHeight;
 }
 
+// Проверка новых сообщений
+async function checkNewMessages() {
+    if (isUserTyping) return; // Не обновляем, если пользователь печатает
+
+    try {
+        const response = await fetch(`/admin/api/chat/{{ chat.user_id }}/messages`);
+        if (response.ok) {
+            const data = await response.json();
+            updateMessages(data.messages);
+        }
+    } catch (error) {
+        console.error('Ошибка проверки сообщений:', error);
+    }
+}
+
+// Обновление сообщений без перезагрузки страницы
+function updateMessages(messages) {
+    const messagesContainer = document.getElementById('messagesContainer');
+    // Используем правильный селектор для нового дизайна
+    const currentMessageCount = messagesContainer.querySelectorAll('.message-wrapper').length;
+
+    // Если количество сообщений изменилось
+    if (messages.length !== currentMessageCount) {
+        renderMessages(messages);
+    }
+}
+
+// Рендер сообщений с новым дизайном
+function renderMessages(messages) {
+    const messagesContainer = document.getElementById('messagesContainer');
+
+    if (messages.length === 0) {
+        messagesContainer.innerHTML = `
+            <div class="empty-chat-state">
+                <div class="empty-chat-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h4>Начните общение</h4>
+                <p>Отправьте первое сообщение покупателю</p>
+            </div>
+        `;
+        return;
+    }
+
+    messagesContainer.innerHTML = messages.map(message => `
+        <div class="message-wrapper ${message.role === 'user' ? 'user-message' : 'other-message'}">
+            <div class="message-bubble ${getBubbleClass(message.role)}">
+                <!-- Аватар отправителя -->
+                <div class="message-avatar">
+                    ${getAvatarHTML(message.role)}
+                </div>
+
+                <!-- Содержимое сообщения -->
+                <div class="message-content">
+                    <!-- Заголовок с именем и временем -->
+                    <div class="message-header">
+                        <span class="sender-name">
+                            ${getSenderName(message.role)}
+                        </span>
+                        <span class="message-time">
+                            <i class="far fa-clock"></i>
+                            ${message.timestamp}
+                        </span>
+                    </div>
+
+                    <!-- Текст сообщения -->
+                    <div class="message-text">
+                        ${escapeHtml(message.content || message.text || '')}
+                    </div>
+
+                    <!-- Статус сообщения -->
+                    <div class="message-status">
+                        ${message.role === 'user' ? '<i class="fas fa-check-double delivered"></i>' : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    scrollToBottom();
+}
+
+// Вспомогательные функции
+function getBubbleClass(sender) {
+    const classes = {
+        'user': 'user-bubble',
+        'bot': 'bot-bubble',
+        'manager': 'manager-bubble'
+    };
+    return classes[sender] || 'bot-bubble';
+}
+
+function getAvatarHTML(sender) {
+    const avatars = {
+        'user': '<div class="avatar user-avatar"><i class="fas fa-user"></i></div>',
+        'bot': '<div class="avatar bot-avatar"><i class="fas fa-robot"></i></div>',
+        'manager': '<div class="avatar manager-avatar"><i class="fas fa-user-tie"></i></div>'
+    };
+    return avatars[sender] || '<div class="avatar bot-avatar"><i class="fas fa-robot"></i></div>';
+}
+
+function getSenderName(sender) {
+    const names = {
+        'user': 'Покупатель',
+        'bot': 'AI Помощник',
+        'manager': 'Менеджер'
+    };
+    return names[sender] || 'Неизвестный';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Отправка сообщения
 document.getElementById('messageForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value.trim();
-    
+
     if (!message) return;
-    
+
+    // Временно отключаем автообновление
+    clearInterval(refreshInterval);
+    isUserTyping = false;
+
     try {
         const response = await fetch(`/admin/api/chat/{{ chat.user_id }}/message`, {
             method: 'POST',
@@ -257,23 +657,31 @@ document.getElementById('messageForm').addEventListener('submit', async function
             },
             body: JSON.stringify({ message: message })
         });
-        
+
         if (response.ok) {
             messageInput.value = '';
-            location.reload(); // Просто перезагружаем страницу для простоты
+            // После отправки проверяем новые сообщения
+            await checkNewMessages();
+            // Перезапускаем автообновление
+            startAutoRefresh();
         } else {
             alert('Ошибка отправки сообщения');
+            startAutoRefresh();
         }
     } catch (error) {
         console.error('Error:', error);
         alert('Ошибка отправки сообщения');
+        startAutoRefresh();
     }
 });
 
 // Переключение бота
 async function toggleBot(userId, element) {
     const enabled = !element.classList.contains('active');
-    
+
+    // Временно отключаем автообновление
+    clearInterval(refreshInterval);
+
     try {
         const response = await fetch(`/admin/api/chat/${userId}/toggle_bot`, {
             method: 'POST',
@@ -282,7 +690,7 @@ async function toggleBot(userId, element) {
             },
             body: JSON.stringify({ enabled: enabled })
         });
-        
+
         if (response.ok) {
             const result = await response.json();
             if (result.success) {
@@ -294,15 +702,42 @@ async function toggleBot(userId, element) {
     } catch (error) {
         console.error('Error:', error);
         alert('Ошибка переключения бота');
+    } finally {
+        // Возвращаем автообновление
+        startAutoRefresh();
     }
 }
 
-// Прокрутка при загрузке
-document.addEventListener('DOMContentLoaded', scrollToBottom);
+// Отслеживание ввода пользователя
+document.getElementById('messageInput').addEventListener('input', function() {
+    isUserTyping = this.value.trim().length > 0;
+});
 
-// Автообновление каждые 10 секунд
-setInterval(() => {
-    location.reload();
-}, 10000);
+document.getElementById('messageInput').addEventListener('focus', function() {
+    isUserTyping = true;
+    clearInterval(refreshInterval);
+});
+
+document.getElementById('messageInput').addEventListener('blur', function() {
+    isUserTyping = false;
+    startAutoRefresh();
+});
+
+// Запуск автообновления
+function startAutoRefresh() {
+    clearInterval(refreshInterval); // Очищаем предыдущий интервал
+    refreshInterval = setInterval(checkNewMessages, 3000); // Каждые 3 секунды
+}
+
+// Прокрутка при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    scrollToBottom();
+    startAutoRefresh(); // Запускаем автообновление при загрузке
+});
+
+// Останавливаем автообновление при уходе со страницы
+window.addEventListener('beforeunload', function() {
+    clearInterval(refreshInterval);
+});
 </script>
 {% endblock %}
