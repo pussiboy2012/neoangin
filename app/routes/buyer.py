@@ -7,7 +7,7 @@ bp = Blueprint("buyer", __name__)
 
 @bp.route("/")
 def index():
-    return render_template("index.html")
+        return redirect(url_for('buyer.catalog'))
 
 # ---- auth ----
 @bp.route("/register", methods=["GET", "POST"])
