@@ -98,47 +98,26 @@ def remove_from_cart(product_id):
     return redirect(url_for("buyer.cart"))
 
 # ---- order ----
-@bp.route("/order/create", methods=["GET", "POST"])
+@bp.route("/order/create", methods=["GET","POST"])
 @login_required()
 def create_order():
-    cart = session.get("cart", {})
-
-    if not cart:
-        flash("Корзина пуста")
-        return redirect(url_for("buyer.cart"))
-
-    # Подготовка данных для отображения
-    items = []
-    total = 0
-    for pid, qty in cart.items():
-        p = read_json(Path(PRODUCTS) / f"{pid}.json")
-        if p:
-            price = p.get("price", 0)
-            items.append({
-                "product": p,
-                "qty": qty,
-                "sum": price * qty
-            })
-            total += price * qty
-
     if request.method == "POST":
-        # Создание заказа
+        cart = session.get("cart", {})
+        if not cart:
+            flash("Корзина пуста")
+            return redirect(url_for("buyer.cart"))
         order_id = gen_id("o_")
-        order_items = []
+        items = []
+        total = 0
         for pid, qty in cart.items():
-            p = read_json(Path(PRODUCTS) / f"{pid}.json")
-            price = p.get("price", 0) if p else 0
-            order_items.append({
-                "product_id": pid,
-                "title": p.get("title") if p else "?",
-                "qty": qty,
-                "price": price
-            })
-
+            p = read_json(Path(PRODUCTS)/f"{pid}.json")
+            price = p.get("price",0) if p else 0
+            items.append({"product_id": pid, "title": p.get("title") if p else "?", "qty": qty, "price": price})
+            total += price*qty
         order = {
             "id": order_id,
             "user_id": session["user"]["id"],
-            "items": order_items,
+            "items": items,
             "total": total,
             "status": "pending_moderation",
             "created_at": datetime.utcnow().isoformat()

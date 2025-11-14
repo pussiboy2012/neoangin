@@ -21,9 +21,11 @@
           <a href="{{ url_for('buyer.catalog') }}" class="nav-link-hard {{ 'active' if request.endpoint == 'buyer.catalog' }}">
             Каталог
           </a>
+          {% if session.user %}
           <a href="{{ url_for('buyer.stock') }}" class="nav-link-hard {{ 'active' if request.endpoint == 'buyer.stock' }}">
             Есть на складе
           </a>
+          {% endif %}
           <div class="search-container">
             <i class="fa fa-search" aria-hidden="true" style="color: #888"></i>
             <input type="text" class="search-input" placeholder="">
@@ -133,7 +135,7 @@
     <div class="container py-4">
       {% with messages = get_flashed_messages() %}
         {% if messages %}
-          <div class="flash">
+          <div class="flash" id="flash">
             {% for m in messages %}
               <div>{{ m }}</div>
             {% endfor %}
@@ -205,9 +207,27 @@
         mobileNav.classList.remove('active');
       }
     });
+
+    //затухание всплывающих сообщений
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessages = document.querySelectorAll('[id^="flash"]');
+        flashMessages.forEach(function(message) {
+      setTimeout(function() {
+        message.style.transition = 'opacity 0.5s ease';
+        message.style.opacity = '0';
+        setTimeout(function() {
+          if (message.parentNode) {
+            message.parentNode.removeChild(message);
+          }
+        }, 500);      
+      }, 5000); 
+    });
+  });
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='chatbot/chatbot.js') }}"></script>
+  {% if session.user %}
+    <script src="{{ url_for('static', filename='chatbot/chatbot.js') }}"></script>
+  {% endif %}
 </body>
 </html>

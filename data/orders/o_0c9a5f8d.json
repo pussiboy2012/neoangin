@@ -1,0 +1,15 @@
+{
+  "id": "o_0c9a5f8d",
+  "user_id": "u_2c21cab5",
+  "items": [
+    {
+      "product_id": "p_029e2902",
+      "title": "ебать что за краска",
+      "qty": 2,
+      "price": 500.0
+    }
+  ],
+  "total": 1000.0,
+  "status": "pending_moderation",
+  "created_at": "2025-11-14T00:02:59.112240"
+}
