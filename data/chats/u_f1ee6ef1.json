@@ -98,10 +98,106 @@
       "type": "text",
       "timestamp": "2025-11-14T18:33:46.379432",
       "sender_name": "Неизвестный"
+    },
+    {
+      "id": "msg_61124e40",
+      "role": "manager",
+      "content": "привет, сегодня мы не работаем, поэтому ты пока спишь !",
+      "type": "text",
+      "timestamp": "2025-11-14T22:15:23.888359",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_fe9bcb6a",
+      "role": "manager",
+      "content": "ты лох, или не лох ?",
+      "type": "text",
+      "timestamp": "2025-11-14T22:25:22.874681",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_dc18d1ec",
+      "role": "manager",
+      "content": "лох",
+      "type": "text",
+      "timestamp": "2025-11-14T22:26:24.138695",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_6acbdb81",
+      "role": "manager",
+      "content": "хоз",
+      "type": "text",
+      "timestamp": "2025-11-14T22:26:34.883754",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_39f370f7",
+      "role": "manager",
+      "content": "лох",
+      "type": "text",
+      "timestamp": "2025-11-14T22:37:13.966672",
+      "sender_name": "manager"
+    },
+    {
+      "id": "msg_09484a21",
+      "role": "manager",
+      "content": "лох",
+      "type": "text",
+      "timestamp": "2025-11-14T22:37:29.418578",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_a3989536",
+      "role": "manager",
+      "content": "лох",
+      "type": "text",
+      "timestamp": "2025-11-14T22:37:36.985824",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_1118d281",
+      "role": "manager",
+      "content": "хлвжлвыужлв",
+      "type": "text",
+      "timestamp": "2025-11-14T22:37:58.387618",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_35d1cfe7",
+      "role": "manager",
+      "content": "лох",
+      "type": "text",
+      "timestamp": "2025-11-14T22:46:38.843784",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_ca2744d3",
+      "role": "manager",
+      "content": "вжух",
+      "type": "text",
+      "timestamp": "2025-11-14T22:46:50.284678",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_f92138e1",
+      "role": "manager",
+      "content": "вжух",
+      "type": "text",
+      "timestamp": "2025-11-14T22:50:05.578009",
+      "sender_name": "Менеджер"
+    },
+    {
+      "id": "msg_4d442005",
+      "role": "manager",
+      "content": "rora",
+      "type": "text",
+      "timestamp": "2025-11-14T22:50:57.957343",
+      "sender_name": "Менеджер"
     }
   ],
   "bot_enabled": false,
   "assigned_manager": null,
   "status": "active",
-  "last_activity": "2025-11-14T18:33:46.379475"
+  "last_activity": "2025-11-14T22:50:57.957367"
 }

@@ -280,6 +280,19 @@ def send_manager_message(user_id):
 
     return jsonify({'success': True})
 
+@bp.route('/api/chat/<user_id>/messages')
+def get_chat_messages(user_id):
+    """Получение сообщений чата (для AJAX обновления)"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    chat = get_chat(user_id)
+    if not chat:
+        return jsonify({'messages': []})
+
+    # Возвращаем все сообщения чата
+    return jsonify({'messages': chat.get('messages', [])})
+
 
 @bp.route('/api/chat/<user_id>/toggle_bot', methods=['POST'])
 def toggle_chat_bot(user_id):
