@@ -18,6 +18,115 @@ ORDERS = DATA_DIR / "orders"
 STOCKS = DATA_DIR / "stocks"
 ANALYTICS = DATA_DIR / "analytics"
 
+CHATS_DIR = Path("data/chats")
+
+
+def ensure_chats_dir():
+    """Создает директорию для чатов"""
+    CHATS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def get_user_chat_file(user_id):
+    """Возвращает путь к файлу чата пользователя"""
+    return CHATS_DIR / f"{user_id}.json"
+
+
+def create_chat(user_id, user_name):
+    """Создает новый чат для пользователя"""
+    chat_file = get_user_chat_file(user_id)
+    chat_data = {
+        "user_id": user_id,
+        "user_name": user_name,
+        "created_at": datetime.utcnow().isoformat(),
+        "messages": [],
+        "bot_enabled": True,
+        "assigned_manager": None,
+        "status": "active"
+    }
+    write_json(chat_file, chat_data)
+    return chat_data
+
+
+def get_chat(user_id):
+    """Получает чат пользователя"""
+    chat_file = get_user_chat_file(user_id)
+    if chat_file.exists():
+        return read_json(chat_file)
+    return None
+
+
+def add_message_to_chat(user_id, role, content, message_type="text"):
+    """Добавляет сообщение в чат"""
+    chat = get_chat(user_id)
+    if not chat:
+        return None
+
+    message = {
+        "id": gen_id("msg_"),
+        "role": role,  # "user", "assistant", "manager"
+        "content": content,
+        "type": message_type,
+        "timestamp": datetime.utcnow().isoformat(),
+        "sender_name": get_sender_name(role, user_id)
+    }
+
+    chat["messages"].append(message)
+    chat["last_activity"] = datetime.utcnow().isoformat()
+
+    write_json(get_user_chat_file(user_id), chat)
+    return message
+
+
+def get_sender_name(role, user_id):
+    """Возвращает имя отправителя"""
+    if role == "user":
+        user_data = read_json(Path(USERS) / f"{user_id}.json")
+        return user_data.get("full_name", "Покупатель")
+    elif role == "assistant":
+        return "AI Ассистент"
+    elif role == "manager":
+        return "Менеджер"
+    return "Неизвестный"
+
+
+def get_all_chats():
+    """Получает все чаты"""
+    ensure_chats_dir()
+    chats = []
+    for chat_file in CHATS_DIR.glob("*.json"):
+        chat_data = read_json(chat_file)
+        if chat_data:
+            # Добавляем информацию о последнем сообщении
+            last_message = chat_data["messages"][-1] if chat_data["messages"] else None
+            chat_data["last_message"] = last_message
+            chat_data["unread_count"] = len(
+                [m for m in chat_data["messages"] if m.get("role") == "user" and not m.get("read")])
+            chats.append(chat_data)
+
+    # Сортируем по последней активности
+    chats.sort(key=lambda x: x.get("last_activity", x["created_at"]), reverse=True)
+    return chats
+
+
+def toggle_bot_for_chat(user_id, enabled):
+    """Включает/выключает бота для чата"""
+    chat = get_chat(user_id)
+    if chat:
+        chat["bot_enabled"] = enabled
+        write_json(get_user_chat_file(user_id), chat)
+        return True
+    return False
+
+
+def assign_manager_to_chat(user_id, manager_id):
+    """Назначает менеджера на чат"""
+    chat = get_chat(user_id)
+    if chat:
+        chat["assigned_manager"] = manager_id
+        chat["bot_enabled"] = False  # При назначении менеджера выключаем бота
+        write_json(get_user_chat_file(user_id), chat)
+        return True
+    return False
 
 def ensure_data_dirs():
     """

@@ -51,11 +51,6 @@
               </a>
             {% endif %}
 
-            <div class="user-info">
-              <span class="user-name">{{ session.user.company_name }}</span>
-              <span class="user-role">{{ session.user.role }}</span>
-            </div>
-
           {% else %}
             <div class="auth-links">
               <a href="{{ url_for('buyer.login') }}" class="btn-auth btn-login">

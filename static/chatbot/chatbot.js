@@ -182,10 +182,10 @@ class ChatBot {
         this.addMessageToDOM(message, 'user', this.getCurrentTime());
         this.elements.input.value = '';
         this.elements.input.style.height = '45px';
-        
+
         // Сохраняем историю после отправки сообщения
         this.saveHistory();
-        
+
         // Показываем индикатор загрузки
         this.showTypingIndicator();
         this.isLoading = true;
@@ -200,10 +200,10 @@ class ChatBot {
             });
 
             const data = await response.json();
-            
+
             // Убираем индикатор загрузки
             this.hideTypingIndicator();
-            
+
             if (response.ok) {
                 this.addMessageToDOM(data.response, 'bot', data.timestamp);
             } else {

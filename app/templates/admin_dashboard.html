@@ -99,6 +99,8 @@
     .icon-users { background: linear-gradient(135deg, var(--admin-info), #3498db); }
     .icon-stock { background: linear-gradient(135deg, var(--admin-warning), #f1c40f); }
     .icon-orders { background: linear-gradient(135deg, var(--admin-accent), #e74c3c); }
+    .icon-logout { background: linear-gradient(135deg, var(--admin-warning), #f1c40f); }
+    .icon-chats { background: linear-gradient(135deg, var(--admin-accent), #e74c3c); }
 
     .card-title {
         font-size: 1.4rem;
@@ -364,6 +366,33 @@
                 <i class="fas fa-clipboard-list me-2"></i>Просмотреть заказы
             </a>
         </div>
+
+        <!-- Просмотр чатов -->
+        <div class="admin-card">
+            <div class="card-icon icon-chats">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h3 class="card-title">Поддержка клиентов</h3>
+            <p class="card-description">
+                Общайтесь с покупателями, отвечайте на вопросы и помогайте с выбором товаров через систему чатов
+            </p>
+            <a href="{{ url_for('admin.admin_chats') }}" class="btn-admin">
+                <i class="fas fa-comments me-2"></i>Открыть чаты
+            </a>
+        </div>
+
+        <div class="admin-card">
+            <div class="card-icon icon-logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <h3 class="card-title">Выход из системы</h3>
+            <p class="card-description">
+                Завершите текущую сессию и вернитесь на главную страницу. Все несохраненные данные будут сохранены.
+            </p>
+            <a href="{{ url_for('buyer.logout') }}" class="btn-admin btn-logout" onclick="return confirm('Вы уверены, что хотите выйти?')">
+                <i class="fas fa-sign-out-alt me-2"></i> Выйти из аккаунта
+            </a>
+        </div>
     </div>
 
     <!-- Статистика системы -->
@@ -392,4 +421,14 @@
         </div>
     </div>
 </div>
+<script>
+// Заглушка для чатов
+//const chatBtn = document.querySelector('a[href*="chats"]');
+//if (chatBtn) {
+//    chatBtn.addEventListener('click', function(e) {
+//        e.preventDefault();
+//        alert('💬 Система чатов находится в разработке\n\nСкоро здесь появится:\n• Чат с покупателями\n• Уведомления о новых сообщениях\n• История переписок\n• Шаблоны ответов\n\nОжидайте обновления! 🚀');
+//    });
+//}
+</script>
 {% endblock %}

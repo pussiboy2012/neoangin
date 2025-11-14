@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .chats-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .chats-header {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .chats-grid {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
+
+    .chat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .chat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .chat-card.unread {
+        border-left: 4px solid #e74c3c;
+        background: #fff5f5;
+    }
+
+    .chat-card-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .chat-user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .user-details h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .user-details .user-role {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .chat-status {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+
+    .last-message-time {
+        color: #95a5a6;
+        font-size: 0.8rem;
+    }
+
+    .unread-badge {
+        background: #e74c3c;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .bot-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+
+    .bot-enabled {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .bot-disabled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .last-message {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin-top: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .no-chats {
+        text-align: center;
+        padding: 3rem;
+        color: #7f8c8d;
+    }
+
+    .no-chats i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #bdc3c7;
+    }
+
+    .manager-assigned {
+        background: #e8f4fd;
+        border-left: 4px solid #3498db;
+    }
+
+    .manager-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        color: #3498db;
+    }
+</style>
+
+<div class="chats-container">
+    <!-- Заголовок -->
+    <div class="chats-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-comments me-2"></i>Управление чатами
+                </h1>
+                <p class="mb-0 opacity-75">Общайтесь с покупателями и управляйте поддержкой</p>
+            </div>
+            <div class="text-end">
+                <div class="text-white-50 small">Активные чаты</div>
+                <div class="h4 mb-0">{{ chats|length }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список чатов -->
+    {% if chats %}
+    <div class="chats-grid">
+        {% for chat in chats %}
+        <div class="chat-card {% if chat.unread_count > 0 %}unread{% endif %} {% if chat.manager_id %}manager-assigned{% endif %}"
+             onclick="location.href='{{ url_for('admin.admin_chat_detail', user_id=chat.user_id) }}'">
+
+            <div class="chat-card-header">
+                <div class="chat-user-info">
+                    <div class="user-avatar">
+                        {{ chat.user_name[0]|upper }}
+                    </div>
+                    <div class="user-details">
+                        <h4>{{ chat.user_name }}</h4>
+                        <div class="user-role">Покупатель</div>
+                        <div class="bot-status {% if chat.bot_enabled %}bot-enabled{% else %}bot-disabled{% endif %}">
+                            <i class="fas fa-robot"></i>
+                            {% if chat.bot_enabled %}Бот активен{% else %}Бот отключен{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-status">
+                    {% if chat.unread_count > 0 %}
+                    <span class="unread-badge">{{ chat.unread_count }} новое</span>
+                    {% endif %}
+                    <span class="last-message-time">
+                        {{ chat.last_message_time|default('Нет сообщений') }}
+                    </span>
+                </div>
+            </div>
+
+            {% if chat.manager_id %}
+            <div class="manager-info">
+                <i class="fas fa-user-tie"></i>
+                Назначен менеджер
+            </div>
+            {% endif %}
+
+            {% if chat.last_message %}
+            <div class="last-message">
+                <strong>
+                    {% if chat.last_message.sender == 'user' %}👤{% endif %}
+                    {% if chat.last_message.sender == 'bot' %}🤖{% endif %}
+                    {% if chat.last_message.sender == 'manager' %}👨‍💼{% endif %}
+                </strong>
+                {{ chat.last_message.text|truncate(80) }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-chats">
+        <i class="fas fa-comments"></i>
+        <h3>Чатов пока нет</h3>
+        <p>Когда покупатели начнут общаться с поддержкой, чаты появятся здесь</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Автообновление списка чатов каждые 30 секунд
+setTimeout(() => {
+    location.reload();
+}, 30000);
+
+// Подсветка новых чатов
+document.addEventListener('DOMContentLoaded', function() {
+    const chatCards = document.querySelectorAll('.chat-card.unread');
+    chatCards.forEach(card => {
+        card.style.animation = 'pulse 2s infinite';
+    });
+});
+
+// Добавляем стиль для анимации пульсации
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); }
+        50% { box-shadow: 0 4px 25px rgba(231, 76, 60, 0.6); }
+        100% { box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
