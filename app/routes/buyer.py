@@ -140,72 +140,99 @@ def index():
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        # Получаем данные из формы
-        full_name = request.form["full_name"].strip()
-        inn = request.form["inn"].strip()
-        email = request.form["email"].strip().lower()
-        phone = request.form["phone"].strip()
-        password = request.form["password"]
-        confirm_password = request.form["confirm_password"]
+        try:
+            # Получаем данные из формы (используем правильные имена полей)
+            full_name = request.form["full_name"].strip()
+            inn = request.form["inn"].strip()
+            email = request.form["email"].strip().lower()
+            phone = request.form["phone"].strip()
+            password = request.form["password"]
+            confirm_password = request.form["confirm_password"]
 
-        # Валидации
-        errors = []
+            # Валидации
+            errors = []
 
-        # Проверка ИНН
-        if not validate_inn(inn):
-            errors.append("Неверный формат ИНН")
+            # Проверка ИНН
+            if not validate_inn(inn):
+                errors.append("Неверный формат ИНН")
 
-        # Остальные валидации...
-        if len(full_name) < 2:
-            errors.append("ФИО должно содержать минимум 2 символа")
+            # Остальные валидации...
+            if len(full_name) < 2:
+                errors.append("ФИО должно содержать минимум 2 символа")
 
-        # Проверка email, телефона, пароля...
-        is_valid_email, email_error = validate_corporate_email(email)
-        if not is_valid_email:
-            errors.append(email_error)
+            # Проверка email, телефона, пароля...
+            is_valid_email, email_error = validate_corporate_email(email)
+            if not is_valid_email:
+                errors.append(email_error)
 
-        is_valid_phone, phone_error = validate_phone_number(phone)
-        if not is_valid_phone:
-            errors.append(phone_error)
+            is_valid_phone, phone_error = validate_phone_number(phone)
+            if not is_valid_phone:
+                errors.append(phone_error)
 
-        if len(password) < 8:
-            errors.append("Пароль должен содержать минимум 8 символов")
-        if password != confirm_password:
-            errors.append("Пароли не совпадают")
+            if len(password) < 8:
+                errors.append("Пароль должен содержать минимум 8 символов")
+            if password != confirm_password:
+                errors.append("Пароли не совпадают")
 
-        # Проверка существующего пользователя
-        if get_user_by_username(email):
-            errors.append("Пользователь с таким email уже существует")
+            # Проверка существующего пользователя - используем email как username
+            if get_user_by_username(email):
+                errors.append("Пользователь с таким email уже существует")
 
-        if errors:
-            for error in errors:
-                flash(error)
-            return redirect(url_for("buyer.register"))
+            # Если есть ошибки
+            if errors:
+                # Если это AJAX запрос (из модального окна)
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'errors': errors})
+                else:
+                    # Обычная форма
+                    for error in errors:
+                        flash(error)
+                    return redirect(url_for("buyer.register"))
 
-        # Получаем название компании из DaData
-        company_name = get_company_name_by_inn(inn)
+            # Получаем название компании из DaData
+            company_name = get_company_name_by_inn(inn)
 
-        # Создание пользователя
-        user = {
-            "id": gen_id("u_"),
-            "username": email,
-            "email": email,
-            "full_name": full_name,
-            "company_name": company_name,  # Сохраняем название компании
-            "inn": inn,
-            "phone": phone,
-            "password": hash_password(password),
-            "role": "buyer",
-            "created_at": datetime.utcnow().isoformat(),
-            "company_verified": bool(company_name)  # Верифицируем если получили название
-        }
+            # Создание пользователя - используем email как username
+            user = {
+                "id": gen_id("u_"),
+                "username": email,  # Используем email как username
+                "email": email,
+                "full_name": full_name,
+                "company_name": company_name,  # Сохраняем название компании
+                "inn": inn,
+                "phone": phone,
+                "password": hash_password(password),
+                "role": "buyer",
+                "created_at": datetime.utcnow().isoformat(),
+                "company_verified": bool(company_name)  # Верифицируем если получили название
+            }
 
-        write_json(Path(USERS) / f"{user['id']}.json", user)
-        flash("Регистрация успешна! Компания зарегистрирована.")
-        return redirect(url_for("buyer.login"))
+            write_json(Path(USERS) / f"{user['id']}.json", user)
+            
+            # Если это AJAX запрос
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': True, 
+                    'message': 'Регистрация успешна! Компания зарегистрирована.',
+                })
+            else:
+                # Обычная форма
+                flash("Регистрация успешна! Компания зарегистрирована.")
+                return 0
 
+        except KeyError as e:
+            # Обработка ошибки отсутствующего поля
+            missing_field = str(e).replace("'", "")
+            error_msg = f"Отсутствует обязательное поле: {missing_field}"
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'errors': [error_msg]})
+            else:
+                flash(error_msg)
+                return redirect(url_for("buyer.register"))
+
+    # GET запрос - показываем страницу регистрации (для прямой ссылки)
     return render_template("register.html")
-
 
 def get_company_name_by_inn(inn):
     """Получает название компании по ИНН из DaData"""
@@ -237,6 +264,7 @@ def get_company_name_by_inn(inn):
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
+    print(login)
     if request.method == "POST":
         email = request.form["username"].strip().lower()
         password = request.form["password"]

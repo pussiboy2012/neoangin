@@ -6,7 +6,7 @@
             <h3 class="auth-title">Регистрация</h3>
         </div>
 
-        <form method="post" class="auth-form" id="registerForm">
+        <form method="post" class="auth-form" id="registerForm" action="{{ url_for('buyer.register') }}">
             <!-- Личная информация -->
                 <div class="input-group">
                     <input name="full_name"  placeholder="ФИО контактного лица" required class="form-input" id="fullName">
@@ -280,6 +280,96 @@ document.addEventListener('DOMContentLoaded', function() {
     validateForm();
 });
 
+// Обработка отправки формы регистрации
+// Обработка отправки формы регистрации
+// Обработка отправки формы регистрации
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Регистрация...';
+            
+            const formData = new FormData(registerForm);
+            
+            // Создаем AbortController для контроля таймаута
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+            
+            fetch(registerForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                signal: controller.signal
+            })
+            .then(response => {
+                clearTimeout(timeoutId);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Успешная регистрация
+                    console.log('Регистрация успешна:', data.message);
+                    
+                    // Закрываем модальное окно
+                    const modal = document.getElementById('reg-form');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                    
+                    // Очищаем форму
+                    registerForm.reset();
+                    
+                } else {
+                    // Ошибки
+                    console.log('Ошибки регистрации:', data.errors);
+                }
+            })
+            .catch(error => {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    console.error('Таймаут запроса');
+                } else {
+                    console.error('Ошибка:', error);
+                }
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        });
+    }
+
+
+    
+    // Обработчик для закрытия модального окна при клике вне его
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('reg-form');
+        if (modal && modal.style.display === 'flex' && event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Закрытие по ESC
+    document.addEventListener('keydown', function(event) {
+        const modal = document.getElementById('reg-form');
+        if (modal && modal.style.display === 'flex' && event.key === 'Escape') {
+            modal.style.display = 'none';
+        }
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const innInput = document.getElementById('inn');
     const verifyInnBtn = document.getElementById('verifyInn');
@@ -534,7 +624,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
     }
-
     // Инициализация
     validateForm();
 });
