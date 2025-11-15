@@ -101,6 +101,9 @@ body {
     pointer-events: none;
 }
 
+.light {
+    background: rgba(255, 255, 255, 0.1);
+}
 /* ===========================================
    Header and Navigation
    =========================================== */
@@ -333,10 +336,12 @@ body {
     background: var(--primary-gradient);
     color: white;
     border: none;
+    margin: 0;
 }
 
 .btn-register:hover {
     transform: translateY(-2px);
+    cursor: pointer;
     box-shadow: 0 5px 15px rgba(234, 119, 32, 0.3);
     color: white;
 }
@@ -1645,7 +1650,256 @@ p.footer-link:hover{
     }
 }
 
+/* ===============================
+    auth
+  ================================*/
 
+
+/* Стили окон аутентификации */
+.modal {
+    display: none;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    align-items: center;
+}
+
+/* Затемнение фона */
+.modal::before {
+    content: "";
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 13flipx;
+}
+
+.auth-title {
+    color: #ffffff;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 30px;
+    font-weight: 500;
+}
+
+.auth{
+    max-width: 30vw;
+    padding: 13px 50px;
+    min-height: fit-content;
+    max-height: fit-content;
+}
+
+
+.register-subtitle {
+    color: #718096;
+    font-size: 16px;
+    margin: 0;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group {
+    display: block;
+    background: none;
+    margin-bottom: 22px;
+}
+.input-wrapper {
+    position: relative;
+    display: flex;
+}
+
+.form-input {
+    color: white;
+    width: 100%;
+    padding: 12px 60px 12px 15px;
+    background-color: var(--bg-secondary-dark);
+    border: 1px solid #888888;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+    resize: none;
+    height: 45px;
+    max-height: 120px;
+    overflow-y: hidden;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    background: var(--bg-secondary-dark);
+    outline: none;
+    border-color: #e87521;
+    box-shadow: 0 0 0 4px rgba(232, 117, 32, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-input::placeholder {
+    color: #a0aec0;
+}
+
+.form-input-button {
+    position: absolute;
+    right: 10px;
+    min-height: 100%;
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.input-icon {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #a0aec0;
+}
+
+.input-hint {
+    font-size: 12px;
+    color: #718096;
+    margin: 2px 0 -20px 0;
+}
+
+/* Password Strength */
+.password-strength {
+    margin-top: 8px;
+    display: none;
+}
+
+.password-strength.show {
+    display: block;
+}
+
+.strength-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-fill.weak {
+    width: 25%;
+    background: #e53e3e;
+}
+
+.strength-fill.fair {
+    width: 50%;
+    background: #dd6b20;
+}
+
+.strength-fill.good {
+    width: 75%;
+    background: #d69e2e;
+}
+
+.strength-fill.strong {
+    width: 100%;
+    background: #38a169;
+}
+
+.strength-text {
+    font-size: 11px;
+    color: #718096;
+    text-align: right;
+}
+
+/* Password Requirements */
+.password-requirements {
+    margin-top: 8px;
+    display: none;
+}
+
+.password-requirements.show {
+    display: block;
+}
+
+.requirement {
+    font-size: 11px;
+    color: #e53e3e;
+    margin-bottom: 2px;
+    transition: color 0.3s ease;
+}
+
+.requirement.met {
+    color: #38a169;
+}
+
+.terms-group {
+    margin: 10px 0;
+}
+.form-check-input{
+    margin: 2px;
+    background-color: inherit;
+}
+.checkbox-label {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 14px;
+    color: white;
+    line-height: 1.4;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 4px rgba(232, 117, 32, 0.3);
+}
+.form-check-input:checked {
+    background-color: #f59B17;
+  border-color: #f59B17;
+}
+.form-check-input:not(:checked) {
+  border-color: #616161;
+
+}
+
+.auth-link {
+    color: #f59B17;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+.register-footer {
+    text-align: center;
+    padding: 25px 0;
+}
+
+.login-link {
+    color: #718096;
+    font-size: 15px;
+    margin: 0;
+}
 /* ===============================
     chat-bot
   ================================*/
