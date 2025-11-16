@@ -113,12 +113,12 @@
             </a>
           {% else %}
             <div class="mobile-auth-links">
-              <a href="{{ url_for('buyer.login') }}" class="mobile-btn-auth btn-login" onclick="closeMobileMenu()">
+              <p class="mobile-btn-auth btn-login" onclick="closeMobileMenu(); showForm('auth-form')">
                 <i class="fas fa-sign-in-alt me-1"></i>Вход
-              </a>
-              <a href="{{ url_for('buyer.register') }}" class="mobile-btn-auth btn-register" onclick="closeMobileMenu()">
+              </p>
+              <p class="mobile-btn-auth btn-register" onclick="closeMobileMenu(); showForm('reg-form')">
                 <i class="fas fa-user-plus me-1"></i>Регистрация
-              </a>
+              </p>
             </div>
           {% endif %}
         </div>

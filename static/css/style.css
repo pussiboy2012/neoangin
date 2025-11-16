@@ -1340,145 +1340,6 @@ select:-webkit-autofill:focus {
 
 
 /* ===========================================
-   Responsive Design
-   =========================================== */
-
-@media (max-width: 1200px) {
-    .hero-title {
-        font-size: 3rem;
-    }
-}
-
-@media (max-width: 992px) {
-    .nav-links {
-        display: none;
-    }
-    .mobile-menu {
-        display: flex;
-        align-items: center;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-    .container {
-        max-width: 90vw;
-        margin: 10px 0 10px 0;
-    }
-    .hero-section {
-        padding: 80px 0;
-        min-height: 60vh;
-    }
-    .hero-title {
-        font-size: 2.5rem;
-    }
-    .admin-grid {
-        grid-template-columns: 1fr;
-    }
-    .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-    .footer{
-        flex-direction: column;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-    }
-    .hero-title {
-        font-size: 2rem;
-    }
-    .hero-subtitle {
-        font-size: 1.1rem;
-    }
-    .footer-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-    }
-    .footer-info{
-        flex-direction: column;
-    }
-    .footer-links{
-        flex-direction: column;
-    }
-    .category-card {
-        margin-bottom: 2rem;
-    }
-    .product-card {
-        margin-bottom: 2rem;
-    }
-    .feature-card {
-        margin-bottom: 2rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .hero-section {
-        padding: 60px 0;
-        min-height: 50vh;
-    }
-    .hero-title {
-        font-size: 1.75rem;
-    }
-    .btn-hero {
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-    }
-    .admin-hero {
-        padding: 40px 0;
-    }
-    .stock-hero {
-        padding: 40px 0;
-    }
-    .catalog-hero {
-        padding: 40px 0;
-    }
-}
-
-
-/* ===========================================
-   Animations and Effects
-   =========================================== */
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes bounceIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.05);
-    }
-    70% {
-        transform: scale(0.9);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.bounce-in {
-    animation: bounceIn 0.6s ease-out;
-}
-
-
-/* ===========================================
    Utility Classes
    =========================================== */
 
@@ -1683,6 +1544,7 @@ select:-webkit-autofill:focus {
     height: 100%;
     overflow: auto;
     align-items: center;
+    justify-content: center;
 }
 
 /* Затемнение фона */
@@ -1722,6 +1584,7 @@ select:-webkit-autofill:focus {
     padding: 13px 50px;
     min-height: fit-content;
     max-height: fit-content;
+    margin: 0;
 }
 
 
@@ -1803,7 +1666,7 @@ select:-webkit-autofill:focus {
 .input-hint {
     font-size: 12px;
     color: #718096;
-    margin: 2px 0 -20px 0;
+    margin: 2px 0 -12px 0;
 }
 
 /* Password Strength */
@@ -1927,6 +1790,9 @@ select:-webkit-autofill:focus {
     font-weight: 500;
     cursor: pointer;
 }
+.auth-link-muted {
+    color: rgb(153, 153, 153);
+}
 
 .auth-link:hover {
     text-decoration: underline;
@@ -1945,6 +1811,146 @@ select:-webkit-autofill:focus {
 }
 .bigger {
     font-size: 30px;
+}
+
+
+/* ===========================================
+   Responsive Design
+   =========================================== */
+
+@media (max-width: 1200px) {
+    .hero-title {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .nav-links {
+        display: none;
+    }
+    .mobile-menu {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .container {
+        max-width: 90vw;
+        margin: 30px 0 10px 0;
+    }
+    .hero-section {
+        padding: 80px 0;
+        min-height: 60vh;
+    }
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    .footer{
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        max-width: 95vw;
+    }
+    .hero-title {
+        font-size: 2rem;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    .footer-info{
+        flex-direction: column;
+    }
+    .footer-links{
+        flex-direction: column;
+    }
+    .category-card {
+        margin-bottom: 2rem;
+    }
+    .product-card {
+        margin-bottom: 2rem;
+    }
+    .feature-card {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 60px 0;
+        min-height: 50vh;
+    }
+    .hero-title {
+        font-size: 1.75rem;
+    }
+    .btn-hero {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    .admin-hero {
+        padding: 40px 0;
+    }
+    .stock-hero {
+        padding: 40px 0;
+    }
+    .catalog-hero {
+        padding: 40px 0;
+    }
+}
+
+
+/* ===========================================
+   Animations and Effects
+   =========================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.bounce-in {
+    animation: bounceIn 0.6s ease-out;
 }
 /* ===============================
     chat-bot
