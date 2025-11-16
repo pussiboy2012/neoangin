@@ -297,7 +297,7 @@
             <a href="{{ url_for('admin.create_product') }}" class="btn-action">
                 <i class="fas fa-plus-circle"></i> Новый товар
             </a>
-            <a href="{{ url_for('admin.create_user') }}" class="btn-action">
+            <a href="{{ url_for('admin.users_management') }}" class="btn-action">
                 <i class="fas fa-user-plus"></i> Создать пользователя
             </a>
             <a href="{{ url_for('admin.stocks') }}" class="btn-action">
@@ -334,8 +334,8 @@
             <p class="card-description">
                 Создавайте учетные записи для менеджеров и администраторов, назначайте роли и права доступа
             </p>
-            <a href="{{ url_for('admin.create_user') }}" class="btn-admin">
-                <i class="fas fa-user-plus me-2"></i>Создать пользователя
+            <a href="{{ url_for('admin.users_management') }}" class="btn-admin">
+                <i class="fas fa-user-plus me-2"></i>Управление пользователями
             </a>
         </div>
 
