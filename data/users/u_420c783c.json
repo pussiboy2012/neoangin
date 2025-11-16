@@ -1,0 +1,13 @@
+{
+  "id": "u_420c783c",
+  "username": "alice",
+  "email": "some@firma.com",
+  "full_name": "Бобби Фриман Стажировский",
+  "inn": "4822001318",
+  "company_name": "АО \"КОМПАНИЯ РОСИНКА\"",
+  "phone": "88005553535",
+  "password": "fd7a2c5fef4f067615885be41ee05d440a2016c9c355009f8da84a8ac386d720",
+  "role": "buyer",
+  "created_at": "2025-11-16T16:53:59.418334",
+  "company_verified": true
+}
