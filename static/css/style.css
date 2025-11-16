@@ -309,10 +309,12 @@ body {
 
 .btn-auth {
     padding: 0.5rem 1.5rem;
-    border-radius: 25px;
+    border-radius: 10px;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.3s ease;
+    height: 60px;
+    align-content: center;
 }
 
 .btn-login {
@@ -321,6 +323,7 @@ body {
         linear-gradient(#222222, #222222) padding-box,
         linear-gradient(270deg, #eA7720 0%, #b64652 51%, #f59B17 100%) border-box;
     color: white;
+    margin: 0;
 }
 
 .btn-login:hover {
@@ -1281,6 +1284,22 @@ p.footer-link:hover{
    Forms and Inputs
    =========================================== */
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus
+input:-webkit-autofill, 
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  border: 0;
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px #424242 inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -1301,7 +1320,6 @@ p.footer-link:hover{
     border-radius: 12px;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: #f8f9fa;
     font-weight: 500;
 }
 
@@ -1675,7 +1693,7 @@ p.footer-link:hover{
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.9);
     z-index: -1;
 }
 
@@ -1690,6 +1708,13 @@ p.footer-link:hover{
     margin-bottom: 10px;
     font-size: 30px;
     font-weight: 500;
+}
+.close-btn{
+    color: #999999;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
 }
 
 .auth{
@@ -1727,9 +1752,9 @@ p.footer-link:hover{
     padding: 12px 60px 12px 15px;
     background-color: var(--bg-secondary-dark);
     border: 1px solid #888888;
-    border-radius: 25px;
+    border-radius: 10px;
     outline: none;
-    font-size: 14px;
+    font-size: 20px;
     resize: none;
     height: 45px;
     max-height: 120px;
@@ -1880,25 +1905,46 @@ p.footer-link:hover{
 
 }
 
+.authorize{
+    background: linear-gradient(90deg, #6C9FD4 0%, #423782 50%, #417EC1 100%);
+    font-size: 30px;
+}
+.authorize:hover {
+    transform: translateY(-2px);
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(65, 126, 193, 0.3);
+    color: white;
+}
+.reg {
+    font-size: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .auth-link {
     color: #f59B17;
     text-decoration: none;
     font-weight: 500;
+    cursor: pointer;
 }
 
 .auth-link:hover {
     text-decoration: underline;
 }
 
-.register-footer {
+.auth-footer {
     text-align: center;
-    padding: 25px 0;
+    padding: 12px 0;
 }
 
 .login-link {
-    color: #718096;
+    color: #999999;
     font-size: 15px;
     margin: 0;
+    cursor: pointer;
+}
+.bigger {
+    font-size: 30px;
 }
 /* ===============================
     chat-bot

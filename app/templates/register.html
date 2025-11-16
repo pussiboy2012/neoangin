@@ -1,82 +1,85 @@
 {% block modal %}
 <div class="modal" id="reg-form">
+            <div id="register-errors" class="error-message" style="display: none;"></div>
     <div class="container figma-glass light auth">
         <div class="auth-header">
             <img src="../../static/images/LOGO.svg" alt="">
             <h3 class="auth-title">Регистрация</h3>
+            <i class="bi bi-x-lg close-btn" onclick="closeform('reg-form')"></i>
         </div>
 
         <form method="post" class="auth-form" id="registerForm" action="{{ url_for('buyer.register') }}">
+            <!-- Блок для отображения ошибок сервера -->
+
             <!-- Личная информация -->
-                <div class="input-group">
-                    <input name="full_name"  placeholder="ФИО контактного лица" required class="form-input" id="fullName">
-                </div>
+            <div class="input-group">
+                <input name="full_name" placeholder="ФИО контактного лица" required class="form-input" id="fullName">
+            </div>
 
             <!-- Корпоративная информация -->
-                <!-- ИНН -->
-                <div class="input-group">
-                    <div class="input-wrapper">
+            <!-- ИНН -->
+            <div class="input-group">
+                <div class="input-wrapper">
                     <input name="inn" placeholder="ИНН компании" required class="form-input" id="inn" maxlength="12" pattern="\d{10,12}">
                     <button type="button" class="form-input-button" id="verifyInn" title="Проверить ИНН">
                         <i class="fas fa-search"></i>
                     </button>
-                    </div>
-                    <div class="input-hint">10 цифр для юрлиц, 12 для ИП</div>
-                    <div class="inn-status" id="innStatus"></div>
                 </div>
+                <div class="input-hint">10 цифр для юрлиц, 12 для ИП</div>
+                <div class="inn-status" id="innStatus"></div>
+            </div>
 
-                <!-- Email -->
-                <div class="input-group">
-                    <div class="input-wrapper">
+            <!-- Email -->
+            <div class="input-group">
+                <div class="input-wrapper">
                     <input name="email" type="email" placeholder="Корпоративная почта" required class="form-input" id="email">
-                    </div>
-                    <div class="input-hint">Только корпоративные домены организации</div>
                 </div>
+                <div class="input-hint">Только корпоративные домены организации</div>
+            </div>
 
-                <!-- Телефон -->
-                <div class="input-group">
-                    <div class="input-wrapper">
+            <!-- Телефон -->
+            <div class="input-group">
+                <div class="input-wrapper">
                     <input name="phone" type="tel" placeholder="Контактный номер телефона" required class="form-input" id="phone">
-                    </div>
-                    <div class="input-hint">Формат: +7 (XXX) XXX-XX-XX</div>
                 </div>
+                <div class="input-hint">Формат: +7 (XXX) XXX-XX-XX</div>
+            </div>
 
             <!-- Безопасность -->
 
-                <!-- Пароль -->
-                <div class="input-group">
-                    <div class="input-wrapper">
+            <!-- Пароль -->
+            <div class="input-group">
+                <div class="input-wrapper">
                     <input name="password" placeholder="Создайте пароль" type="password" required class="form-input" id="password">
                     <button type="button" class="form-input-button" id="togglePassword">
                         <i class="fas fa-eye"></i>
                     </button>
-                    </div>
-                    <div class="password-strength" id="passwordStrength">
-                        <div class="strength-bar">
-                            <div class="strength-fill" id="strengthFill"></div>
-                        </div>
-                        <div class="strength-text" id="strengthText">Введите пароль</div>
-                    </div>
-                    <div class="password-requirements" id="passwordRequirements">
-                        <div class="requirement" id="reqLength">✓ Минимум 8 символов</div>
-                        <div class="requirement" id="reqUpper">✓ Заглавная буква</div>
-                        <div class="requirement" id="reqLower">✓ Строчная буква</div>
-                        <div class="requirement" id="reqNumber">✓ Цифра</div>
-                        <div class="requirement" id="reqSpecial">✓ Спецсимвол</div>
-                    </div>
                 </div>
+                <div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <div class="strength-text" id="strengthText">Введите пароль</div>
+                </div>
+                <div class="password-requirements" id="passwordRequirements">
+                    <div class="requirement" id="reqLength">✓ Минимум 8 символов</div>
+                    <div class="requirement" id="reqUpper">✓ Заглавная буква</div>
+                    <div class="requirement" id="reqLower">✓ Строчная буква</div>
+                    <div class="requirement" id="reqNumber">✓ Цифра</div>
+                    <div class="requirement" id="reqSpecial">✓ Спецсимвол</div>
+                </div>
+            </div>
 
-                <!-- Подтверждение пароля -->
-                <div class="input-group">
-                    
-                    <div class="input-wrapper">
+            <!-- Подтверждение пароля -->
+            <div class="input-group">
+                <div class="input-wrapper">
                     <input name="confirm_password" placeholder="Подтвердите пароль" type="password" required class="form-input" id="confirmPassword">
                     <button type="button" class="form-input-button" id="toggleConfirmPassword">
                         <i class="fas fa-eye"></i>
                     </button>
-                    </div>
-                    <div class="input-hint" id="confirmHint">Пароли должны совпадать</div>
                 </div>
+                <div class="input-hint" id="confirmHint">Пароли должны совпадать</div>
+            </div>
 
             <div class="terms-group">
                 <label class="checkbox-label">
@@ -87,13 +90,16 @@
                 </label>
             </div>
 
-            <button type="submit" class="btn-auth btn-register" id="submitBtn" disabled>
-                Зарегистрировать
+            <button type="submit" class="btn-auth btn-register reg" id="submitBtn" disabled>
+                <span class="btn-text">Зарегистрироваться</span>
+                <span class="btn-loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i> Регистрация...
+                </span>
             </button>
         </form>
 
-        <div class="register-footer">
-            <p class="login-link">Уже есть корпоративный аккаунт? <a href="{{ url_for('buyer.login') }}" class="auth-link">Войти</a></p>
+        <div class="auth-footer">
+            <p class="login-link">Уже есть корпоративный аккаунт? <p class="auth-link" onclick="openAuthModal()">Войти</p></p>
         </div>
     </div>
 </div>
@@ -109,7 +115,8 @@
 
 .inn-status.verified {
     display: block;
-    color: #ffffff;
+    background: #c6f6d5;
+    color: #22543d;
     border: 1px solid #9ae6b4;
 }
 
@@ -122,14 +129,87 @@
 
 .inn-status.loading {
     display: block;
-    color: #ffffff;
+    background: #bee3f8;
+    color: #2a4365;
     border: 1px solid #90cdf4;
 }
 
+.error-message {
+    background: #fed7d7;
+    color: #742a2a;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 10px 0;
+    border: 1px solid #feb2b2;
+    font-size: 14px;
+    position: absolute;
+    z-index: 1;
+    bottom: 5px;
+    right: 5px;
+    max-width: 30%;
+}
+
+.error-list {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.error-item {
+    margin: 4px 0;
+}
+
+.success-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #48bb78;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.password-requirements .requirement.met {
+    color: #38a169;
+}
+
+.password-requirements .requirement:not(.met) {
+    color: #a0aec0;
+}
+
+.strength-fill.weak {
+    width: 20%;
+    background: #e53e3e;
+}
+
+.strength-fill.fair {
+    width: 40%;
+    background: #dd6b20;
+}
+
+.strength-fill.good {
+    width: 60%;
+    background: #d69e2e;
+}
+
+.strength-fill.strong {
+    width: 80%;
+    background: #38a169;
+}
+
+.strength-fill.very-strong {
+    width: 100%;
+    background: #25855a;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    const registerErrors = document.getElementById('register-errors');
+    
+    // Элементы формы
     const passwordInput = document.getElementById('password');
     const confirmInput = document.getElementById('confirmPassword');
     const togglePassword = document.getElementById('togglePassword');
@@ -140,6 +220,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordRequirements = document.getElementById('passwordRequirements');
     const submitBtn = document.getElementById('submitBtn');
     const termsCheckbox = document.getElementById('termsCheckbox');
+    const innInput = document.getElementById('inn');
+    const verifyInnBtn = document.getElementById('verifyInn');
+    const innStatus = document.getElementById('innStatus');
+    const fullNameInput = document.getElementById('fullName');
 
     // Элементы требований к паролю
     const reqLength = document.getElementById('reqLength');
@@ -154,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
         input.setAttribute('type', type);
 
-        // Обновляем иконку
         const icon = button.querySelector('i');
         if (type === 'text') {
             icon.className = 'fas fa-eye-slash';
@@ -174,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
         togglePasswordVisibility(confirmInput, this);
     });
 
+    // Функция проверки сложности пароля
     function checkPasswordStrength(password) {
         let strength = 0;
         const requirements = {
@@ -220,16 +304,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 strengthFill.className = 'strength-fill good';
                 strengthText.textContent = 'Хороший';
                 strengthText.style.color = '#d69e2e';
-            } else {
+            } else if (strength <= 4) {
                 strengthFill.className = 'strength-fill strong';
                 strengthText.textContent = 'Надежный';
                 strengthText.style.color = '#38a169';
+            } else {
+                strengthFill.className = 'strength-fill very-strong';
+                strengthText.textContent = 'Очень надежный';
+                strengthText.style.color = '#25855a';
             }
         }
 
         return strength >= 3; // Минимум 3 из 5 требований
     }
 
+    // Функция проверки совпадения паролей
     function checkPasswordMatch() {
         const password = passwordInput.value;
         const confirm = confirmInput.value;
@@ -249,191 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function validateForm() {
-        const isPasswordStrong = checkPasswordStrength(passwordInput.value);
-        const isPasswordMatch = checkPasswordMatch();
-        const isTermsAccepted = termsCheckbox.checked;
-
-        // Проверяем, что все поля заполнены
-        const fullName = document.getElementById('fullName').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-
-        const allFieldsFilled = fullName && email && phone && passwordInput.value && confirmInput.value;
-
-        submitBtn.disabled = !(isPasswordStrong && isPasswordMatch && isTermsAccepted && allFieldsFilled);
-    }
-
-    // Слушатели событий
-    passwordInput.addEventListener('input', validateForm);
-    confirmInput.addEventListener('input', validateForm);
-    termsCheckbox.addEventListener('change', validateForm);
-
-    // Слушатели для всех полей формы
-    const formInputs = document.querySelectorAll('.form-input, .checkbox-input');
-    formInputs.forEach(input => {
-        input.addEventListener('input', validateForm);
-        input.addEventListener('change', validateForm);
-    });
-
-    // Инициализация
-    validateForm();
-});
-
-// Обработка отправки формы регистрации
-// Обработка отправки формы регистрации
-// Обработка отправки формы регистрации
-document.addEventListener('DOMContentLoaded', function() {
-    const registerForm = document.getElementById('registerForm');
-    
-    if (registerForm) {
-        registerForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Регистрация...';
-            
-            const formData = new FormData(registerForm);
-            
-            // Создаем AbortController для контроля таймаута
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
-            
-            fetch(registerForm.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                signal: controller.signal
-            })
-            .then(response => {
-                clearTimeout(timeoutId);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Успешная регистрация
-                    console.log('Регистрация успешна:', data.message);
-                    
-                    // Закрываем модальное окно
-                    const modal = document.getElementById('reg-form');
-                    if (modal) {
-                        modal.style.display = 'none';
-                    }
-                    
-                    // Очищаем форму
-                    registerForm.reset();
-                    
-                } else {
-                    // Ошибки
-                    console.log('Ошибки регистрации:', data.errors);
-                }
-            })
-            .catch(error => {
-                clearTimeout(timeoutId);
-                if (error.name === 'AbortError') {
-                    console.error('Таймаут запроса');
-                } else {
-                    console.error('Ошибка:', error);
-                }
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
-        });
-    }
-
-
-    
-    // Обработчик для закрытия модального окна при клике вне его
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('reg-form');
-        if (modal && modal.style.display === 'flex' && event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-    
-    // Закрытие по ESC
-    document.addEventListener('keydown', function(event) {
-        const modal = document.getElementById('reg-form');
-        if (modal && modal.style.display === 'flex' && event.key === 'Escape') {
-            modal.style.display = 'none';
-        }
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const innInput = document.getElementById('inn');
-    const verifyInnBtn = document.getElementById('verifyInn');
-    const innStatus = document.getElementById('innStatus');
-    const fullNameInput = document.getElementById('fullName');
-
-    // Функция проверки ИНН через наш сервер
-    async function verifyInn() {
-        const inn = innInput.value.trim();
-
-        if (!inn || inn.length < 10) {
-            showInnStatus('Введите корректный ИНН (10-12 цифр)', 'error');
-            return;
-        }
-
-        // Базовая валидация формата
-        if (!/^\d{10,12}$/.test(inn)) {
-            showInnStatus('ИНН должен содержать только цифры', 'error');
-            return;
-        }
-
-        showInnStatus('Проверяем ИНН...', 'loading');
-        verifyInnBtn.disabled = true;
-
-        try {
-            const response = await fetch('/verify_inn', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ inn: inn })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Автозаполнение данных компании
-                if (data.company_name) {
-                    showInnStatus(`✓ ${data.company_name}`, 'verified');
-                } else {
-                    showInnStatus('✓ ИНН проверен', 'verified');
-                }
-
-                // Можно добавить автозаполнение других полей при необходимости
-                // if (data.full_name && !fullNameInput.value) {
-                //     fullNameInput.value = data.full_name;
-                // }
-            } else {
-                showInnStatus(data.error || 'Ошибка проверки ИНН', 'error');
-            }
-        } catch (error) {
-            console.error('Ошибка проверки ИНН:', error);
-            showInnStatus('Ошибка подключения. Проверьте ИНН вручную', 'error');
-        } finally {
-            verifyInnBtn.disabled = false;
-        }
-    }
-
-    function showInnStatus(message, type) {
-        innStatus.textContent = message;
-        innStatus.className = `inn-status ${type}`;
-    }
-
-    // Валидация ИНН на клиенте
+    // Функция проверки ИНН на клиенте
     function validateInn(inn) {
         if (!inn) return false;
 
@@ -471,161 +376,249 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     }
 
-    // События для ИНН
-    verifyInnBtn.addEventListener('click', verifyInn);
-
-    innInput.addEventListener('input', function() {
-        innStatus.className = 'inn-status';
-        validateForm();
-
-        // Автоматическая проверка при вводе 10 или 12 цифр
-        const inn = this.value.trim();
-        if ((inn.length === 10 || inn.length === 12) && /^\d+$/.test(inn)) {
-            verifyInn();
-        }
-    });
-
-    // Обновляем validateForm чтобы включать проверку ИНН
-    const originalValidateForm = validateForm;
-    window.validateForm = function() {
-        const isValid = originalValidateForm();
+    // Функция проверки ИНН через сервер
+    async function verifyInn() {
         const inn = innInput.value.trim();
 
-        // Проверяем ИНН
+        if (!inn || inn.length < 10) {
+            showInnStatus('Введите корректный ИНН (10-12 цифр)', 'error');
+            return;
+        }
+
+        // Базовая валидация формата
+        if (!/^\d{10,12}$/.test(inn)) {
+            showInnStatus('ИНН должен содержать только цифры', 'error');
+            return;
+        }
+
+        showInnStatus('Проверяем ИНН...', 'loading');
+        verifyInnBtn.disabled = true;
+
+        try {
+            const response = await fetch('/verify_inn', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ inn: inn })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.company_name) {
+                    showInnStatus(`✓ ${data.company_name}`, 'verified');
+                } else {
+                    showInnStatus('✓ ИНН проверен', 'verified');
+                }
+            } else {
+                showInnStatus(data.error || 'Ошибка проверки ИНН', 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка проверки ИНН:', error);
+            showInnStatus('Ошибка подключения. Проверьте ИНН вручную', 'error');
+        } finally {
+            verifyInnBtn.disabled = false;
+        }
+    }
+
+    function showInnStatus(message, type) {
+        innStatus.textContent = message;
+        innStatus.className = `inn-status ${type}`;
+    }
+
+    // Основная функция валидации формы
+    function validateForm() {
+        const isPasswordStrong = checkPasswordStrength(passwordInput.value);
+        const isPasswordMatch = checkPasswordMatch();
+        const isTermsAccepted = termsCheckbox.checked;
+        const inn = innInput.value.trim();
         const isInnValid = validateInn(inn);
+        const fullName = fullNameInput.value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+
+        const allFieldsFilled = fullName && email && phone && passwordInput.value && confirmInput.value;
+
+        // Обновляем статус ИНН
         if (inn && !isInnValid) {
             showInnStatus('Неверный формат ИНН', 'error');
+        } else if (inn && isInnValid && !innStatus.classList.contains('verified')) {
+            showInnStatus('ИНН корректен, можно проверить', '');
         }
 
-        // Дополнительная проверка для кнопки отправки
-        const fullName = fullNameInput.value.trim();
-
-        submitBtn.disabled = !(isValid && isInnValid && fullName);
-
-        return isValid && isInnValid;
-    };
-
-    // Остальной существующий код...
-    const passwordInput = document.getElementById('password');
-    const confirmInput = document.getElementById('confirmPassword');
-    const togglePassword = document.getElementById('togglePassword');
-    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
-    const passwordStrength = document.getElementById('passwordStrength');
-    const strengthFill = document.getElementById('strengthFill');
-    const strengthText = document.getElementById('strengthText');
-    const passwordRequirements = document.getElementById('passwordRequirements');
-    const submitBtn = document.getElementById('submitBtn');
-    const termsCheckbox = document.getElementById('termsCheckbox');
-
-    // Элементы требований к паролю
-    const reqLength = document.getElementById('reqLength');
-    const reqUpper = document.getElementById('reqUpper');
-    const reqLower = document.getElementById('reqLower');
-    const reqNumber = document.getElementById('reqNumber');
-    const reqSpecial = document.getElementById('reqSpecial');
-    const confirmHint = document.getElementById('confirmHint');
-
-    // Функция переключения видимости пароля
-    function togglePasswordVisibility(input, button) {
-        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-        input.setAttribute('type', type);
-
-        // Обновляем иконку
-        const icon = button.querySelector('i');
-        if (type === 'text') {
-            icon.className = 'fas fa-eye-slash';
-            button.title = 'Скрыть пароль';
-        } else {
-            icon.className = 'fas fa-eye';
-            button.title = 'Показать пароль';
-        }
+        submitBtn.disabled = !(isPasswordStrong && isPasswordMatch && isTermsAccepted && allFieldsFilled && isInnValid);
+        
+        return isPasswordStrong && isPasswordMatch && isTermsAccepted && allFieldsFilled && isInnValid;
     }
 
-    // Обработчики для кнопок просмотра пароля
-    togglePassword.addEventListener('click', function() {
-        togglePasswordVisibility(passwordInput, this);
+    // Слушатели событий
+    passwordInput.addEventListener('input', validateForm);
+    confirmInput.addEventListener('input', validateForm);
+    termsCheckbox.addEventListener('change', validateForm);
+    innInput.addEventListener('input', validateForm);
+    verifyInnBtn.addEventListener('click', verifyInn);
+
+    // Слушатели для всех полей формы
+    const formInputs = document.querySelectorAll('#registerForm .form-input');
+    formInputs.forEach(input => {
+        input.addEventListener('input', validateForm);
+        input.addEventListener('change', validateForm);
     });
 
-    toggleConfirmPassword.addEventListener('click', function() {
-        togglePasswordVisibility(confirmInput, this);
-    });
-
-    function checkPasswordStrength(password) {
-        let strength = 0;
-        const requirements = {
-            length: password.length >= 8,
-            upper: /[A-Z]/.test(password),
-            lower: /[a-z]/.test(password),
-            number: /[0-9]/.test(password),
-            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-        };
-
-        // Обновляем отображение требований
-        reqLength.classList.toggle('met', requirements.length);
-        reqUpper.classList.toggle('met', requirements.upper);
-        reqLower.classList.toggle('met', requirements.lower);
-        reqNumber.classList.toggle('met', requirements.number);
-        reqSpecial.classList.toggle('met', requirements.special);
-
-        // Подсчет силы
-        if (requirements.length) strength++;
-        if (requirements.upper) strength++;
-        if (requirements.lower) strength++;
-        if (requirements.number) strength++;
-        if (requirements.special) strength++;
-
-        // Обновляем индикатор силы
-        if (password.length === 0) {
-            passwordStrength.classList.remove('show');
-            passwordRequirements.classList.remove('show');
-            strengthFill.className = 'strength-fill';
-            strengthText.textContent = 'Введите пароль';
-        } else {
-            passwordStrength.classList.add('show');
-            passwordRequirements.classList.add('show');
-
-            if (strength <= 1) {
-                strengthFill.className = 'strength-fill weak';
-                strengthText.textContent = 'Слабый';
-                strengthText.style.color = '#e53e3e';
-            } else if (strength <= 2) {
-                strengthFill.className = 'strength-fill fair';
-                strengthText.textContent = 'Средний';
-                strengthText.style.color = '#dd6b20';
-            } else if (strength <= 3) {
-                strengthFill.className = 'strength-fill good';
-                strengthText.textContent = 'Хороший';
-                strengthText.style.color = '#d69e2e';
-            } else {
-                strengthFill.className = 'strength-fill strong';
-                strengthText.textContent = 'Надежный';
-                strengthText.style.color = '#38a169';
+    // Обработчик отправки формы
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Скрываем предыдущие ошибки
+        registerErrors.style.display = 'none';
+        registerErrors.innerHTML = '';
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        
+        // Показываем индикатор загрузки
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline';
+        submitBtn.disabled = true;
+        
+        const formData = new FormData(registerForm);
+        
+        // Создаем AbortController для контроля таймаута
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        fetch(registerForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            signal: controller.signal
+        })
+        .then(response => {
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                // Если статус не 200, пробуем прочитать JSON с ошибкой
+                return response.json().then(errorData => {
+                    throw new Error(JSON.stringify(errorData));
+                }).catch(() => {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                });
             }
-        }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Успешная регистрация
+                showSuccessMessage(data.message || 'Регистрация успешна!');
+                
+                // Закрываем модальное окно
+                closeform('reg-form');
+                
+                // Очищаем форму
+                registerForm.reset();
+                
+                // Если нужно перенаправить на страницу входа
+                setTimeout(() => {
+                    openAuthModal();
+                }, 2000);
+                
+            } else {
+                // Показываем ошибки от сервера
+                let errorsHtml = '';
+                if (data.errors && Array.isArray(data.errors)) {
+                    errorsHtml = '<ul class="error-list">';
+                    data.errors.forEach(error => {
+                        errorsHtml += `<li class="error-item">${error}</li>`;
+                    });
+                    errorsHtml += '</ul>';
+                } else if (data.message) {
+                    errorsHtml = data.message;
+                } else {
+                    errorsHtml = 'Произошла неизвестная ошибка при регистрации';
+                }
 
-        return strength >= 3; // Минимум 3 из 5 требований
-    }
+                registerErrors.innerHTML = errorsHtml;
+                registerErrors.style.display = 'block';
 
-    function checkPasswordMatch() {
-        const password = passwordInput.value;
-        const confirm = confirmInput.value;
+                // Прокручиваем к ошибкам
+                registerErrors.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            let errorMessage = 'Ошибка при отправке формы';
+            
+            if (error.name === 'AbortError') {
+                errorMessage = 'Превышено время ожидания ответа от сервера';
+            } else {
+                try {
+                    const errorData = JSON.parse(error.message);
+                    if (errorData.errors) {
+                        errorMessage = errorData.errors.join(', ');
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    }
+                } catch {
+                    errorMessage = error.message || 'Неизвестная ошибка';
+                }
+            }
+            
+            registerErrors.innerHTML = errorMessage;
+            registerErrors.style.display = 'block';
+            registerErrors.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        })
+        .finally(() => {
+            // Восстанавливаем кнопку
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
+            validateForm(); // Перевалидируем форму
+        });
+    });
 
-        if (confirm.length === 0) {
-            confirmHint.textContent = 'Пароли должны совпадать';
-            confirmHint.style.color = '#718096';
-            return false;
-        } else if (password === confirm) {
-            confirmHint.textContent = 'Пароли совпадают';
-            confirmHint.style.color = '#38a169';
-            return true;
-        } else {
-            confirmHint.textContent = 'Пароли не совпадают';
-            confirmHint.style.color = '#e53e3e';
-            return false;
-        }
-    }
     // Инициализация
     validateForm();
 });
+
+// Вспомогательные функции
+function closeform(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function openAuthModal(){
+    closeform('reg-form');
+    // Предполагаем, что у вас есть функция showForm или аналогичная
+    if (typeof showForm === 'function') {
+        showForm('auth-form');
+    } else {
+        const authModal = document.getElementById('auth-form');
+        if (authModal) {
+            authModal.style.display = 'flex';
+        }
+    }
+}
+
+// Закрытие по ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeform('reg-form');
+    }
+});
+
+function showSuccessMessage(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    document.body.appendChild(successDiv);
+    
+    setTimeout(() => {
+        successDiv.remove();
+    }, 3000);
+}
 </script>
 {% endblock %}

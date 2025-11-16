@@ -141,6 +141,7 @@ def index():
 def register():
     if request.method == "POST":
         try:
+            print("penis")
             # Получаем данные из формы (используем правильные имена полей)
             full_name = request.form["full_name"].strip()
             inn = request.form["inn"].strip()
@@ -182,6 +183,7 @@ def register():
             if errors:
                 # Если это AJAX запрос (из модального окна)
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    print(errors)
                     return jsonify({'success': False, 'errors': errors})
                 else:
                     # Обычная форма
@@ -264,24 +266,56 @@ def get_company_name_by_inn(inn):
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    print(login)
-    if request.method == "POST":
+    # Для AJAX запросов
+    if request.method == "POST" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         email = request.form["username"].strip().lower()
-        password = request.form["password"]
+        password = request.form["login-password"]  # Обратите внимание на имя поля
 
         user = get_user_by_username(email)
+        
         if not user or user.get("password") != hash_password(password):
-            flash("Неверные учётные данные")
-            return redirect(url_for("buyer.login"))
+            return jsonify({
+                'success': False,
+                'message': 'Неверные учётные данные'
+            }), 401
 
-        # Обновляем сессию со всеми данными пользователя
+        # Обновляем сессию
         session["user"] = {
             "id": user["id"],
             "username": user["username"],
             "email": user["email"],
             "full_name": user.get("full_name", ""),
             "phone": user.get("phone", ""),
-            "inn": user.get("inn", ""),  # Добавляем ИНН
+            "inn": user.get("inn", ""),
+            "role": user["role"],
+            "company_name": user["company_name"],
+            "company_verified": user.get("company_verified", False)
+        }
+        session.setdefault("cart", {})
+        
+        return jsonify({
+            'success': True,
+            'message': 'Вход выполнен успешно',
+            'redirect': url_for('buyer.index')
+        })
+
+    # Для обычных запросов (на случай, если JavaScript отключен)
+    if request.method == "POST":
+        email = request.form["username"].strip().lower()
+        password = request.form["login-password"]
+
+        user = get_user_by_username(email)
+        if not user or user.get("password") != hash_password(password):
+            flash("Неверные учётные данные")
+            return redirect(url_for("buyer.login"))
+
+        session["user"] = {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"],
+            "full_name": user.get("full_name", ""),
+            "phone": user.get("phone", ""),
+            "inn": user.get("inn", ""),
             "role": user["role"],
             "company_name": user["company_name"],
             "company_verified": user.get("company_verified", False)

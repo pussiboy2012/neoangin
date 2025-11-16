@@ -1,145 +1,157 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="login-container">
-    <div class="login-card">
-        <h3 class="login-title">Вход в систему</h3>
-        <form method="post" class="login-form">
+{% block modal%}
+<div class="modal" id="auth-form">
+    <div class="container figma-glass light auth">
+        <div class="auth-header">
+            <img src="../../static/images/LOGO.svg" alt="">
+            <h3 class="auth-title">Авторизация</h3>
+            <i class="bi bi-x-lg close-btn" onclick="closeform('auth-form')"></i>
+        </div>
+
+        <form method="post" class="auth-form" action="{{ url_for('buyer.login') }}">
             <div class="input-group">
-                <input name="username" placeholder="Логин" required class="form-input">
-                <span class="input-icon">👤</span>
+                <input name="username" placeholder="Логин" required class="form-input" id="login-form">
             </div>
             <div class="input-group">
-                <input name="password" placeholder="Пароль" type="password" required class="form-input">
-                <span class="input-icon">🔒</span>
+                <div class="input-wrapper">
+                    <input name="login-password" placeholder="Пароль" type="password" required class="form-input" id="login-password">
+                    <button type="button" class="form-input-button" id="LogintogglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
-            <button type="submit" class="submit-btn">Войти</button>
+            <button type="submit" class="btn-auth btn-register authorize" id="submitBtn" >Войти</button>
         </form>
-        <div class="login-footer">
-            <p class="register-link">Нет аккаунта? <a href="{{ url_for('buyer.register') }}" class="link">Зарегистрироваться</a></p>
+        <div class="auth-footer">
+            <h3 class="login-link bigger" onclick="openRegModal()">Регистрация</h3>
+            <p class="auth-link"><a href="{{ url_for('buyer.register') }}" class="auth-link">Забыли пароль?</a></p>
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const loginSubmit = document.getElementById('login-submit');
+    const passwordInput = document.getElementById('login-password');
+    const togglePassword = document.getElementById('LogintogglePassword');
+
+    // Функция переключения видимости пароля
+    function togglePasswordVisibility(input, button) {
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+
+        const icon = button.querySelector('i');
+        if (type === 'text') {
+            icon.className = 'fas fa-eye-slash';
+            button.title = 'Скрыть пароль';
+        } else {
+            icon.className = 'fas fa-eye';
+            button.title = 'Показать пароль';
+        }
+    }
+
+    // Обработчик для кнопки просмотра пароля
+    togglePassword.addEventListener('click', function() {
+        togglePasswordVisibility(passwordInput, this);
+    });
+
+    // Обработчик отправки формы
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Скрываем предыдущие ошибки
+        loginError.style.display = 'none';
+        loginError.textContent = '';
+        
+        // Показываем индикатор загрузки
+        const btnText = loginSubmit.querySelector('.btn-text');
+        const btnLoading = loginSubmit.querySelector('.btn-loading');
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline';
+        loginSubmit.disabled = true;
+
+        // Собираем данные формы
+        const formData = new FormData(loginForm);
+        
+        // Отправляем AJAX запрос
+        fetch('{{ url_for("buyer.login") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest' // Помечаем как AJAX запрос
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Успешный вход - перезагружаем страницу или перенаправляем
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                // Показываем ошибку
+                loginError.textContent = data.message || 'Произошла ошибка при входе';
+                loginError.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            loginError.textContent = 'Ошибка соединения с сервером';
+            loginError.style.display = 'block';
+        })
+        .finally(() => {
+            // Восстанавливаем кнопку
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
+            loginSubmit.disabled = false;
+        });
+    });
+});
+
+function closeform(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Закрытие по ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeform('auth-form');
+    }
+});
+
+function openRegModal(){
+    closeform('auth-form')
+    showForm('reg-form')
+}
+</script>
 
 <style>
-.login-container {
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
+.error-message {
+    color: #ff4444;
+    background-color: #ffebee;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    border: 1px solid #ffcdd2;
 }
 
-.login-card {
-    background: white;
-    padding: 40px 30px;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    backdrop-filter: blur(10px);
+.btn-loading {
+    display: none;
 }
 
-.login-title {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 24px;
-    font-weight: 600;
-}
 
-.login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.input-group {
-    position: relative;
-}
-
-.form-input {
-    width: 100%;
-    padding: 15px 45px 15px 15px;
-    border: 2px solid #e1e5e9;
-    border-radius: 12px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    background: #f8f9fa;
-    box-sizing: border-box;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
-}
-
-.input-icon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-}
-
-.submit-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
-}
-
-.submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-}
-
-.submit-btn:active {
-    transform: translateY(0);
-}
-
-.login-footer {
-    text-align: center;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #e1e5e9;
-}
-
-.forgot-link {
-    color: #667eea;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s ease;
-}
-
-.forgot-link:hover {
-    color: #764ba2;
-    text-decoration: underline;
-}
-
-/* Адаптивность */
-@media (max-width: 480px) {
-    .login-card {
-        padding: 30px 20px;
-        margin: 10px;
-    }
-
-    .login-title {
-        font-size: 20px;
-    }
-
-    .form-input {
-        padding: 12px 40px 12px 12px;
-    }
+.auth-form .input-group {
+    margin-bottom: 15px;
 }
 </style>
 {% endblock %}
