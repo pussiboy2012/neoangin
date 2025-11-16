@@ -3,175 +3,592 @@
 {% block content %}
 <style>
     .chats-container {
-        max-width: 1200px;
         margin: 0 auto;
-        padding: 20px;
     }
 
     .chats-header {
-        background: linear-gradient(135deg, #2c3e50, #34495e);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 2rem;
-        border-radius: 15px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chats-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .chats-header-content {
+        position: relative;
+        z-index: 2;
     }
 
     .chats-grid {
         display: grid;
-        gap: 1.5rem;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     }
 
     .chat-card {
         background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-radius: 16px;
+        padding: 1.25rem;
         box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        border: 1px solid #e9ecef;
-        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .chat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        background-size: 200% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
     .chat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.15);
     }
 
     .chat-card.unread {
-        border-left: 4px solid #e74c3c;
-        background: #fff5f5;
+        border-left: 4px solid #ff4757;
+        background: linear-gradient(135deg, #fff9f9 0%, #fff5f5 100%);
+    }
+
+    .chat-card.manager-assigned {
+        background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+        border-left: 4px solid #3498db;
     }
 
     .chat-card-header {
         display: flex;
-        justify-content: between;
-        align-items: center;
+        justify-content: space-between;
+        align-items: flex-start;
         margin-bottom: 1rem;
+        gap: 0.75rem;
     }
 
     .chat-user-info {
         display: flex;
-        align-items: center;
-        gap: 1rem;
+        align-items: flex-start;
+        gap: 0.75rem;
+        flex: 1;
+        min-width: 0;
     }
 
     .user-avatar {
         width: 50px;
         height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #3498db, #2980b9);
+        border-radius: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: bold;
         font-size: 1.2rem;
+        box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+        flex-shrink: 0;
+    }
+
+    .user-details {
+        flex: 1;
+        min-width: 0;
     }
 
     .user-details h4 {
-        margin: 0;
+        margin: 0 0 4px 0;
         color: #2c3e50;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .user-details .user-role {
+    .user-role {
         color: #7f8c8d;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
+        margin-bottom: 6px;
     }
 
     .chat-status {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 0.5rem;
+        gap: 0.4rem;
+        flex-shrink: 0;
+        min-width: fit-content;
     }
 
     .last-message-time {
         color: #95a5a6;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
     }
 
     .unread-badge {
-        background: #e74c3c;
+        background: linear-gradient(135deg, #ff4757, #ff3742);
         color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
+        padding: 0.35rem 0.7rem;
+        border-radius: 16px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        box-shadow: 0 3px 8px rgba(255, 71, 87, 0.3);
+        animation: pulse 2s infinite;
+        white-space: nowrap;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
 
     .bot-status {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        margin-top: 0.5rem;
+        gap: 0.4rem;
+        padding: 0.4rem 0.7rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.4rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        white-space: nowrap;
     }
 
     .bot-enabled {
-        background: #d4edda;
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
         color: #155724;
+        border: 1px solid #c3e6cb;
     }
 
     .bot-disabled {
-        background: #f8d7da;
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
         color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .manager-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.7rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.4rem;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        color: #1565c0;
+        border: 1px solid #bbdefb;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        white-space: nowrap;
     }
 
     .last-message {
         color: #5d6d7e;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         line-height: 1.4;
-        margin-top: 0.5rem;
+        margin-top: 0.8rem;
+        padding: 0.8rem;
+        background: rgba(0,0,0,0.02);
+        border-radius: 10px;
+        border-left: 3px solid #e9ecef;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
 
-    .no-chats {
-        text-align: center;
-        padding: 3rem;
-        color: #7f8c8d;
+    .last-message strong {
+        margin-right: 0.3rem;
     }
 
-    .no-chats i {
+    .no-chats {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        color: #6c757d;
+    }
+
+    .no-chats-icon {
         font-size: 4rem;
         margin-bottom: 1rem;
         color: #bdc3c7;
+        opacity: 0.7;
     }
 
-    .manager-assigned {
-        background: #e8f4fd;
-        border-left: 4px solid #3498db;
+    .no-chats h3 {
+        margin-bottom: 0.8rem;
+        color: #495057;
+        font-weight: 600;
+        font-size: 1.3rem;
     }
 
-    .manager-info {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
+    .no-chats p {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        line-height: 1.5;
+    }
+
+    .stats-badge {
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 0.8rem 1.2rem;
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.2rem;
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stats-label {
         font-size: 0.8rem;
-        color: #3498db;
+        opacity: 0.9;
+    }
+
+    /* Анимации */
+    .chat-card {
+        animation: cardAppear 0.6s ease-out;
+    }
+
+    @keyframes cardAppear {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== МОБИЛЬНАЯ АДАПТИВНОСТЬ ===== */
+
+    /* Планшеты и маленькие ноутбуки */
+    @media (max-width: 1024px) {
+        .chats-container {
+            padding: 12px;
+        }
+
+        .chats-grid {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 0.875rem;
+        }
+
+        .chat-card {
+            padding: 1.125rem;
+        }
+    }
+
+    /* Планшеты (портретная ориентация) */
+    @media (max-width: 768px) {
+        .chats-header {
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.25rem;
+        }
+
+        .chats-header-content {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .chats-header h1 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-badge {
+            padding: 0.7rem 1rem;
+        }
+
+        .stats-number {
+            font-size: 1.8rem;
+        }
+
+        .chats-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .chat-card {
+            padding: 1rem;
+            border-radius: 14px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+
+        .user-details h4 {
+            font-size: 0.95rem;
+        }
+
+        .last-message {
+            font-size: 0.82rem;
+            padding: 0.7rem;
+            margin-top: 0.7rem;
+        }
+    }
+
+    /* Большие телефоны */
+    @media (max-width: 480px) {
+        .chats-container {
+            padding: 10px;
+        }
+
+        .chats-header {
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .chats-header h1 {
+            font-size: 1.3rem;
+        }
+
+        .chats-header p {
+            font-size: 0.9rem;
+        }
+
+        .stats-badge {
+            padding: 0.6rem 0.9rem;
+        }
+
+        .stats-number {
+            font-size: 1.6rem;
+        }
+
+        .stats-label {
+            font-size: 0.75rem;
+        }
+
+        .chat-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .chat-status {
+            flex-direction: row;
+            align-items: center;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .chat-user-info {
+            width: 100%;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .user-details h4 {
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+        }
+
+        .bot-status, .manager-info {
+            font-size: 0.7rem;
+            padding: 0.35rem 0.6rem;
+        }
+
+        .unread-badge {
+            font-size: 0.65rem;
+            padding: 0.3rem 0.6rem;
+        }
+
+        .last-message-time {
+            font-size: 0.7rem;
+        }
+
+        .last-message {
+            font-size: 0.8rem;
+            padding: 0.6rem;
+            margin-top: 0.6rem;
+            -webkit-line-clamp: 3;
+        }
+
+        .no-chats {
+            padding: 2rem 1rem;
+        }
+
+        .no-chats-icon {
+            font-size: 3.5rem;
+        }
+
+        .no-chats h3 {
+            font-size: 1.2rem;
+        }
+
+        .no-chats p {
+            font-size: 0.85rem;
+        }
+    }
+
+    /* Очень маленькие телефоны */
+    @media (max-width: 360px) {
+        .chats-container {
+            padding: 8px;
+        }
+
+        .chats-header {
+            padding: 1rem;
+            border-radius: 14px;
+        }
+
+        .chats-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .chat-card {
+            padding: 0.875rem;
+            border-radius: 12px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            font-size: 0.9rem;
+        }
+
+        .user-details h4 {
+            font-size: 0.85rem;
+        }
+
+        .last-message {
+            font-size: 0.78rem;
+            padding: 0.5rem;
+        }
+    }
+
+    /* Пейзажная ориентация на мобильных */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .chats-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+
+        .chats-header-content {
+            flex-direction: row;
+            text-align: left;
+        }
+    }
+
+    /* Высокие экраны */
+    @media (min-height: 800px) and (max-width: 768px) {
+        .no-chats {
+            padding: 4rem 2rem;
+        }
+    }
+
+    /* Отключение hover эффектов на тач-устройствах */
+    @media (hover: none) {
+        .chat-card:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .chat-card:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+    }
+
+    /* Улучшенная поддержка тач-интерфейса */
+    .chat-card {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    /* Оптимизация для медленных устройств */
+    @media (prefers-reduced-motion: reduce) {
+        .chat-card,
+        .unread-badge,
+        .chat-card::before {
+            animation: none;
+            transition: none;
+        }
+    }
+
+    /* Скроллбар */
+    .chats-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chats-container::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.05);
+        border-radius: 3px;
+    }
+
+    .chats-container::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.2);
+        border-radius: 3px;
+    }
+
+    .chats-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(0,0,0,0.3);
     }
 </style>
 
 <div class="chats-container">
     <!-- Заголовок -->
     <div class="chats-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="h3 mb-2">
+        <div class="chats-header-content d-flex justify-content-between align-items-center">
+            <div class="flex-grow-1">
+                <h1 class="h3 mb-2 fw-bold">
                     <i class="fas fa-comments me-2"></i>Управление чатами
                 </h1>
-                <p class="mb-0 opacity-75">Общайтесь с покупателями и управляйте поддержкой</p>
+                <p class="mb-0 opacity-90">Общайтесь с покупателями и управляйте поддержкой</p>
             </div>
-            <div class="text-end">
-                <div class="text-white-50 small">Активные чаты</div>
-                <div class="h4 mb-0">{{ chats|length }}</div>
+            <div class="stats-badge flex-shrink-0">
+                <div class="stats-number">{{ chats|length }}</div>
+                <div class="stats-label">Активных чатов</div>
             </div>
         </div>
     </div>
@@ -181,8 +598,7 @@
     <div class="chats-grid">
         {% for chat in chats %}
         <div class="chat-card {% if chat.unread_count > 0 %}unread{% endif %} {% if chat.manager_id %}manager-assigned{% endif %}"
-             onclick="location.href='{{ url_for('admin.admin_chat_detail', user_id=chat.user_id) }}'">
-
+             data-user-id="{{ chat.user_id }}">
             <div class="chat-card-header">
                 <div class="chat-user-info">
                     <div class="user-avatar">
@@ -199,11 +615,13 @@
                 </div>
                 <div class="chat-status">
                     {% if chat.unread_count > 0 %}
-                    <span class="unread-badge">{{ chat.unread_count }} новое</span>
+                    <span class="unread-badge">{{ chat.unread_count }} новых</span>
                     {% endif %}
+                    {% if chat.unread_count == 0 %}
                     <span class="last-message-time">
                         {{ chat.last_message_time|default('Нет сообщений') }}
                     </span>
+                    {% endif %}
                 </div>
             </div>
 
@@ -217,11 +635,11 @@
             {% if chat.last_message %}
             <div class="last-message">
                 <strong>
-                    {% if chat.last_message.sender == 'user' %}👤{% endif %}
-                    {% if chat.last_message.sender == 'bot' %}🤖{% endif %}
-                    {% if chat.last_message.sender == 'manager' %}👨‍💼{% endif %}
+                    {% if chat.last_message.role == 'user' %}👤{% endif %}
+                    {% if chat.last_message.role == 'bot' %}🤖{% endif %}
+                    {% if chat.last_message.role == 'manager' %}👨‍💼{% endif %}
                 </strong>
-                {{ chat.last_message.text|truncate(80) }}
+                {{ chat.last_message.content|truncate(80) }}
             </div>
             {% endif %}
         </div>
@@ -229,36 +647,173 @@
     </div>
     {% else %}
     <div class="no-chats">
-        <i class="fas fa-comments"></i>
+        <div class="no-chats-icon">
+            <i class="fas fa-comments"></i>
+        </div>
         <h3>Чатов пока нет</h3>
-        <p>Когда покупатели начнут общаться с поддержкой, чаты появятся здесь</p>
+        <p>Когда покупатели начнут общаться с поддержкой,<br>чаты появятся здесь автоматически</p>
     </div>
     {% endif %}
 </div>
 
 <script>
-// Автообновление списка чатов каждые 30 секунд
-setTimeout(() => {
-    location.reload();
-}, 30000);
+// Глобальные переменные
+let refreshInterval;
 
-// Подсветка новых чатов
+// Функция для обновления списка чатов через AJAX
+async function updateChatsList() {
+    try {
+        const response = await fetch(window.location.href);
+        if (response.ok) {
+            const text = await response.text();
+
+            // Создаем временный элемент для парсинга HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+
+            // Находим новый контейнер чатов
+            const newChatsContainer = tempDiv.querySelector('.chats-grid') || tempDiv.querySelector('.no-chats');
+            const currentChatsContainer = document.querySelector('.chats-grid') || document.querySelector('.no-chats');
+
+            if (newChatsContainer && currentChatsContainer) {
+                // Сохраняем позицию скролла
+                const scrollPosition = window.scrollY;
+
+                // Заменяем контейнер
+                currentChatsContainer.replaceWith(newChatsContainer);
+
+                // Восстанавливаем позицию скролла
+                window.scrollTo(0, scrollPosition);
+
+                // Обновляем счетчик в заголовке
+                const newStatsBadge = tempDiv.querySelector('.stats-badge');
+                const currentStatsBadge = document.querySelector('.stats-badge');
+                if (newStatsBadge && currentStatsBadge) {
+                    currentStatsBadge.replaceWith(newStatsBadge);
+                }
+
+                // Переинициализируем анимации
+                initializeChatCards();
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка обновления списка чатов:', error);
+    }
+}
+
+// Функция для инициализации анимаций карточек
+function initializeChatCards() {
+    const chatCards = document.querySelectorAll('.chat-card');
+    chatCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+}
+
+// Умное обновление для мобильных устройств
+function startMobileRefresh() {
+    let isUserActive = true;
+    let inactivityTimer;
+
+    // Сбрасываем таймер неактивности при действиях пользователя
+    function resetInactivityTimer() {
+        isUserActive = true;
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+            isUserActive = false;
+        }, 30000); // 30 секунд неактивности
+    }
+
+    // Отслеживаем действия пользователя (оптимизировано для мобильных)
+    const userEvents = ['touchstart', 'touchend', 'click', 'scroll', 'keydown'];
+    userEvents.forEach(event => {
+        document.addEventListener(event, resetInactivityTimer, { passive: true });
+    });
+
+    // Проверяем видимость страницы
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            clearInterval(refreshInterval);
+        } else {
+            startRefreshInterval();
+        }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Запуск интервала обновления (реже на мобильных для экономии батареи)
+    function startRefreshInterval() {
+        clearInterval(refreshInterval);
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const interval = isMobile ? 20000 : 15000; // 20 сек на мобильных, 15 на десктоп
+
+        refreshInterval = setInterval(() => {
+            // Обновляем только если пользователь неактивен и страница видима
+            if (!isUserActive && !document.hidden) {
+                updateChatsList();
+            }
+        }, interval);
+    }
+
+    // Инициализация
+    resetInactivityTimer();
+    startRefreshInterval();
+}
+
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    const chatCards = document.querySelectorAll('.chat-card.unread');
-    chatCards.forEach(card => {
-        card.style.animation = 'pulse 2s infinite';
+    initializeChatCards();
+    startMobileRefresh();
+
+    // Останавливаем обновление при уходе со страницы
+    window.addEventListener('beforeunload', function() {
+        clearInterval(refreshInterval);
     });
 });
 
-// Добавляем стиль для анимации пульсации
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0% { box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); }
-        50% { box-shadow: 0 4px 25px rgba(231, 76, 60, 0.6); }
-        100% { box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); }
+// Обновление при возвращении на страницу
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        updateChatsList();
     }
-`;
-document.head.appendChild(style);
+});
+
+// Оптимизация для медленных сетей
+if ('connection' in navigator) {
+    const connection = navigator.connection;
+    if (connection.saveData || connection.effectiveType.includes('2g')) {
+        // Реже обновляем на медленных соединениях
+        clearInterval(refreshInterval);
+        refreshInterval = setInterval(updateChatsList, 30000);
+    }
+}
+
+// Функция для открытия чата и пометки как прочитанного
+function openChat(userId) {
+    // Сначала помечаем как прочитанные
+    fetch(`/admin/api/chat/${userId}/mark_read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(response => {
+        // Затем переходим в чат
+        location.href = `/admin/chat/${userId}`;
+    }).catch(error => {
+        console.error('Ошибка пометки как прочитанного:', error);
+        // Все равно переходим в чат
+        location.href = `/admin/chat/${userId}`;
+    });
+}
+
+// Обновляем обработчики кликов
+document.addEventListener('DOMContentLoaded', function() {
+    const chatCards = document.querySelectorAll('.chat-card');
+    chatCards.forEach(card => {
+        const userId = card.getAttribute('data-user-id');
+        if (userId) {
+            card.onclick = function() { openChat(userId); };
+        }
+    });
+});
 </script>
 {% endblock %}

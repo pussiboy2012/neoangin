@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app, session
+from ..utils import USERS, read_json
 from datetime import datetime
 from app.chatbot import chatbot
+from pathlib import Path
 from app.utils import get_chat, create_chat, add_message_to_chat, write_json, get_user_chat_file
 
 bp = Blueprint('chatbot', __name__)
@@ -20,9 +22,10 @@ def chat():
         # Получаем чат пользователя
         chat_data = get_chat(user_id)
         if not chat_data:
-            # Создаем новый чат
-            user_name = session.get('user', {}).get('username', 'Покупатель')
-            chat_data = create_chat(user_id, user_name)
+            user_data = read_json(Path(USERS) / f"{user_id}.json")
+            user_name = user_data.get('full_name', 'Покупатель') if user_data else 'Покупатель'
+            company_name = user_data.get('company_name', 'ООО ДАБАТА') if user_data else 'ООО ДАБАТА'
+            chat = create_chat(user_id, user_name, company_name)
 
         # Проверяем, включен ли бот для этого чата
         if not chat_data.get('bot_enabled', True):

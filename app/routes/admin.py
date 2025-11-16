@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from ..utils import PRODUCTS, STOCKS, ORDERS, USERS, read_json, write_json, gen_id, get_user_by_username, list_json
 from pathlib import Path
 from datetime import datetime
-from ..utils import get_all_chats, get_chat, add_message_to_chat, toggle_bot_for_chat, assign_manager_to_chat, create_chat
+from ..utils import get_all_chats, get_chat, add_message_to_chat, toggle_bot_for_chat, assign_manager_to_chat, create_chat, mark_all_messages_as_read
 from ..chatbot import chatbot
 
 bp = Blueprint("admin", __name__, template_folder="../templates")
@@ -246,8 +246,61 @@ def admin_chats():
         return redirect(url_for('buyer.login'))
 
     chats = get_all_chats()
-    return render_template('chats.html', chats=chats)
 
+    # Обрабатываем данные для шаблона
+    processed_chats = []
+    for chat in chats:
+        # Получаем информацию о пользователе
+        user_file = Path(USERS) / f"{chat['user_id']}.json"
+        user_name = chat.get('user_name', 'Покупатель')
+        if user_file.exists():
+            user_data = read_json(user_file)
+            user_name = user_data.get('username', user_data.get('full_name', user_name))
+
+        # Форматируем время последнего сообщения
+        last_message_time = None
+        if chat.get('last_message'):
+            last_message_time = format_chat_time(chat['last_message']['timestamp'])
+
+        processed_chats.append({
+            'user_id': chat['user_id'],
+            'user_name': user_name,
+            'bot_enabled': chat.get('bot_enabled', True),
+            'manager_id': chat.get('assigned_manager'),
+            'last_message': chat.get('last_message'),
+            'unread_count': chat.get('unread_count', 0),
+            'last_message_time': last_message_time
+        })
+
+    # Сортируем по времени последнего сообщения (сначала новые)
+    processed_chats.sort(key=lambda x: x['last_message_time'] or '', reverse=True)
+
+    return render_template('chats.html', chats=processed_chats)
+
+
+def format_chat_time(timestamp):
+    """Форматирует время для отображения в списке чатов"""
+    if not timestamp:
+        return None
+    try:
+        if 'T' in timestamp:
+            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            return dt.strftime('%H:%M')
+        return timestamp
+    except:
+        return timestamp
+
+@bp.route('/api/chat/<user_id>/mark_read', methods=['POST'])
+def mark_chat_read(user_id):
+    """Помечает все сообщения в чате как прочитанные"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    try:
+        success = mark_all_messages_as_read(user_id)
+        return jsonify({'success': success})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/chat/<user_id>')
 def admin_chat_detail(user_id):
@@ -260,7 +313,8 @@ def admin_chat_detail(user_id):
         # Создаем чат если его нет
         user_data = read_json(Path(USERS) / f"{user_id}.json")
         user_name = user_data.get('full_name', 'Покупатель') if user_data else 'Покупатель'
-        chat = create_chat(user_id, user_name)
+        company_name = user_data.get('company_name', 'ООО ДАБАТА') if user_data else 'ООО ДАБАТА'
+        chat = create_chat(user_id, user_name, company_name)
 
     return render_template('chat_detail.html', chat=chat)
 

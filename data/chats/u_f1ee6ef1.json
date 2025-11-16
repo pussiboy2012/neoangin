@@ -9,7 +9,8 @@
       "content": "раапол",
       "type": "text",
       "timestamp": "2025-11-14T18:28:06.090384",
-      "sender_name": "bob"
+      "sender_name": "bob",
+      "read": true
     },
     {
       "id": "msg_9cf10d08",
@@ -25,7 +26,8 @@
       "content": "оророр",
       "type": "text",
       "timestamp": "2025-11-14T18:28:09.560613",
-      "sender_name": "bob"
+      "sender_name": "bob",
+      "read": true
     },
     {
       "id": "msg_edd3e0d7",
@@ -41,7 +43,8 @@
       "content": "wef",
       "type": "text",
       "timestamp": "2025-11-14T18:29:13.714714",
-      "sender_name": "bob"
+      "sender_name": "bob",
+      "read": true
     },
     {
       "id": "msg_d2f03230",
@@ -57,7 +60,8 @@
       "content": "wef",
       "type": "text",
       "timestamp": "2025-11-14T18:29:14.975302",
-      "sender_name": "bob"
+      "sender_name": "bob",
+      "read": true
     },
     {
       "id": "msg_b9f7b7c2",
@@ -73,7 +77,8 @@
       "content": "1234567",
       "type": "text",
       "timestamp": "2025-11-14T18:31:37.826915",
-      "sender_name": "bob"
+      "sender_name": "bob",
+      "read": true
     },
     {
       "id": "msg_17afcc17",
@@ -89,7 +94,8 @@
       "content": "234567",
       "type": "text",
       "timestamp": "2025-11-14T18:33:43.682039",
-      "sender_name": "bob"
+      "sender_name": "bob",
+      "read": true
     },
     {
       "id": "msg_962b9676",

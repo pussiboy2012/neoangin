@@ -17,6 +17,7 @@ USERS = DATA_DIR / "users"
 ORDERS = DATA_DIR / "orders"
 STOCKS = DATA_DIR / "stocks"
 ANALYTICS = DATA_DIR / "analytics"
+CHATS = "data/chats"
 
 CHATS_DIR = Path("data/chats")
 
@@ -31,12 +32,13 @@ def get_user_chat_file(user_id):
     return CHATS_DIR / f"{user_id}.json"
 
 
-def create_chat(user_id, user_name):
+def create_chat(user_id, full_name, company_name):
     """Создает новый чат для пользователя"""
     chat_file = get_user_chat_file(user_id)
     chat_data = {
         "user_id": user_id,
-        "user_name": user_name,
+        "user_name": full_name,
+        "user_company": company_name,
         "created_at": datetime.utcnow().isoformat(),
         "messages": [],
         "bot_enabled": True,
@@ -46,6 +48,173 @@ def create_chat(user_id, user_name):
     write_json(chat_file, chat_data)
     return chat_data
 
+
+def get_all_chats():
+    """Получает все чаты с подсчетом непрочитанных сообщений"""
+    chats = []
+    chats_path = Path(CHATS)
+
+    if chats_path.exists():
+        for chat_file in chats_path.glob('*.json'):
+            try:
+                chat_data = read_json(chat_file)
+                if chat_data:
+                    # Добавляем user_id если его нет
+                    chat_data['user_id'] = chat_file.stem
+
+                    # Инициализируем read статусы если их нет
+                    chat_data = initialize_read_statuses(chat_data)
+
+                    # Считаем непрочитанные сообщения
+                    unread_count = count_unread_messages(chat_data)
+                    chat_data['unread_count'] = unread_count
+
+                    # Получаем последнее сообщение
+                    last_message = get_last_message(chat_data)
+                    chat_data['last_message'] = last_message
+
+                    chats.append(chat_data)
+            except Exception as e:
+                print(f"Ошибка чтения чата {chat_file}: {e}")
+
+    return chats
+
+
+def initialize_read_statuses(chat_data):
+    """Инициализирует read статусы для всех сообщений"""
+    if 'messages' in chat_data:
+        for message in chat_data['messages']:
+            if 'read' not in message:
+                # По умолчанию сообщения от пользователя непрочитанные, остальные прочитанные
+                message['read'] = message.get('role') != 'user'
+
+    return chat_data
+
+
+def count_unread_messages(chat_data):
+    """Считает непрочитанные сообщения от пользователя"""
+    if 'messages' not in chat_data:
+        return 0
+
+    unread_count = 0
+    for message in chat_data['messages']:
+        # Считаем только сообщения от пользователя которые не прочитаны
+        if message.get('role') == 'user' and not message.get('read', False):
+            unread_count += 1
+
+    return unread_count
+
+
+def get_last_message(chat_data):
+    """Получает последнее сообщение чата"""
+    if 'messages' in chat_data and chat_data['messages']:
+        last_msg = chat_data['messages'][-1]
+        return {
+            'role': last_msg.get('role'),
+            'content': last_msg.get('content', ''),
+            'text': last_msg.get('content', ''),  # для обратной совместимости
+            'timestamp': last_msg.get('timestamp'),
+            'read': last_msg.get('read', True)
+        }
+    return None
+
+
+def mark_messages_as_read(user_id, message_ids=None):
+    """Помечает сообщения как прочитанные"""
+    chat_file = Path(CHATS) / f"{user_id}.json"
+    if not chat_file.exists():
+        return False
+
+    chat_data = read_json(chat_file)
+    if not chat_data or 'messages' not in chat_data:
+        return False
+
+    updated = False
+    for message in chat_data['messages']:
+        # Если указаны конкретные message_ids, помечаем только их
+        if message_ids:
+            if message.get('id') in message_ids and message.get('role') == 'user':
+                if not message.get('read', False):
+                    message['read'] = True
+                    updated = True
+        # Иначе помечаем все непрочитанные сообщения пользователя
+        elif message.get('role') == 'user' and not message.get('read', False):
+            message['read'] = True
+            updated = True
+
+    if updated:
+        write_json(chat_file, chat_data)
+
+    return updated
+
+
+def mark_all_messages_as_read(user_id):
+    """Помечает все сообщения пользователя как прочитанные"""
+    return mark_messages_as_read(user_id)
+
+
+def get_chat(user_id):
+    """Получает чат пользователя"""
+    chat_file = Path(CHATS) / f"{user_id}.json"
+    if chat_file.exists():
+        chat_data = read_json(chat_file)
+        if chat_data:
+            # Инициализируем read статусы
+            chat_data = initialize_read_statuses(chat_data)
+            return chat_data
+    return None
+
+
+def create_chat(user_id, user_name):
+    """Создает новый чат"""
+    chat_data = {
+        "user_id": user_id,
+        "user_name": user_name,
+        "created_at": datetime.utcnow().isoformat(),
+        "messages": [],
+        "bot_enabled": True,
+        "assigned_manager": None,
+        "status": "active",
+        "last_activity": datetime.utcnow().isoformat()
+    }
+
+    chat_file = Path(CHATS) / f"{user_id}.json"
+    write_json(chat_file, chat_data)
+    return chat_data
+
+
+def add_message_to_chat(user_id, role, content, sender_name=None):
+    """Добавляет сообщение в чат"""
+    chat = get_chat(user_id)
+    if not chat:
+        # Создаем новый чат если его нет
+        user_file = Path(USERS) / f"{user_id}.json"
+        user_name = "Покупатель"
+        if user_file.exists():
+            user_data = read_json(user_file)
+            user_name = user_data.get('username', user_data.get('full_name', 'Покупатель'))
+        chat = create_chat(user_id, user_name)
+
+    # Создаем сообщение
+    message = {
+        "id": gen_id("msg_"),
+        "role": role,
+        "content": content,
+        "type": "text",
+        "timestamp": datetime.utcnow().isoformat(),
+        "sender_name": sender_name or ("Покупатель" if role == "user" else "Система"),
+        "read": role != "user"  # Сообщения от пользователя по умолчанию непрочитанные
+    }
+
+    # Добавляем сообщение
+    chat["messages"].append(message)
+    chat["last_activity"] = datetime.utcnow().isoformat()
+
+    # Сохраняем
+    chat_file = Path(CHATS) / f"{user_id}.json"
+    write_json(chat_file, chat)
+
+    return message
 
 def get_chat(user_id):
     """Получает чат пользователя"""
@@ -87,25 +256,6 @@ def get_sender_name(role, user_id):
     elif role == "manager":
         return "Менеджер"
     return "Неизвестный"
-
-
-def get_all_chats():
-    """Получает все чаты"""
-    ensure_chats_dir()
-    chats = []
-    for chat_file in CHATS_DIR.glob("*.json"):
-        chat_data = read_json(chat_file)
-        if chat_data:
-            # Добавляем информацию о последнем сообщении
-            last_message = chat_data["messages"][-1] if chat_data["messages"] else None
-            chat_data["last_message"] = last_message
-            chat_data["unread_count"] = len(
-                [m for m in chat_data["messages"] if m.get("role") == "user" and not m.get("read")])
-            chats.append(chat_data)
-
-    # Сортируем по последней активности
-    chats.sort(key=lambda x: x.get("last_activity", x["created_at"]), reverse=True)
-    return chats
 
 
 def toggle_bot_for_chat(user_id, enabled):
