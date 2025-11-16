@@ -12,13 +12,9 @@
         --border-color: #e2e8f0;
         --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         --hover-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        --bg-secondary-dark: #ffffff;
     }
 
-    .admin-dashboard {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
-        padding: 2rem 0;
-    }
 
     .dashboard-header {
         text-align: center;
@@ -29,7 +25,7 @@
     .dashboard-title {
         font-size: 3rem;
         font-weight: 800;
-        color: var(--text-dark);
+        color: white;
         margin-bottom: 1rem;
         position: relative;
         display: inline-block;
@@ -53,83 +49,6 @@
         max-width: 600px;
         margin: 0 auto;
         line-height: 1.6;
-    }
-
-    .dashboard-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 3rem;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: var(--card-shadow);
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--hover-shadow);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-    }
-
-    .stat-icon.users {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-
-    .stat-icon.buyers {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-    }
-
-    .stat-icon.managers {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        color: white;
-    }
-
-    .stat-icon.admins {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        color: white;
-    }
-
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: var(--text-dark);
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-label {
-        color: var(--text-light);
-        font-weight: 600;
-        font-size: 0.95rem;
     }
 
     .dashboard-content {
@@ -332,6 +251,7 @@
 
     .user-main-info {
         display: flex;
+        max-width: 300px;
         align-items: center;
         gap: 1rem;
         margin-bottom: 0.75rem;
@@ -583,6 +503,7 @@
         border-radius: 10px;
         font-size: 1rem;
         transition: all 0.3s ease;
+        color: black;
         background: white;
     }
 
@@ -596,6 +517,14 @@
         font-size: 0.8rem;
         color: var(--text-light);
         margin-top: 0.25rem;
+    }
+
+    .password-field {
+        display: none;
+    }
+
+    .password-field.active {
+        display: block;
     }
 
     .modal-actions {
@@ -703,11 +632,8 @@
     }
 
     @media (max-width: 480px) {
-        .dashboard-stats {
-            grid-template-columns: 1fr;
-        }
-
         .user-main-info {
+            max-width:
             flex-direction: column;
             align-items: flex-start;
             gap: 0.5rem;
@@ -724,9 +650,8 @@
         }
     }
 </style>
-
 <section class="admin-dashboard">
-    <div class="container">
+    <div class="container_sas">
         <div class="dashboard-header">
             <h1 class="dashboard-title">Управление пользователями</h1>
             <p class="dashboard-subtitle">Мониторинг, создание и редактирование учетных записей пользователей системы</p>
@@ -740,7 +665,7 @@
                     <button class="btn-outline" onclick="exportUsers()">
                         <i class="fas fa-download"></i>Экспорт
                     </button>
-                    <button class="btn-primary" onclick="openCreateModal()">
+                    <button class="btn-primary" onclick="openUserTypeModal()">
                         <i class="fas fa-user-plus"></i>Добавить пользователя
                     </button>
                 </div>
@@ -783,7 +708,7 @@
                     {% for user in users %}
                     <div class="user-card" data-user-id="{{ user.id }}" data-role="{{ user.role }}">
                         <div class="user-avatar">
-                            {{ user.username[0]|upper }}
+                            {{ user.full_name[0]|upper if user.full_name else user.username[0]|upper }}
                         </div>
                         <div class="user-info">
                             <div class="user-main-info">
@@ -812,6 +737,13 @@
                                 </div>
                                 {% endif %}
 
+                                {% if user.company_name %}
+                                <div class="user-detail">
+                                    <i class="fas fa-building"></i>
+                                    <span>{{ user.company_name }}</span>
+                                </div>
+                                {% endif %}
+
                                 <div class="user-detail">
                                     <i class="fas fa-calendar"></i>
                                     <span>Создан: {{ user.created_at[:10] if user.created_at else 'N/A' }}</span>
@@ -833,10 +765,11 @@
                                     '{{ user.full_name or '' }}',
                                     '{{ user.inn or '' }}',
                                     '{{ user.email or '' }}',
-                                    '{{ user.phone or '' }}')">
+                                    '{{ user.phone or '' }}',
+                                    '{{ user.company_name or '' }}')">
                                     <i class="fas fa-edit"></i>Изменить
                                 </button>
-                                <button class="btn-action btn-delete" onclick="deleteUser('{{ user.id }}', '{{ user.username }}')">
+                                <button class="btn-action btn-delete" onclick="deleteUser('{{ user.id }}', '{{ user.full_name or user.username }}')">
                                     <i class="fas fa-trash"></i>Удалить
                                 </button>
                             </div>
@@ -858,44 +791,233 @@
     </div>
 </section>
 
-<!-- Модальное окно создания/редактирования -->
-<div id="userModal" class="modal-overlay">
+<!-- Модальное окно выбора типа пользователя -->
+<div id="userTypeModal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title" id="modalTitle">Редактирование пользователя</h3>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 class="modal-title">Выберите тип пользователя</h3>
+            <button class="modal-close" onclick="closeUserTypeModal()">&times;</button>
         </div>
 
-        <form id="userForm" method="post">
+        <div class="user-type-selection">
+            <div class="user-type-card" onclick="selectUserType('buyer')">
+                <div class="user-type-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h4>Покупатель</h4>
+                <p>Клиент компании с ИНН и названием организации</p>
+            </div>
+
+            <div class="user-type-card" onclick="selectUserType('staff')">
+                <div class="user-type-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h4>Сотрудник</h4>
+                <p>Менеджер или администратор компании</p>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeUserTypeModal()">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно создания покупателя -->
+<div id="buyerModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Создание покупателя</h3>
+            <button class="modal-close" onclick="closeBuyerModal()">&times;</button>
+        </div>
+
+        <form id="buyerForm" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="buyer_username">Логин пользователя *</label>
+                    <input type="text" id="buyer_username" name="username" class="form-input" required>
+                    <div class="input-hint">Минимум 3 символа</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="buyer_full_name">ФИО контактного лица *</label>
+                    <input type="text" id="buyer_full_name" name="full_name" class="form-input" required>
+                </div>
+
+                <input type="hidden" id="role_buyer" name="role"  value="buyer">
+
+                <div class="form-group">
+                    <label class="form-label" for="buyer_email">Email *</label>
+                    <input type="email" id="buyer_email" name="email" class="form-input" required>
+                    <div class="input-hint">Корпоративная почта организации</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="buyer_inn">ИНН компании *</label>
+                    <input type="text" id="buyer_inn" name="inn" class="form-input" required maxlength="12" pattern="\d{10,12}">
+                    <div class="input-hint">10 цифр для юрлиц, 12 для ИП</div>
+                    <div id="innStatus" class="inn-status"></div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <label class="form-label" for="buyer_phone">Телефон *</label>
+                    <input type="tel" id="buyer_phone" name="phone" class="form-input" required pattern="\+?[\d\s\-\(\)]+" minlength="10">
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="buyer_company_name">Название компании</label>
+                    <input type="text" id="buyer_company_name" name="company_name" class="form-input" readonly>
+                    <div class="input-hint">Автоматически заполняется по ИНН</div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="buyer_password">Пароль *</label>
+                    <input type="password" id="buyer_password" name="password" class="form-input" required minlength="6">
+                    <div class="input-hint">Минимум 6 символов</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="buyer_confirm_password">Подтверждение пароля *</label>
+                    <input type="password" id="buyer_confirm_password" name="confirm_password" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeBuyerModal()">
+                    Отмена
+                </button>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i>Создать покупателя
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно создания сотрудника -->
+<div id="staffModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Создание сотрудника</h3>
+            <button class="modal-close" onclick="closeStaffModal()">&times;</button>
+        </div>
+
+        <form id="staffForm" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="staff_username">Логин пользователя *</label>
+                    <input type="text" id="staff_username" name="username" class="form-input" required>
+                    <div class="input-hint">Минимум 3 символа</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="staff_full_name">ФИО сотрудника *</label>
+                    <input type="text" id="staff_full_name" name="full_name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="staff_email">Email *</label>
+                    <input type="email" id="staff_email" name="email" class="form-input" required>
+                    <div class="input-hint">Корпоративная почта</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="staff_phone">Телефон *</label>
+                    <input type="tel" id="staff_phone" name="phone" class="form-input" required pattern="\+?[\d\s\-\(\)]+" minlength="10">
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Роль сотрудника *</label>
+                    <div class="role-selection">
+                        <label class="role-option">
+                            <input type="radio" name="role" value="manager" required>
+                            <div class="role-card">
+                                <i class="fas fa-user-tie"></i>
+                                <span>Менеджер</span>
+                            </div>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="admin" required>
+                            <div class="role-card">
+                                <i class="fas fa-user-shield"></i>
+                                <span>Администратор</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="staff_password">Пароль *</label>
+                    <input type="password" id="staff_password" name="password" class="form-input" required minlength="6">
+                    <div class="input-hint">Минимум 6 символов</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="staff_confirm_password">Подтверждение пароля *</label>
+                    <input type="password" id="staff_confirm_password" name="confirm_password" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeStaffModal()">
+                    Отмена
+                </button>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i>Создать сотрудника
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Редактирование пользователя</h3>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+
+        <form id="editForm" method="post">
             <input type="hidden" id="edit_user_id" name="user_id">
 
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label" for="edit_username">Логин пользователя *</label>
                     <input type="text" id="edit_username" name="username" class="form-input" required>
-                    <div class="input-hint">Минимум 3 символа</div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="edit_full_name">ФИО контактного лица *</label>
+                    <label class="form-label" for="edit_full_name">ФИО *</label>
                     <input type="text" id="edit_full_name" name="full_name" class="form-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="edit_inn">ИНН компании *</label>
-                    <input type="text" id="edit_inn" name="inn" class="form-input" required maxlength="12">
-                    <div class="input-hint">10 цифр для юрлиц, 12 для ИП</div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="edit_email">Email *</label>
                     <input type="email" id="edit_email" name="email" class="form-input" required>
-                    <div class="input-hint">Корпоративная почта организации</div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="edit_phone">Телефон *</label>
                     <input type="tel" id="edit_phone" name="phone" class="form-input" required>
+                </div>
+
+                <div class="form-group" id="edit_inn_group">
+                    <label class="form-label" for="edit_inn">ИНН компании</label>
+                    <input type="text" id="edit_inn" name="inn" class="form-input" maxlength="12">
+                </div>
+
+                <div class="form-group" id="edit_company_group">
+                    <label class="form-label" for="edit_company_name">Название компании</label>
+                    <input type="text" id="edit_company_name" name="company_name" class="form-input">
                 </div>
 
                 <div class="form-group">
@@ -910,47 +1032,273 @@
 
             <div class="form-group">
                 <label class="form-label" for="edit_password">Новый пароль</label>
-                <input type="password" id="edit_password" name="password" class="form-input" placeholder="Оставьте пустым для сохранения старого пароля">
+                <input type="password" id="edit_password" name="password" class="form-input" placeholder="Оставьте пустым, чтобы не менять">
                 <div class="input-hint">Минимум 6 символов</div>
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel" onclick="closeModal()">
+                <button type="button" class="btn-cancel" onclick="closeEditModal()">
                     Отмена
                 </button>
                 <button type="submit" class="btn-save">
-                    <i class="fas fa-save"></i>Создать
+                    <i class="fas fa-save"></i>Сохранить изменения
                 </button>
             </div>
         </form>
     </div>
 </div>
 
+<style>
+.user-type-selection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.user-type-card {
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.user-type-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow);
+}
+
+.user-type-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.user-type-card h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-dark);
+}
+
+.user-type-card p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.role-selection {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.role-option {
+    flex: 1;
+}
+
+.role-option input {
+    display: none;
+}
+
+.role-card {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-option input:checked + .role-card {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.role-card:hover {
+    border-color: var(--primary-color);
+}
+
+.role-card i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.role-card span {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.inn-status {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: none;
+}
+
+.inn-status.verified {
+    display: block;
+    background: rgba(72, 187, 120, 0.1);
+    color: #48bb78;
+    border: 1px solid rgba(72, 187, 120, 0.3);
+}
+
+.inn-status.error {
+    display: block;
+    background: rgba(245, 101, 101, 0.1);
+    color: #f56565;
+    border: 1px solid rgba(245, 101, 101, 0.3);
+}
+
+.inn-status.loading {
+    display: block;
+    background: rgba(66, 153, 225, 0.1);
+    color: #4299e1;
+    border: 1px solid rgba(66, 153, 225, 0.3);
+}
+
+@media (max-width: 768px) {
+    .user-type-selection {
+        grid-template-columns: 1fr;
+    }
+
+    .role-selection {
+        flex-direction: column;
+    }
+}
+</style>
+
 <script>
-    // Переключение модального окна
-    function openEditModal(userId, username, role, fullName, inn, email, phone) {
-        document.getElementById('modalTitle').textContent = 'Редактирование пользователя';
+    let isEditMode = false;
+    let currentUserType = '';
+
+    // Открытие модального окна выбора типа пользователя
+    function openUserTypeModal() {
+        document.getElementById('userTypeModal').classList.add('active');
+    }
+
+    function closeUserTypeModal() {
+        document.getElementById('userTypeModal').classList.remove('active');
+    }
+
+    // Выбор типа пользователя
+    function selectUserType(type) {
+        currentUserType = type;
+        closeUserTypeModal();
+
+        if (type === 'buyer') {
+            openBuyerModal();
+        } else if (type === 'staff') {
+            openStaffModal();
+        }
+    }
+
+    // Модальное окно покупателя
+    function openBuyerModal() {
+        document.getElementById('buyerModal').classList.add('active');
+    }
+
+    function closeBuyerModal() {
+        document.getElementById('buyerModal').classList.remove('active');
+        document.getElementById('buyerForm').reset();
+        document.getElementById('innStatus').className = 'inn-status';
+    }
+
+    // Модальное окно сотрудника
+    function openStaffModal() {
+        document.getElementById('staffModal').classList.add('active');
+    }
+
+    function closeStaffModal() {
+        document.getElementById('staffModal').classList.remove('active');
+        document.getElementById('staffForm').reset();
+    }
+
+    // Проверка ИНН для покупателя
+    document.getElementById('buyer_inn').addEventListener('input', function() {
+        const inn = this.value.trim();
+        const innStatus = document.getElementById('innStatus');
+
+        if (inn.length === 10 || inn.length === 12) {
+            if (/^\d+$/.test(inn)) {
+                verifyInn(inn);
+            } else {
+                showInnStatus('ИНН должен содержать только цифры', 'error');
+            }
+        } else {
+            innStatus.className = 'inn-status';
+        }
+    });
+
+    async function verifyInn(inn) {
+        const innStatus = document.getElementById('innStatus');
+        const companyNameInput = document.getElementById('buyer_company_name');
+
+        showInnStatus('Проверяем ИНН...', 'loading');
+
+        try {
+            console.log('=== DEBUG: Отправка запроса для ИНН:', inn);
+
+            const response = await fetch('{{ url_for("admin.verify_inn") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ inn: inn })
+            });
+
+            console.log('=== DEBUG: Статус ответа:', response.status);
+
+            const data = await response.json();
+            console.log('=== DEBUG: Данные ответа:', data);
+
+            if (data.success) {
+                showInnStatus(`✓ ${data.company_name}`, 'verified');
+                companyNameInput.value = data.company_name;
+            } else {
+                showInnStatus(data.error || 'Ошибка проверки ИНН', 'error');
+                companyNameInput.value = '';
+            }
+        } catch (error) {
+            console.error('=== DEBUG: Ошибка запроса:', error);
+            showInnStatus('Ошибка подключения. Проверьте ИНН вручную', 'error');
+            companyNameInput.value = '';
+        }
+    }
+
+    function showInnStatus(message, type) {
+        const innStatus = document.getElementById('innStatus');
+        innStatus.textContent = message;
+        innStatus.className = `inn-status ${type}`;
+    }
+
+    // Открытие модального окна для редактирования
+    function openEditModal(userId, username, role, fullName, inn, email, phone, companyName) {
+        isEditMode = true;
+
         document.getElementById('edit_user_id').value = userId;
         document.getElementById('edit_username').value = username;
         document.getElementById('edit_role').value = role;
         document.getElementById('edit_full_name').value = fullName || '';
-        document.getElementById('edit_inn').value = inn || '';
         document.getElementById('edit_email').value = email || '';
         document.getElementById('edit_phone').value = phone || '';
-        document.getElementById('edit_password').value = '';
+        document.getElementById('edit_inn').value = inn || '';
+        document.getElementById('edit_company_name').value = companyName || '';
 
-        document.getElementById('userModal').classList.add('active');
+        // Показываем/скрываем поля ИНН и компании в зависимости от роли
+        const isBuyer = role === 'buyer';
+        document.getElementById('edit_inn_group').style.display = isBuyer ? 'block' : 'none';
+        document.getElementById('edit_company_group').style.display = isBuyer ? 'block' : 'none';
+
+        document.getElementById('editModal').classList.add('active');
     }
 
-    function openCreateModal() {
-        document.getElementById('modalTitle').textContent = 'Создание пользователя';
-        document.getElementById('userForm').reset();
-        document.getElementById('edit_user_id').value = '';
-        document.getElementById('userModal').classList.add('active');
-    }
-
-    function closeModal() {
-        document.getElementById('userModal').classList.remove('active');
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
     }
 
     // Удаление пользователя
@@ -980,25 +1328,149 @@
         }
     }
 
+    // Обработка форм
+    document.getElementById('buyerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitUserForm(this, 'buyer');
+    });
+
+    document.getElementById('staffForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitUserForm(this, 'staff');
+    });
+
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitUserForm(this, 'edit');
+    });
+
+    // Добавьте эти функции валидации
+    function validateBuyerForm() {
+        const username = document.getElementById('buyer_username').value.trim();
+        const email = document.getElementById('buyer_email').value.trim();
+        const fullName = document.getElementById('buyer_full_name').value.trim();
+        const inn = document.getElementById('buyer_inn').value.trim();
+        const phone = document.getElementById('buyer_phone').value.trim();
+        const password = document.getElementById('buyer_password').value;
+        const confirmPassword = document.getElementById('buyer_confirm_password').value;
+
+        if (password !== confirmPassword) {
+            alert('Пароли не совпадают');
+            return false;
+        }
+
+        if (!inn || inn.length < 10) {
+            alert('Введите корректный ИНН (10 или 12 цифр)');
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateStaffForm() {
+        const username = document.getElementById('staff_username').value.trim();
+        const email = document.getElementById('staff_email').value.trim();
+        const fullName = document.getElementById('staff_full_name').value.trim();
+        const phone = document.getElementById('staff_phone').value.trim();
+        const password = document.getElementById('staff_password').value;
+        const confirmPassword = document.getElementById('staff_confirm_password').value;
+        const role = document.querySelector('input[name="role"]:checked');
+
+        if (!role) {
+            alert('Выберите роль сотрудника');
+            return false;
+        }
+
+        if (password !== confirmPassword) {
+            alert('Пароли не совпадают');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Обновите обработчики форм
+    document.getElementById('buyerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (validateBuyerForm()) {
+            submitUserForm(this, 'buyer');
+        }
+    });
+
+    document.getElementById('staffForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (validateStaffForm()) {
+            submitUserForm(this, 'staff');
+        }
+    });
+
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitUserForm(this, 'edit');
+    });
+
+    function submitUserForm(form, type) {
+        const formData = new FormData(form);
+
+        // Для сотрудников устанавливаем фиксированные значения
+        if (type === 'staff') {
+            formData.set('inn', '');
+            formData.set('company_name', 'ООО "Прайм-Топ"');
+        }
+
+        // Добавляем CSRF токен если используется
+        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+        if (csrfToken) {
+            formData.append('csrf_token', csrfToken);
+        }
+
+        const url = type === 'edit' ? '{{ url_for("admin.update_user") }}' : '{{ url_for("admin.create_user") }}';
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                // Убираем Content-Type, чтобы браузер сам установил с boundary
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при сохранении пользователя: ' + error.message);
+        });
+    }
+
     // Фильтрация и поиск
     function filterUsers() {
         const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
         const roleFilter = document.getElementById('roleFilter').value;
-        const sortBy = document.getElementById('sortUsers').value;
 
         const userCards = document.querySelectorAll('.user-card');
 
         userCards.forEach(card => {
-            const username = card.querySelector('.user-username').textContent.toLowerCase();
-            const fullName = card.querySelector('.user-fullname')?.textContent.toLowerCase() || '';
+            const fullName = card.querySelector('.user-username').textContent.toLowerCase();
             const email = card.querySelector('.user-detail:nth-child(1) span')?.textContent.toLowerCase() || '';
             const inn = card.querySelector('.user-detail:nth-child(2) span')?.textContent.toLowerCase() || '';
+            const companyName = card.querySelector('.user-detail:nth-child(4) span')?.textContent.toLowerCase() || '';
             const userRole = card.getAttribute('data-role');
 
-            const matchesSearch = username.includes(searchTerm) ||
-                                fullName.includes(searchTerm) ||
+            const matchesSearch = fullName.includes(searchTerm) ||
                                 email.includes(searchTerm) ||
-                                inn.includes(searchTerm);
+                                inn.includes(searchTerm) ||
+                                companyName.includes(searchTerm);
             const matchesRole = !roleFilter || userRole === roleFilter;
 
             card.style.display = matchesSearch && matchesRole ? 'flex' : 'none';
@@ -1017,36 +1489,17 @@
     }
 
 
-    // Обработка формы
-    document.getElementById('userForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        const isEdit = document.getElementById('edit_user_id').value !== '';
-
-        fetch(isEdit ? '{{ url_for("admin.update_user") }}' : '{{ url_for("admin.create_user") }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Ошибка: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Произошла ошибка');
-        });
-    });
-
     // Закрытие по ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeModal();
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.classList.remove('active');
+            });
         }
     });
+
+    // Инициализация фильтров
+    document.getElementById('searchUsers').addEventListener('input', filterUsers);
+    document.getElementById('roleFilter').addEventListener('change', filterUsers);
 </script>
 {% endblock %}
