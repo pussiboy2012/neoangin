@@ -204,6 +204,10 @@
                             <td class="series-info">{{ item.series_info }}</td>
                             <td class="remaining-quantity">{{ item.remaining_quantity }} шт.</td>
                             <td>
+                                <a href="{{ url_for('buyer.stock_detail', id_stock=item.id_stock) }}" class="btn-details">
+                                    <i class="fas fa-info-circle"></i>
+                                    Подробнее
+                                </a>
                                 <form method="POST" action="{{ url_for('buyer.add_to_cart') }}" class="d-inline">
                                     <input type="hidden" name="product_id" value="{{ item.product_id }}">
                                     <input type="hidden" name="qty" value="1">

@@ -15,22 +15,22 @@
         <!-- Список товаров -->
         <div class="cart-items">
             {% for it in items %}
-            <div class="cart-item" data-product-id="{{ it.product.id }}">
+            <div class="cart-item" data-product-id="{{ it.product.id_product }}">
                 <div class="item-image">
                     <img src="https://via.placeholder.com/80x80/4a5568/ffffff?text=Product"
-                         alt="{{ it.product.title }}"
+                         alt="{{ it.title }}"
                          class="product-img">
                 </div>
 
                 <div class="item-details">
-                    <h3 class="item-title">{{ it.product.title }}</h3>
-                    <div class="item-category">{{ it.product.category }}</div>
-                    <div class="item-price">{{ it.product.price }} ₽/шт</div>
+                    <h3 class="item-title">{{ it.title }}</h3>
+                    <div class="item-category">{{ it.product.category_product }}</div>
+                    <div class="item-price">{{ it.product.price_product }} ₽/шт</div>
                 </div>
 
                 <div class="item-quantity">
                     <form method="post" action="{{ url_for('buyer.update_cart') }}" class="quantity-form">
-                        <input type="hidden" name="product_id" value="{{ it.product.id }}">
+                        <input type="hidden" name="product_id" value="{{ it.product_id }}">
                         <div class="quantity-controls">
                             <button type="submit" name="change" value="-1" class="quantity-btn minus-btn"
                                     {% if it.qty <= 1 %}disabled{% endif %}>−</button>
@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="item-actions">
-                    <a href="{{ url_for('buyer.remove_from_cart', product_id=it.product.id) }}"
+                    <a href="{{ url_for('buyer.remove_from_cart', cart_key=it.product_id) }}"
                        class="remove-btn"
                        title="Удалить из корзины"
                        onclick="return confirm('Вы уверены, что хотите удалить товар из корзины?')">
@@ -78,7 +78,7 @@
                     <span class="total-amount">{{ total }} ₽</span>
                 </div>
 
-                <a href="{{ url_for('buyer.create_order') }}" class="checkout-btn">
+                <a href="{{ url_for('buyer.create_order_route') }}" class="checkout-btn">
                     📦 Отправить заказ на модерацию
                 </a>
 

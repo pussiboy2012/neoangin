@@ -200,16 +200,25 @@ def cart():
     items = []
     total = 0
 
-    for pid, qty in cart.items():
+    for cart_key, item_data in cart.items():
         try:
-            product_id = int(pid)
+            product_id = int(item_data.get('product_id', cart_key.split('_')[0]))
             product = get_product_by_id(product_id)
             if product:
+                qty = item_data.get('qty', 0)
+                ral = item_data.get('ral', '')
                 price = float(product.price_product)
+                # For stock items with RAL, show nomenclature with RAL
+                if ral:
+                    title = f"{product.nomenclature_product} RAL {ral}"
+                else:
+                    title = product.title_product
                 items.append({
-                    "product_id": pid,
-                    "title": product.title_product,
+                    "product": product,
+                    "product_id": cart_key,
+                    "title": title,
                     "qty": qty,
+                    "ral": ral,
                     "price": price,
                     "sum": price * qty
                 })
@@ -232,19 +241,23 @@ def create_order_route():
         flash('Корзина пуста.')
         return redirect(url_for('buyer.cart'))
 
-    # Создаем заказ
-    order_id = create_order(session['user']['id'], cart)
+    # Создаем заказ на доставку
+    order_id = create_order(session['user']['id'], cart, status='delivery')
     if order_id:
         session['cart'] = {}
-        flash('Заказ создан успешно!')
+        flash('Заказ на доставку создан успешно!')
         return redirect(url_for("buyer.orders"))
     else:
         flash('Ошибка при создании заказа.')
         return redirect(url_for('buyer.cart'))
 
 
-@bp.route('/add_to_cart', methods=['POST'])
-def add_to_cart():
+@bp.route('/create_production_order', methods=['POST'])
+def create_production_order():
+    if 'user' not in session:
+        flash('Пожалуйста, войдите в систему.')
+        return redirect(url_for('buyer.login'))
+
     product_id = request.form.get('product_id')
     qty = int(request.form.get('qty', 1))
 
@@ -252,8 +265,33 @@ def add_to_cart():
         flash('Неверный товар.')
         return redirect(url_for('buyer.catalog'))
 
+    # Создаем заказ на производство
+    items = {product_id: {'qty': qty, 'ral': ''}}  # Для производства RAL не нужен
+    order_id = create_order(session['user']['id'], items, status='production')
+    if order_id:
+        flash('Заказ на производство создан успешно!')
+        return redirect(url_for("buyer.orders"))
+    else:
+        flash('Ошибка при создании заказа на производство.')
+        return redirect(url_for('buyer.product_detail', product_id=product_id))
+
+
+@bp.route('/add_to_cart', methods=['POST'])
+def add_to_cart():
+    product_id = request.form.get('product_id')
+    qty = int(request.form.get('qty', 1))
+    ral = request.form.get('ral', '')
+
+    if not product_id:
+        flash('Неверный товар.')
+        return redirect(url_for('buyer.catalog'))
+
     cart = session.get('cart', {})
-    cart[product_id] = cart.get(product_id, 0) + qty
+    cart_key = f"{product_id}_{ral}" if ral else product_id
+
+    if cart_key not in cart:
+        cart[cart_key] = {'qty': 0, 'ral': ral, 'product_id': product_id}
+    cart[cart_key]['qty'] += qty
     session['cart'] = cart
     session.modified = True
 
@@ -263,22 +301,32 @@ def add_to_cart():
 
 @bp.route('/update_cart', methods=['POST'])
 def update_cart():
-    product_id = request.form.get('product_id')
+    cart_key = request.form.get('product_id')
     change = int(request.form.get('change', 0))
 
     cart = session.get('cart', {})
 
-    if product_id in cart:
-        new_qty = cart[product_id] + change
+    if cart_key in cart:
+        new_qty = cart[cart_key]['qty'] + change
         if new_qty > 0:
-            cart[product_id] = new_qty
+            cart[cart_key]['qty'] = new_qty
         else:
             # Если количество стало 0 или меньше, удаляем товар
-            cart.pop(product_id, None)
+            cart.pop(cart_key, None)
 
         session['cart'] = cart
         session.modified = True
 
+    return redirect(url_for('buyer.cart'))
+
+
+@bp.route('/remove_from_cart/<cart_key>')
+def remove_from_cart(cart_key):
+    cart = session.get('cart', {})
+    if cart_key in cart:
+        cart.pop(cart_key, None)
+        session['cart'] = cart
+        session.modified = True
     return redirect(url_for('buyer.cart'))
 
 
@@ -296,10 +344,17 @@ def orders():
 def stock():
     from sqlalchemy import text
 
-    # Получаем данные из представления product_stock_series
+    # Получаем данные напрямую из таблиц stocks и products
     stock_series = db.session.execute(text("""
-        SELECT nomenclature_ral, series_info, remaining_quantity
-        FROM product_stock_series
+        SELECT s.id_stock,
+               concat(p.nomenclature_product,
+                      CASE WHEN s.ral_stock IS NOT NULL THEN concat(' RAL ', s.ral_stock) ELSE '' END) AS nomenclature_ral,
+               concat('п.', s.id_stock, ' от ', to_char(s.date_stock, 'DD.MM.YYYY'), ' до ',
+                      to_char(s.date_stock + (p.expiration_month_product || ' months')::interval, 'DD.MM.YYYY')) AS series_info,
+               s.count_stock AS remaining_quantity
+        FROM stocks s
+        JOIN products p ON s.id_product = p.id_product
+        WHERE s.count_stock > 0
         ORDER BY nomenclature_ral, series_info
     """)).fetchall()
 
@@ -311,15 +366,72 @@ def stock():
     # Подготавливаем данные для шаблона
     stock_data = []
     for series in stock_series:
-        product_name = product_names.get(series.nomenclature_ral, series.nomenclature_ral)
-        product_id = product_ids.get(series.nomenclature_ral, series.nomenclature_ral)
+        # Извлекаем базовую номенклатуру из nomenclature_ral
+        if ' RAL ' in series.nomenclature_ral:
+            base_nomenclature = series.nomenclature_ral.split(' RAL ')[0]
+        else:
+            base_nomenclature = series.nomenclature_ral
+
+        product_name = product_names.get(base_nomenclature, series.nomenclature_ral)
+        product_id = product_ids.get(base_nomenclature)
         if product_id is not None:
-            stock_data.append({
-                'product_name': product_name,
-                'nomenclature_ral': series.nomenclature_ral,
-                'series_info': series.series_info,
-                'remaining_quantity': series.remaining_quantity,
-                'product_id': product_id
-            })
+            try:
+                product_id = int(product_id)
+                stock_data.append({
+                    'product_name': product_name,
+                    'nomenclature_ral': series.nomenclature_ral,
+                    'series_info': series.series_info,
+                    'remaining_quantity': series.remaining_quantity,
+                    'product_id': product_id,
+                    'id_stock': series.id_stock
+                })
+            except (ValueError, TypeError):
+                continue  # Skip invalid product IDs
 
     return render_template("stock.html", stock_data=stock_data)
+
+
+@bp.route("/stock_detail/<int:id_stock>/")
+def stock_detail(id_stock):
+    # Получить информацию о остатке по id_stock напрямую из таблиц stocks и products
+    from sqlalchemy import text
+    stock_series = db.session.execute(text("""
+        SELECT s.id_stock,
+               concat(p.nomenclature_product,
+                      CASE WHEN s.ral_stock IS NOT NULL THEN concat(' RAL ', s.ral_stock) ELSE '' END) AS nomenclature_ral,
+               concat('п.', s.id_stock, ' от ', to_char(s.date_stock, 'DD.MM.YYYY'), ' до ',
+                      to_char(s.date_stock + (p.expiration_month_product || ' months')::interval, 'DD.MM.YYYY')) AS series_info,
+               s.count_stock AS remaining_quantity,
+               p.id_product, p.title_product, p.description_product, p.price_product, p.img_path_product
+        FROM stocks s
+        JOIN products p ON s.id_product = p.id_product
+        WHERE s.id_stock = :id_stock
+        LIMIT 1
+    """), {'id_stock': id_stock}).fetchone()
+
+    if not stock_series:
+        flash('Информация о остатке не найдена.')
+        return redirect(url_for('buyer.stock'))
+
+    # Создать объект продукта из данных
+    from ..models import Product
+    product = Product(
+        id_product=stock_series.id_product,
+        title_product=stock_series.title_product,
+        description_product=stock_series.description_product,
+        price_product=stock_series.price_product,
+        img_path_product=stock_series.img_path_product,
+        nomenclature_product=stock_series.nomenclature_ral.split(' RAL ')[0] if ' RAL ' in stock_series.nomenclature_ral else stock_series.nomenclature_ral,
+        category_product='',  # Не используется в шаблоне
+        expiration_month_product=0,  # Не используется в шаблоне
+        created_at_product=None  # Не используется в шаблоне
+    )
+
+    stock_info = {
+        'nomenclature_ral': stock_series.nomenclature_ral,
+        'series_info': stock_series.series_info,
+        'remaining_quantity': stock_series.remaining_quantity
+    }
+
+    # Вернуть шаблон stock_detail.html
+    return render_template("stock_detail.html", product=product, stock_info=stock_info)
