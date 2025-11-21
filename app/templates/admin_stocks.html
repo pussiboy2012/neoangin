@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
+    body {
+    background: radial-gradient(circle at 20% 80%, rgba(44, 62, 80, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(52, 73, 94, 0.1) 0%, transparent 50%), linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: var(--admin-primary);
+    background: url(data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232c3e50' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E);
+}
     .stocks-management-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         min-height: calc(100vh - 200px);
         padding: 2rem 0;
     }
@@ -479,6 +483,69 @@
                         </div>
                         <h4>Остатки не найдены</h4>
                         <p>Добавьте товары на склад для просмотра остатков</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Состав заказов -->
+        <div class="stocks-container">
+            <div class="stocks-list-card" style="width: 100%;">
+                <h3 class="stocks-title">
+                    <i class="fas fa-shopping-cart"></i>
+                    Состав заказов
+                </h3>
+
+                {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">ID Заказа</th>
+                                    <th scope="col">Пользователь</th>
+                                    <th scope="col">Статус</th>
+                                    <th scope="col">Дата создания</th>
+                                    <th scope="col">Товары</th>
+                                    <th scope="col">Общая сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr>
+                                        <td>{{ order.id }}</td>
+                                        <td>{{ order.user_id }}</td>
+                                        <td>
+                                            <span class="badge {% if order.status == 'approved' %}bg-success{% elif order.status == 'pending_moderation' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {% if order.status == 'approved' %}Одобрен{% elif order.status == 'pending_moderation' %}На модерации{% else %}{{ order.status }}{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>{{ order.created_at[:10] if order.created_at else 'N/A' }}</td>
+                                        <td>
+                                            {% if order['items'] %}
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                                    {% for item in order['items'] %}
+                                                        <li style="margin-bottom: 5px;">
+                                                            {{ item.title }} - {{ item.qty }} шт. ({{ item.price }} ₽)
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                Нет товаров
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ "%.2f"|format(order.total) }} ₽</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h4>Заказы не найдены</h4>
+                        <p>Заказы с товарами из product-order и stock-order будут отображаться здесь</p>
                     </div>
                 {% endif %}
             </div>

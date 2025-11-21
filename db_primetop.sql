@@ -100,6 +100,7 @@ create table Users (
    role_user            VARCHAR(7)           not null,
    created_at_user      DATE                 not null,
    company_verified_user BOOL                 not null,
+)
 
 /*==============================================================*/
 /* Index: Users_PK                                              */

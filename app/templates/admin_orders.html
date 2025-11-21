@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
+    body {
+    background: radial-gradient(circle at 20% 80%, rgba(44, 62, 80, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(52, 73, 94, 0.1) 0%, transparent 50%), linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: var(--admin-primary);
+    background: url(data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232c3e50' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E);
+}
     .orders-management-section {
         min-height: calc(100vh - 200px);
         padding: 2rem 0;
     }
 
+    .figma-glass{
+        background: white;
+    }
     .management-header {
         text-align: center;
         margin-bottom: 3rem;
@@ -14,15 +22,14 @@
     .management-title {
         font-size: 2.5rem;
         font-weight: 800;
-        color: #999999;
+        color: black;
         margin-bottom: 1rem;
         background: linear-gradient(135deg, #ffffff, #ffffff);
         -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
     }
 
     .management-subtitle {
-        color: #ffffff;
+        color: black;
         font-size: 1.1rem;
     }
 
@@ -62,38 +69,6 @@
     .orders-grid {
         display: grid;
         gap: 1.5rem;
-    }
-
-    .order-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        border-left: 4px solid #667eea;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .order-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .order-card:hover::before {
-        opacity: 1;
-    }
-
-    .order-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
     }
 
     .order-header {
@@ -149,7 +124,7 @@
 
     .order-details {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1.5rem;
         margin-bottom: 1.5rem;
         padding: 1.5rem;
@@ -323,6 +298,15 @@
         margin-top: 1rem;
     }
 
+    /* Modal z-index fix */
+    .modal {
+        z-index: 1060;
+    }
+
+    .modal-backdrop {
+        z-index: 1055;
+    }
+
     @media (max-width: 768px) {
         .order-header {
             flex-direction: column;
@@ -360,6 +344,29 @@
         <div class="management-header">
             <h1 class="management-title">Управление заказами</h1>
             <p class="management-subtitle">Просмотр и управление всеми заказами в системе</p>
+        </div>
+
+        <!-- Sorting and Filtering Controls -->
+        <div class="filters-section" style="background: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+            <form method="GET" action="{{ url_for('admin.admin_orders') }}" class="d-flex gap-3 align-items-end flex-wrap">
+                <div class="form-group">
+                    <label for="sort_by" class="form-label fw-bold">Сортировка</label>
+                    <select name="sort_by" id="sort_by" class="form-select">
+                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>По дате</option>
+                        <option value="customer" {% if sort_by == 'customer' %}selected{% endif %}>По компании</option>
+                        <option value="status" {% if sort_by == 'status' %}selected{% endif %}>По статусу</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter_customer" class="form-label fw-bold">Фильтр по компании</label>
+                    <input type="text" name="filter_customer" id="filter_customer" class="form-control" placeholder="Введите название компании" value="{{ filter_customer }}">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Применить
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- Статистика -->
@@ -416,7 +423,7 @@
         {% if orders is iterable and orders is not string and orders|length > 0 %}
             <div class="orders-grid">
                 {% for o in orders %}
-                    <div class="order-card" data-order-id="{{ o.id }}">
+                    <div class="figma-glass" data-order-id="{{ o.id }}">
                         <div class="order-header">
                             <div class="order-id">
                                 <i class="fas fa-receipt me-2"></i>Заказ #{{ o.id }}
@@ -447,10 +454,26 @@
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">
-                                    <i class="fas fa-user me-1"></i>Покупатель
+                                    <i class="fas fa-building me-1"></i>Компания
                                 </span>
                                 <span class="detail-value">
-                                    {{ o.user_id }}
+                                    {{ o.company_name }}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-user me-1"></i>Заказчик
+                                </span>
+                                <span class="detail-value">
+                                    {{ o.customer_name }}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-user-tie me-1"></i>Менеджер
+                                </span>
+                                <span class="detail-value">
+                                    {{ o.manager_name }}
                                 </span>
                             </div>
                             <div class="detail-item">
@@ -476,14 +499,14 @@
                         </div>
 
                         <!-- Товары в заказе -->
-                        {% if o.items is defined and o.items is iterable and o.items is not string and o.items|length > 0 %}
+                        {% if o['items'] is defined and o['items'] is iterable and o['items'] is not string and o['items']|length > 0 %}
                             <div class="order-items">
                                 <h4 class="items-title">
                                     <i class="fas fa-box-open me-2"></i>
                                     Состав заказа
                                 </h4>
                                 <div class="items-list">
-                                    {% for item in o.items %}
+                                    {% for item in o['items'] %}
                                         <div class="item-card">
                                             <div class="item-name">
                                                 {{ item.title }}
@@ -525,7 +548,7 @@
                                     <i class="fas fa-check-circle"></i>
                                     Одобрить заказ
                                 </a>
-                                <button class="btn-action btn-view" onclick="viewOrderDetails('{{ o.id }}')">
+                                <button class="btn-action btn-view" onclick="openOrderModal('{{ o.id }}', '{{ o.status }}')">
                                     <i class="fas fa-eye"></i>
                                     Подробнее
                                 </button>
@@ -542,7 +565,7 @@
                                         Заказ обработан
                                     {% endif %}
                                 </span>
-                                <button class="btn-action btn-view" onclick="viewOrderDetails('{{ o.id }}')">
+                                <button class="btn-action btn-view" onclick="openOrderModal('{{ o.id }}', '{{ o.status }}')">
                                     <i class="fas fa-eye"></i>
                                     Детали заказа
                                 </button>
@@ -567,10 +590,249 @@
     </div>
 </section>
 
+<!-- Модальное окно для деталей заказа -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderModalLabel">Детали заказа</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body" id="orderModalBody">
+                <!-- Содержимое будет загружено динамически -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-danger" id="cancelOrderBtn" style="display: none;">Отменить заказ</button>
+                <button type="button" class="btn btn-success" id="updateStatusBtn" style="display: none;">Обновить статус</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    let currentOrderId = null;
+    let currentOrderStatus = null;
+
+    function openOrderModal(orderId, status) {
+        currentOrderId = orderId;
+        currentOrderStatus = status;
+
+        // Найти данные заказа в DOM
+        const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+        if (!orderCard) {
+            alert('Заказ не найден');
+            return;
+        }
+
+        // Извлечь данные из карточки
+        const orderData = extractOrderData(orderCard);
+
+        // Заполнить модальное окно
+        fillOrderModal(orderData);
+
+        // Показать модальное окно
+        const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+        modal.show();
+    }
+
+    function extractOrderData(orderCard) {
+        const data = {};
+
+        // ID заказа
+        data.id = orderCard.dataset.orderId;
+
+        // Статус
+        const statusElement = orderCard.querySelector('.order-status');
+        data.status = currentOrderStatus;
+
+        // Детали
+        const detailItems = orderCard.querySelectorAll('.detail-item');
+        detailItems.forEach(item => {
+            const label = item.querySelector('.detail-label').textContent.trim();
+            const value = item.querySelector('.detail-value').textContent.trim();
+
+            if (label.includes('Дата создания')) {
+                data.created_at = value;
+            } else if (label.includes('Компания')) {
+                data.company_name = value;
+            } else if (label.includes('Заказчик')) {
+                data.customer_name = value;
+            } else if (label.includes('Менеджер')) {
+                data.manager_name = value;
+            } else if (label.includes('Товаров')) {
+                data.items_count = value;
+            } else if (label.includes('Сумма')) {
+                data.total = value;
+            }
+        });
+
+        // Товары
+        data.items = [];
+        const itemCards = orderCard.querySelectorAll('.item-card');
+        itemCards.forEach(card => {
+            const itemName = card.querySelector('.item-name').childNodes[0].textContent.trim();
+            const itemInfo = card.querySelector('.item-info');
+            const qty = itemInfo.querySelector('.item-qty').textContent.trim();
+            const price = itemInfo.querySelector('.item-price').textContent.trim();
+            const total = itemInfo.querySelector('.item-total').textContent.trim();
+
+            data.items.push({
+                name: itemName,
+                qty: qty,
+                price: price,
+                total: total
+            });
+        });
+
+        return data;
+    }
+
+    function fillOrderModal(data) {
+        const modalBody = document.getElementById('orderModalBody');
+        const updateBtn = document.getElementById('updateStatusBtn');
+        const cancelBtn = document.getElementById('cancelOrderBtn');
+
+        let html = `
+            <div class="order-details-modal">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Номер заказа:</strong> #${data.id}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Дата создания:</strong> ${data.created_at}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Компания:</strong> ${data.company_name}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Заказчик:</strong> ${data.customer_name}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Менеджер:</strong> ${data.manager_name}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Статус:</strong>
+                        <select class="form-select d-inline-block w-auto ms-2" id="statusSelect">
+                            <option value="pending_moderation" ${data.status === 'pending_moderation' ? 'selected' : ''}>На модерации</option>
+                            <option value="approved" ${data.status === 'approved' ? 'selected' : ''}>Одобрен</option>
+                            <option value="completed" ${data.status === 'completed' ? 'selected' : ''}>Выполнен</option>
+                            <option value="cancelled" ${data.status === 'cancelled' ? 'selected' : ''}>Отменен</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h5 class="mt-4 mb-3">Состав заказа</h5>
+                <div class="order-items-modal">
+        `;
+
+        data.items.forEach(item => {
+            html += `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div class="flex-grow-1">
+                        <strong>${item.name}</strong>
+                    </div>
+                    <div class="text-end">
+                        <span class="me-3">${item.qty}</span>
+                        <span class="me-3">${item.price}</span>
+                        <span>${item.total}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+
+                <div class="text-end mt-3">
+                    <h5>Итого: ${data.total}</h5>
+                </div>
+            </div>
+        `;
+
+        modalBody.innerHTML = html;
+
+        // Показать/скрыть кнопки в зависимости от статуса
+        if (data.status === 'pending_moderation' || data.status === 'approved') {
+            updateBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+        } else {
+            updateBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        }
+
+        // Обработчики событий
+        updateBtn.onclick = () => updateOrderStatus();
+        cancelBtn.onclick = () => cancelOrder();
+    }
+
+    async function updateOrderStatus() {
+        const statusSelect = document.getElementById('statusSelect');
+        const newStatus = statusSelect.value;
+
+        if (newStatus === currentOrderStatus) {
+            alert('Статус не изменился');
+            return;
+        }
+
+        if (!confirm('Вы уверены, что хотите изменить статус заказа?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/order/update_status/${currentOrderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `status=${newStatus}`
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                location.reload(); // Перезагрузить страницу для обновления данных
+            } else {
+                alert('Ошибка: ' + result.error);
+            }
+        } catch (error) {
+            alert('Произошла ошибка при обновлении статуса');
+            console.error(error);
+        }
+    }
+
+    async function cancelOrder() {
+        if (!confirm('Вы уверены, что хотите отменить этот заказ? Это действие нельзя отменить.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/order/cancel/${currentOrderId}`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                location.reload(); // Перезагрузить страницу для обновления данных
+            } else {
+                alert('Ошибка: ' + result.error);
+            }
+        } catch (error) {
+            alert('Произошла ошибка при отмене заказа');
+            console.error(error);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Анимация появления карточек
-        const orderCards = document.querySelectorAll('.order-card');
+        const orderCards = document.querySelectorAll('.figma-glass');
         orderCards.forEach((card, index) => {
             card.style.opacity = '0';
             card.style.transform = 'translateY(20px)';
@@ -586,7 +848,7 @@
         const approveButtons = document.querySelectorAll('.btn-approve');
         approveButtons.forEach(button => {
             button.addEventListener('click', function(e) {
-                const orderCard = this.closest('.order-card');
+                const orderCard = this.closest('.figma-glass');
                 const orderId = orderCard.dataset.orderId;
                 if (!confirm(`Вы уверены, что хотите одобрить заказ #${orderId}?`)) {
                     e.preventDefault();
@@ -594,9 +856,5 @@
             });
         });
     });
-
-    function viewOrderDetails(orderId) {
-        alert(`Детальная информация о заказе #${orderId}\n\nВ будущем здесь будет открываться модальное окно с полной информацией о заказе.`);
-    }
 </script>
 {% endblock %}

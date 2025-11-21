@@ -8,7 +8,7 @@ from datetime import datetime
 from ..utils import get_all_chats, get_chat, add_message_to_chat, toggle_bot_for_chat, assign_manager_to_chat, create_chat, mark_all_messages_as_read
 from ..chatbot import chatbot
 import hashlib
-from ..models import db, Product, Stock, User, Analyzis
+from ..models import db, Product, Stock, User, Analyzis, Order
 from ..db_helpers import create_product, update_stock, create_user
 from sqlalchemy import text
 
@@ -233,11 +233,21 @@ def hash_password(password):
 
 @bp.route("/stocks", methods=["GET", "POST"])
 def stocks():
-    # Получаем данные из представления product_stock_series
+    # Получаем данные о сериях товаров напрямую из таблиц stocks и products
     stock_series = db.session.execute(text("""
-        SELECT nomenclature_ral, series_info, remaining_quantity
-        FROM product_stock_series
-        ORDER BY nomenclature_ral, series_info
+        SELECT
+            CONCAT(p.nomenclature_product,
+                CASE
+                    WHEN s.ral_stock IS NOT NULL THEN CONCAT(' RAL ', s.ral_stock)
+                    ELSE ''
+                END) AS nomenclature_ral,
+            CONCAT('п.', s.id_stock, ' от ', TO_CHAR(s.date_stock, 'DD.MM.YYYY'), ' до ',
+                TO_CHAR(s.date_stock + INTERVAL '1 month' * p.expiration_month_product, 'DD.MM.YYYY')) AS series_info,
+            s.count_stock AS remaining_quantity
+        FROM stocks s
+        JOIN products p ON s.id_product = p.id_product
+        WHERE s.count_stock > 0
+        ORDER BY p.nomenclature_product, s.ral_stock, s.date_stock
     """)).fetchall()
 
     # Получаем все продукты для формы обновления
@@ -277,6 +287,55 @@ def stocks():
             in_stock_count += 1
         else:
             out_of_stock_count += 1
+
+    # Получаем данные о заказах и их составе
+    orders = Order.query.all()
+    orders_data = []
+    for order in orders:
+        order_dict = {
+            'id': order.id_order,
+            'user_id': order.id_user,
+            'status': order.status_order,
+            'created_at': order.created_at_order.isoformat() if order.created_at_order else '',
+            'total': 0,
+            'items': []
+        }
+        # Handle ProductOrder items
+        for item in order.order_items:
+            product = item.product
+            title = product.title_product
+            if item.ral:
+                title += f" RAL {item.ral}"
+            item_dict = {
+                'product_id': item.id_product,
+                'title': title,
+                'qty': item.count,
+                'price': float(product.price_product) if product else 0,
+                'ral': item.ral
+            }
+            order_dict['items'].append(item_dict)
+            order_dict['total'] += item_dict['qty'] * item_dict['price']
+
+        # Handle StockOrder items
+        for item in order.stock_order_items:
+            stock = item.stock
+            if stock:
+                product = stock.product
+                title = f"{product.nomenclature_product}"
+                if stock.ral_stock:
+                    title += f" RAL {stock.ral_stock}"
+                title += f" (п.{stock.id_stock} от {stock.date_stock.strftime('%d.%m.%Y')})"
+                item_dict = {
+                    'product_id': stock.id_product,
+                    'title': title,
+                    'qty': item.count_order or 0,
+                    'price': float(product.price_product) if product else 0,
+                    'ral': stock.ral_stock
+                }
+                order_dict['items'].append(item_dict)
+                order_dict['total'] += item_dict['qty'] * item_dict['price']
+
+        orders_data.append(order_dict)
 
     if request.method == "POST":
         nomenclature = request.form.get("nomenclature", "").strip()
@@ -332,18 +391,41 @@ def stocks():
                            stock_series=stock_series,
                            total_stock=total_stock,
                            in_stock_count=in_stock_count,
-                           out_of_stock_count=out_of_stock_count)
+                           out_of_stock_count=out_of_stock_count,
+                           orders=orders_data)
 
 @bp.route("/orders")
 def admin_orders():
-    from ..db_helpers import get_all_orders
+    from ..db_helpers import get_all_orders, get_user_by_id
+    from ..utils import get_chat
+
     orders = get_all_orders()
+
+    # Get sorting and filtering parameters
+    sort_by = request.args.get('sort_by', 'date')
+    filter_customer = request.args.get('filter_customer', '').strip()
+
     # Prepare orders data for template
     orders_data = []
     for order in orders:
+        user = get_user_by_id(order.id_user)
+        company_name = user.company_name_user if user else 'N/A'
+        customer_name = user.fullname_user if user else 'N/A'
+
+        # Get assigned manager from chat
+        chat = get_chat(str(order.id_user))
+        manager_name = 'Не назначен'
+        if chat and chat.get('assigned_manager'):
+            manager_user = get_user_by_id(chat['assigned_manager'])
+            if manager_user:
+                manager_name = manager_user.fullname_user
+
         order_dict = {
             'id': order.id_order,
             'user_id': order.id_user,
+            'company_name': company_name,
+            'customer_name': customer_name,
+            'manager_name': manager_name,
             'status': order.status_order,
             'created_at': order.created_at_order.isoformat() if order.created_at_order else '',
             'total': 0,
@@ -386,7 +468,21 @@ def admin_orders():
                 order_dict['total'] += item_dict['qty'] * item_dict['price']
 
         orders_data.append(order_dict)
-    return render_template("admin_orders.html", orders=orders_data)
+
+    # Apply filtering
+    if filter_customer:
+        orders_data = [o for o in orders_data if filter_customer.lower() in o['company_name'].lower()]
+
+    # Apply sorting
+    if sort_by == 'date':
+        orders_data.sort(key=lambda x: x['created_at'], reverse=True)
+    elif sort_by == 'customer':
+        orders_data.sort(key=lambda x: x['company_name'].lower())
+    elif sort_by == 'status':
+        status_order = {'pending_moderation': 0, 'approved': 1, 'completed': 2, 'cancelled': 3}
+        orders_data.sort(key=lambda x: status_order.get(x['status'], 4))
+
+    return render_template("admin_orders.html", orders=orders_data, sort_by=sort_by, filter_customer=filter_customer)
 
 
 @bp.route("/order/approve/<order_id>")
@@ -398,6 +494,57 @@ def approve_order(order_id):
         return redirect(url_for("admin.admin_orders"))
     flash("Заказ одобрен")
     return redirect(url_for("admin.admin_orders"))
+
+
+@bp.route("/order/update_status/<order_id>", methods=["POST"])
+def update_order_status_route(order_id):
+    """Обновление статуса заказа"""
+    try:
+        new_status = request.form.get("status")
+        if not new_status:
+            return jsonify({"success": False, "error": "Статус не указан"})
+
+        valid_statuses = ["pending_moderation", "approved", "completed", "cancelled"]
+        if new_status not in valid_statuses:
+            return jsonify({"success": False, "error": "Неверный статус"})
+
+        from ..db_helpers import update_order_status
+        order = update_order_status(order_id, new_status)
+        if not order:
+            return jsonify({"success": False, "error": "Заказ не найден"})
+
+        status_names = {
+            "pending_moderation": "На модерации",
+            "approved": "Одобрен",
+            "completed": "Выполнен",
+            "cancelled": "Отменен"
+        }
+
+        return jsonify({
+            "success": True,
+            "message": f"Статус заказа изменен на '{status_names.get(new_status, new_status)}'"
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+@bp.route("/order/cancel/<order_id>", methods=["POST"])
+def cancel_order(order_id):
+    """Отмена заказа"""
+    try:
+        from ..db_helpers import update_order_status
+        order = update_order_status(order_id, "cancelled")
+        if not order:
+            return jsonify({"success": False, "error": "Заказ не найден"})
+
+        return jsonify({
+            "success": True,
+            "message": "Заказ отменен"
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 
 @bp.route("/users")

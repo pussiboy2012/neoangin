@@ -517,7 +517,6 @@ p.footer-link:hover{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: 0;
     gap: 10rem;
     margin-top: 0;
     margin-bottom: 0;
