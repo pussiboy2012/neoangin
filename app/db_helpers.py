@@ -1,4 +1,4 @@
-from .models import db, User, Product, Stock, Order, ProductOrder, Analyzis
+from .models import db, User, Product, Stock, Order, ProductOrder, StockOrder, Analyzis
 from datetime import datetime
 import hashlib
 import secrets
@@ -141,15 +141,22 @@ def create_order(user_id, items, status='pending_moderation'):
 
     for key, data in order_items.items():
         product_id, ral, id_stock = key
-        po = ProductOrder(
-            id_product=product_id,
-            id_order=order.id_order,
-            count=data['qty'],
-            ral=ral,
-            id_stock=id_stock,
-            creating_date=datetime.utcnow().date()
-        )
-        db.session.add(po)
+        if id_stock:
+            so = StockOrder(
+                id_stock=id_stock,
+                id_order=order.id_order,
+                count_order=data['qty']
+            )
+            db.session.add(so)
+        else:
+            po = ProductOrder(
+                id_product=product_id,
+                id_order=order.id_order,
+                count=data['qty'],
+                ral=ral,
+                creating_date=datetime.utcnow().date()
+            )
+            db.session.add(po)
 
         # Уменьшить остатки в stocks, если товар из остатков
         if id_stock:

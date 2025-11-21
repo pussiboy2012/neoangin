@@ -351,23 +351,48 @@ def orders():
         flash('Пожалуйста, войдите в систему.')
         return redirect(url_for('buyer.login'))
 
-    from ..models import Order, ProductOrder, Product
+    from ..models import Order, ProductOrder, StockOrder, Product, Stock
     user_orders = Order.query.filter_by(id_user=session['user']['id']).all()
 
     orders_data = []
     for order in user_orders:
         items = []
         total = 0
+        # Get ProductOrder items
         product_orders = ProductOrder.query.filter_by(id_order=order.id_order).all()
         for po in product_orders:
             product = Product.query.get(po.id_product)
             qty = po.count
             price = float(product.price_product)
+            title = product.title_product
+            if po.ral:
+                title += f" RAL {po.ral}"
             items.append({
-                'title': product.title_product,
+                'title': title,
                 'price': price,
                 'qty': qty,
-                'product_id': product.id_product
+                'product_id': product.id_product,
+                'type': 'production'
+            })
+            total += price * qty
+
+        # Get StockOrder items
+        stock_orders = StockOrder.query.filter_by(id_order=order.id_order).all()
+        for so in stock_orders:
+            stock = Stock.query.get(so.id_stock)
+            product = Product.query.get(stock.id_product)
+            qty = so.count_order
+            price = float(product.price_product)
+            title = f"{product.nomenclature_product}"
+            if stock.ral_stock:
+                title += f" RAL {stock.ral_stock}"
+            title += f" (п.{stock.id_stock} от {stock.date_stock.strftime('%d.%m.%Y')})"
+            items.append({
+                'title': title,
+                'price': price,
+                'qty': qty,
+                'product_id': product.id_product,
+                'type': 'stock'
             })
             total += price * qty
 

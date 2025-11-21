@@ -183,6 +183,24 @@ create  index "product-order2_FK" on "product-order" (
 id_order
 );
 
+create table "stock-order" (
+   id_stock             INT4                 not null,
+   id_order             INT4                 not null,
+   count_order          INT4                 null,
+   constraint "PK_STOCK-ORDER" primary key (id_stock, id_order)
+);
+
+
+alter table "stock-order"
+   add constraint "FK_STOCK-OR_STOCK-ORD_STOCKS" foreign key (id_stock)
+      references Stocks (id_stock)
+      on delete restrict on update restrict;
+
+alter table "stock-order"
+   add constraint "FK_STOCK-OR_STOCK-ORD_ORDERS" foreign key (id_order)
+      references Orders (id_order)
+      on delete restrict on update restrict;
+
 alter table Orders
    add constraint "FK_ORDERS_USER-ORDE_USERS" foreign key (id_user)
       references Users (id_user)
@@ -212,6 +230,9 @@ alter table "product-order"
    add constraint "FK_PRODUCT-_PRODUCT-O_PRODUCTS" foreign key (id_product)
       references Products (id_product)
       on delete restrict on update restrict;
+
+
+
 
 /*==============================================================*/
 /* View: product_stock_series                                   */

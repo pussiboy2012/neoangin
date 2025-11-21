@@ -349,31 +349,53 @@ def admin_orders():
             'total': 0,
             'items': []
         }
-        # Calculate total and get items
-        for item in order.items:
+        # Calculate total and get items from both ProductOrder and StockOrder
+        # Handle ProductOrder items
+        for item in order.order_items:
             product = item.product
+            title = product.title_product
+            if item.ral:
+                title += f" RAL {item.ral}"
             item_dict = {
                 'product_id': item.id_product,
-                'title': product.title_product if product else 'Unknown Product',
+                'title': title,
                 'qty': item.count,
                 'price': float(product.price_product) if product else 0,
                 'ral': item.ral
             }
             order_dict['items'].append(item_dict)
             order_dict['total'] += item_dict['qty'] * item_dict['price']
+
+        # Handle StockOrder items
+        for item in order.stock_order_items:
+            stock = item.stock
+            if stock:
+                product = stock.product
+                title = f"{product.nomenclature_product}"
+                if stock.ral_stock:
+                    title += f" RAL {stock.ral_stock}"
+                title += f" (п.{stock.id_stock} от {stock.date_stock.strftime('%d.%m.%Y')})"
+                item_dict = {
+                    'product_id': stock.id_product,
+                    'title': title,
+                    'qty': item.count_order or 0,
+                    'price': float(product.price_product) if product else 0,
+                    'ral': stock.ral_stock
+                }
+                order_dict['items'].append(item_dict)
+                order_dict['total'] += item_dict['qty'] * item_dict['price']
+
         orders_data.append(order_dict)
     return render_template("admin_orders.html", orders=orders_data)
 
 
 @bp.route("/order/approve/<order_id>")
 def approve_order(order_id):
-    path = Path(ORDERS) / f"{order_id}.json"
-    order = read_json(path)
+    from ..db_helpers import update_order_status
+    order = update_order_status(order_id, "approved")
     if not order:
         flash("Заказ не найден")
         return redirect(url_for("admin.admin_orders"))
-    order["status"] = "approved"
-    write_json(path, order)
     flash("Заказ одобрен")
     return redirect(url_for("admin.admin_orders"))
 
