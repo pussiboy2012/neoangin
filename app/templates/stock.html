@@ -156,11 +156,6 @@
                 </div>
                 <h1 class="display-4 fw-bold mb-4">Товары <span class="text-success">в наличии</span></h1>
                 <p class="lead mb-4">Мгновенная доступность, быстрая доставка, гарантия качества. Все краски готовы к отправке в течение 24 часов.</p>
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{{ url_for('buyer.catalog') }}" class="btn btn-dark btn-lg">
-                        <i class="fas fa-palette me-2"></i>Весь ассортимент
-                    </a>
-                </div>
             </div>
             <div class="col-lg-4">
                 <div class="text-center">
@@ -212,10 +207,6 @@
                                     <input type="hidden" name="product_id" value="{{ item.product_id }}">
                                     <input type="hidden" name="ral" value="{{ item.nomenclature_ral.split(' RAL ')[1] if ' RAL ' in item.nomenclature_ral else '' }}">
                                     <input type="hidden" name="qty" value="1">
-                                    <button type="submit" class="btn-details">
-                                        <i class="fas fa-cart-plus"></i>
-                                        В корзину
-                                    </button>
                                 </form>
                             </td>
                         </tr>
