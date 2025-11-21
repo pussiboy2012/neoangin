@@ -2,30 +2,31 @@
 {% block content %}
 <style>
     :root {
-        --admin-primary: #2c3e50;
-        --admin-secondary: #34495e;
-        --admin-accent: #e74c3c;
-        --admin-success: #27ae60;
-        --admin-warning: #f39c12;
-        --admin-info: #3498db;
+        --manager-primary: #2980b9;  /* Более мягкий синий вместо темного */
+        --manager-secondary: #3498db;
+        --manager-accent: #e67e22;   /* Оранжевый для акцентов */
+        --manager-success: #27ae60;
+        --manager-warning: #f39c12;
+        --manager-info: #3498db;
     }
 
     body{
         background:
-            radial-gradient(circle at 20% 80%, rgba(44, 62, 80, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(52, 73, 94, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 20% 80%, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(52, 152, 219, 0.1) 0%, transparent 50%),
             linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        color: var(--admin-primary);
+        color: var(--manager-primary);
         background:
-            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232c3e50' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232980b9' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
 
-    .admin-hero{
+    .manager-hero{
         padding-top: 30px;
         padding-bottom: 20px;
         }
 
-    .admin-badge {
+    .manager-badge {
+        background: linear-gradient(135deg, var(--manager-primary), var(--manager-secondary));
         color: white;
         padding: 0.5rem 1.5rem;
         border-radius: 25px;
@@ -34,17 +35,17 @@
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 1rem;
-        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+        box-shadow: 0 4px 15px rgba(41, 128, 185, 0.3);
     }
 
-    .admin-grid {
+    .manager-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 2rem;
         margin-bottom: 3rem;
     }
 
-    .admin-card {
+    .manager-card {
         background: white;
         border-radius: 20px;
         padding: 2.5rem;
@@ -57,29 +58,29 @@
         overflow: hidden;
     }
 
-    .admin-card::before {
+    .manager-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--admin-primary), var(--admin-accent), var(--admin-info));
+        background: linear-gradient(90deg, var(--manager-primary), var(--manager-accent), var(--manager-info));
         background-size: 200% 100%;
-        animation: adminGradientShift 4s ease infinite;
+        animation: managerGradientShift 4s ease infinite;
     }
 
-    @keyframes adminGradientShift {
+    @keyframes managerGradientShift {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
 
-    .admin-card:hover {
+    .manager-card:hover {
         transform: translateY(-10px) scale(1.02);
         box-shadow:
             0 20px 50px rgba(0,0,0,0.15),
-            0 10px 30px rgba(44, 62, 80, 0.2);
+            0 10px 30px rgba(41, 128, 185, 0.2);
     }
 
     .card-icon {
@@ -95,17 +96,17 @@
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     }
 
-    .icon-create { background: linear-gradient(135deg, var(--admin-success), #2ecc71); }
-    .icon-users { background: linear-gradient(135deg, var(--admin-info), #3498db); }
-    .icon-stock { background: linear-gradient(135deg, var(--admin-warning), #f1c40f); }
-    .icon-orders { background: linear-gradient(135deg, var(--admin-accent), #e74c3c); }
-    .icon-logout { background: linear-gradient(135deg, var(--admin-warning), #f1c40f); }
-    .icon-chats { background: linear-gradient(135deg, var(--admin-accent), #e74c3c); }
+    .icon-orders { background: linear-gradient(135deg, var(--manager-primary), #3498db); }
+    .icon-stock { background: linear-gradient(135deg, var(--manager-warning), #f1c40f); }
+    .icon-products { background: linear-gradient(135deg, var(--manager-success), #2ecc71); }
+    .icon-chats { background: linear-gradient(135deg, var(--manager-accent), #e67e22); }
+    .icon-stats { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .icon-logout { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
 
     .card-title {
         font-size: 1.4rem;
         font-weight: 700;
-        color: var(--admin-primary);
+        color: var(--manager-primary);
         margin-bottom: 1rem;
     }
 
@@ -115,8 +116,8 @@
         margin-bottom: 2rem;
     }
 
-    .btn-admin {
-        background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+    .btn-manager {
+        background: linear-gradient(135deg, var(--manager-primary), var(--manager-secondary));
         color: white;
         border: none;
         border-radius: 15px;
@@ -133,7 +134,7 @@
         overflow: hidden;
     }
 
-    .btn-admin::before {
+    .btn-manager::before {
         content: '';
         position: absolute;
         top: 0;
@@ -144,17 +145,17 @@
         transition: left 0.5s;
     }
 
-    .btn-admin:hover::before {
+    .btn-manager:hover::before {
         left: 100%;
     }
 
-    .btn-admin:hover {
+    .btn-manager:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(44, 62, 80, 0.4);
+        box-shadow: 0 8px 25px rgba(41, 128, 185, 0.4);
         color: white;
     }
 
-    .admin-stats {
+    .manager-stats {
         background: white;
         border-radius: 20px;
         padding: 2.5rem;
@@ -165,7 +166,7 @@
     .stats-title {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--admin-primary);
+        color: var(--manager-primary);
         margin-bottom: 2rem;
         display: flex;
         align-items: center;
@@ -193,7 +194,7 @@
     .stat-number {
         font-size: 2.5rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        background: linear-gradient(135deg, var(--manager-primary), var(--manager-secondary));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0.5rem;
@@ -206,7 +207,7 @@
     }
 
     .quick-actions {
-        background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        background: linear-gradient(135deg, var(--manager-primary), var(--manager-secondary));
         color: white;
         border-radius: 20px;
         padding: 2.5rem;
@@ -250,7 +251,7 @@
     }
 
     @media (max-width: 768px) {
-        .admin-grid {
+        .manager-grid {
             grid-template-columns: 1fr;
         }
 
@@ -264,22 +265,22 @@
     }
 </style>
 
-<!-- Герой секция админ-панели -->
-<section class="admin-hero">
+<!-- Герой секция панели менеджера -->
+<section class="manager-hero">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <div class="admin-badge">
-                    <i class="fas fa-shield-alt"></i>
-                    Панель администратора
+                <div class="manager-badge">
+                    <i class="fas fa-tasks"></i>
+                    Панель менеджера
                 </div>
-                <h1 class="display-4 fw-bold mb-3">Управление системой</h1>
-                <p class="lead mb-0">Полный контроль над магазином, товарами и пользователями</p>
+                <h1 class="display-4 fw-bold mb-3">Операционное управление</h1>
+                <p class="lead mb-0">Управление заказами, остатками и клиентской поддержкой</p>
             </div>
             <div class="col-lg-4 text-lg-end">
                 <div class="text-muted">
-                    <i class="fas fa-user-cog me-2"></i>
-                    <span>Администратор</span>
+                    <i class="fas fa-user-tie me-2"></i>
+                    <span>Менеджер</span>
                 </div>
             </div>
         </div>
@@ -294,81 +295,67 @@
             Быстрые действия
         </h3>
         <div class="action-buttons">
-            <a href="{{ url_for('admin.create_product_page') }}" class="btn-action">
-                <i class="fas fa-plus-circle"></i> Новый товар
+            <a href="{{ url_for('manager.orders') }}" class="btn-action">
+                <i class="fas fa-clipboard-list"></i> Новые заказы
             </a>
-            <a href="{{ url_for('admin.users_management') }}" class="btn-action">
-                <i class="fas fa-user-plus"></i> Создать пользователя
+            <a href="{{ url_for('manager.stocks') }}" class="btn-action">
+                <i class="fas fa-boxes"></i> Пополнить остатки
             </a>
-            <a href="{{ url_for('admin.stocks') }}" class="btn-action">
-                <i class="fas fa-boxes"></i> Обновить остатки
+            <a href="{{ url_for('manager.chats') }}" class="btn-action">
+                <i class="fas fa-comments"></i> Ответить в чатах
             </a>
-            <a href="{{ url_for('admin.admin_orders') }}" class="btn-action">
-                <i class="fas fa-clipboard-list"></i> Просмотреть заказы
+            <a href="{{ url_for('manager.products') }}" class="btn-action">
+                <i class="fas fa-edit"></i> Редактировать товар
             </a>
         </div>
     </div>
 
     <!-- Основные модули управления -->
-    <div class="admin-grid">
-        <!-- Создание товара -->
-        <div class="admin-card">
-            <div class="card-icon icon-create">
-                <i class="fas fa-palette"></i>
-            </div>
-            <h3 class="card-title">Управление товарами</h3>
-            <p class="card-description">
-                Добавляйте новые товары, редактируйте существующие и управляйте ассортиментом магазина
-            </p>
-            <a href="{{ url_for('admin.create_product_page') }}" class="btn-admin">
-                <i class="fas fa-plus-circle me-2"></i>Создать товар
-            </a>
-        </div>
-
-        <!-- Управление пользователями -->
-        <div class="admin-card">
-            <div class="card-icon icon-users">
-                <i class="fas fa-users-cog"></i>
-            </div>
-            <h3 class="card-title">Управление персоналом</h3>
-            <p class="card-description">
-                Создавайте учетные записи для менеджеров и администраторов, назначайте роли и права доступа
-            </p>
-            <a href="{{ url_for('admin.users_management') }}" class="btn-admin">
-                <i class="fas fa-user-plus me-2"></i>Управление пользователями
-            </a>
-        </div>
-
-        <!-- Управление остатками -->
-        <div class="admin-card">
-            <div class="card-icon icon-stock">
-                <i class="fas fa-warehouse"></i>
-            </div>
-            <h3 class="card-title">Складские остатки</h3>
-            <p class="card-description">
-                Обновляйте количество товаров на складе, отслеживайте движение и управляйте инвентарем
-            </p>
-            <a href="{{ url_for('admin.stocks') }}" class="btn-admin">
-                <i class="fas fa-sync-alt me-2"></i>Обновить остатки
-            </a>
-        </div>
-
-        <!-- Просмотр заказов -->
-        <div class="admin-card">
+    <div class="manager-grid">
+        <!-- Управление заказами -->
+        <div class="manager-card">
             <div class="card-icon icon-orders">
                 <i class="fas fa-shopping-cart"></i>
             </div>
             <h3 class="card-title">Управление заказами</h3>
             <p class="card-description">
-                Просматривайте все заказы, отслеживайте статусы выполнения и управляйте процессом доставки
+                Обрабатывайте новые заказы, отслеживайте статусы доставки и управляйте выполнением заказов
             </p>
-            <a href="{{ url_for('admin.admin_orders') }}" class="btn-admin">
-                <i class="fas fa-clipboard-list me-2"></i>Просмотреть заказы
+            <a href="{{ url_for('manager.orders') }}" class="btn-manager">
+                <i class="fas fa-clipboard-list me-2"></i>Перейти к заказам
             </a>
         </div>
 
-        <!-- Просмотр чатов -->
-        <div class="admin-card">
+        <!-- Управление остатками -->
+        <div class="manager-card">
+            <div class="card-icon icon-stock">
+                <i class="fas fa-warehouse"></i>
+            </div>
+            <h3 class="card-title">Складские остатки</h3>
+            <p class="card-description">
+                Обновляйте количество товаров на складе, отслеживайте движение и пополняйте остатки
+            </p>
+            <a href="{{ url_for('manager.stocks') }}" class="btn-manager">
+                <i class="fas fa-sync-alt me-2"></i>Управление остатками
+            </a>
+        </div>
+
+        <!-- Управление товарами -->
+        <div class="manager-card">
+            <div class="card-icon icon-products">
+                <i class="fas fa-palette"></i>
+            </div>
+            <h3 class="card-title">Редактирование товаров</h3>
+            <p class="card-description">
+                Редактируйте информацию о товарах, обновляйте цены, описания и изображения продуктов
+            </p>
+            <a href="{{ url_for('manager.products') }}" class="btn-manager">
+                <i class="fas fa-edit me-2"></i>Редактировать товары
+            </a>
+        </div>
+
+        <!-- Поддержка клиентов -->
+        <div class="manager-card">
             <div class="card-icon icon-chats">
                 <i class="fas fa-comments"></i>
             </div>
@@ -376,12 +363,27 @@
             <p class="card-description">
                 Общайтесь с покупателями, отвечайте на вопросы и помогайте с выбором товаров через систему чатов
             </p>
-            <a href="{{ url_for('admin.admin_chats') }}" class="btn-admin">
+            <a href="{{ url_for('manager.chats') }}" class="btn-manager">
                 <i class="fas fa-comments me-2"></i>Открыть чаты
             </a>
         </div>
 
-        <div class="admin-card">
+        <!-- Статистика и отчеты -->
+        <div class="manager-card">
+            <div class="card-icon icon-stats">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3 class="card-title">Отчеты и аналитика</h3>
+            <p class="card-description">
+                Просматривайте отчеты по продажам, анализируйте популярные товары и отслеживайте ключевые показатели
+            </p>
+            <a href="{{ url_for('manager.reports') }}" class="btn-manager">
+                <i class="fas fa-chart-line me-2"></i>Смотреть отчеты
+            </a>
+        </div>
+
+        <!-- Выход -->
+        <div class="manager-card">
             <div class="card-icon icon-logout">
                 <i class="fas fa-sign-out-alt"></i>
             </div>
@@ -389,34 +391,34 @@
             <p class="card-description">
                 Завершите текущую сессию и вернитесь на главную страницу. Все несохраненные данные будут сохранены.
             </p>
-            <a href="{{ url_for('buyer.logout') }}" class="btn-admin btn-logout" onclick="return confirm('Вы уверены, что хотите выйти?')">
+            <a href="{{ url_for('buyer.logout') }}" class="btn-manager btn-logout" onclick="return confirm('Вы уверены, что хотите выйти?')">
                 <i class="fas fa-sign-out-alt me-2"></i> Выйти из аккаунта
             </a>
         </div>
     </div>
 
-    <!-- Статистика системы -->
-    <div class="admin-stats">
+    <!-- Статистика для менеджера -->
+    <div class="manager-stats">
         <h3 class="stats-title">
             <i class="fas fa-chart-line"></i>
-            Статистика системы
+            Оперативная статистика
         </h3>
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="stat-number">15</div>
+                <div class="stat-number">8</div>
                 <div class="stat-label">Новых заказов</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">468</div>
-                <div class="stat-label">Товаров в каталоге</div>
+                <div class="stat-number">12</div>
+                <div class="stat-label">Товаров мало</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Активных чатов</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">3</div>
-                <div class="stat-label">Активных пользователей</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">4</div>
-                <div class="stat-label">Низкие остатки</div>
+                <div class="stat-label">Заказов сегодня</div>
             </div>
         </div>
     </div>

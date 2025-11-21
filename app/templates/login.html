@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginError = document.getElementById('login-error');
     const loginSubmit = document.getElementById('login-submit');
     const passwordInput = document.getElementById('login-password');
+    const emailInput = document.getElementById('login-email');
     const togglePassword = document.getElementById('LogintogglePassword');
 
     // Функция переключения видимости пароля
@@ -59,20 +60,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Функция нормализации email (приводит к нижнему регистру)
+    function normalizeEmail(email) {
+        return email.trim().toLowerCase();
+    }
+
     // Обработчик для кнопки просмотра пароля
     togglePassword.addEventListener('click', function() {
         togglePasswordVisibility(passwordInput, this);
     });
 
+    // Обработчик ввода email - автоматически приводим к нижнему регистру
+    emailInput.addEventListener('blur', function() {
+        this.value = normalizeEmail(this.value);
+    });
+
     // Обработчик отправки формы
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Скрываем предыдущие ошибки
         loginError.style.display = 'none';
         loginError.textContent = '';
         loginError.className = 'error-message';
-        
+
+        // Нормализуем email перед отправкой
+        const emailValue = normalizeEmail(emailInput.value);
+        emailInput.value = emailValue;
+
+        // Валидация email
+        if (!emailValue || !isValidEmail(emailValue)) {
+            showError('Пожалуйста, введите корректный email адрес');
+            return;
+        }
+
         // Показываем индикатор загрузки
         const btnText = loginSubmit.querySelector('.btn-text');
         const btnLoading = loginSubmit.querySelector('.btn-loading');
@@ -82,11 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Собираем данные формы
         const formData = new FormData(loginForm);
-        
+
         // Добавляем параметр next для возврата на текущую страницу
         const currentUrl = window.location.href;
         const urlWithNext = '{{ url_for("buyer.login") }}?next=' + encodeURIComponent(currentUrl);
-        
+
         // Отправляем AJAX запрос
         fetch(urlWithNext, {
             method: 'POST',
@@ -124,9 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error:', error);
             // Показываем ошибку пользователю
-            loginError.textContent = error.message;
-            loginError.style.display = 'block';
-            loginError.className = 'error-message active';
+            showError(error.message);
         })
         .finally(() => {
             // Восстанавливаем кнопку
@@ -135,6 +154,22 @@ document.addEventListener('DOMContentLoaded', function() {
             loginSubmit.disabled = false;
         });
     });
+
+    // Функция валидации email
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Функция показа ошибки
+    function showError(message) {
+        loginError.textContent = message;
+        loginError.style.display = 'block';
+        loginError.className = 'error-message active';
+
+        // Прокрутка к ошибке
+        loginError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 });
 
 function closeform(id) {
@@ -170,9 +205,6 @@ function clearLoginErrors() {
         errorElement.textContent = '';
     }
 }
-
-// Очищаем ошибки при открытии модального окна (если у вас есть такая функция)
-// document.getElementById('auth-form').addEventListener('show', clearLoginErrors);
 </script>
 
 <style>
