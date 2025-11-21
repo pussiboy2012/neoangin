@@ -67,7 +67,8 @@
                 <!-- Форма добавления в корзину -->
                 <form method="post" action="{{ url_for('buyer.add_to_cart') }}" class="cart-form">
                     <input type="hidden" name="product_id" value="{{ product.id_product }}">
-                    <input type="hidden" name="ral" value="{{ stock_info.series_info }}">
+                    <input type="hidden" name="ral" value="{{ stock_info.nomenclature_ral.split(' RAL ')[1] if ' RAL ' in stock_info.nomenclature_ral else '' }}">
+                    <input type="hidden" name="id_stock" value="{{ stock_info.id_stock }}">
                     <div class="quantity-section">
                         <label class="quantity-label">Количество:</label>
                         <div class="quantity-controls">

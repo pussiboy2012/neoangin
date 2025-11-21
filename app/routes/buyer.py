@@ -197,7 +197,8 @@ def product_detail(product_id):
 @bp.route("/cart")
 def cart():
     cart = session.get("cart", {})
-    items = []
+    stock_items = []
+    production_items = []
     total = 0
 
     for cart_key, item_data in cart.items():
@@ -207,27 +208,40 @@ def cart():
             if product:
                 qty = item_data.get('qty', 0)
                 ral = item_data.get('ral', '')
+                id_stock = item_data.get('id_stock')
                 price = float(product.price_product)
                 # For stock items with RAL, show nomenclature with RAL
                 if ral:
                     title = f"{product.nomenclature_product} RAL {ral}"
                 else:
                     title = product.title_product
-                items.append({
+                # Add stock info if available
+                stock_info = ""
+                if id_stock:
+                    from ..models import Stock
+                    stock = Stock.query.get(id_stock)
+                    if stock:
+                        stock_info = f"п.{stock.id_stock} от {stock.date_stock.strftime('%d.%m.%Y')}"
+                item = {
                     "product": product,
                     "product_id": cart_key,
                     "title": title,
                     "qty": qty,
                     "ral": ral,
+                    "stock_info": stock_info,
                     "price": price,
                     "sum": price * qty
-                })
+                }
+                if id_stock:
+                    stock_items.append(item)
+                else:
+                    production_items.append(item)
                 total += price * qty
         except (ValueError, TypeError):
             # Skip invalid product IDs
             continue
 
-    return render_template("cart.html", items=items, total=total)
+    return render_template("cart.html", stock_items=stock_items, production_items=production_items, total=total)
 
 
 @bp.route('/create_order', methods=['POST'])
@@ -242,7 +256,7 @@ def create_order_route():
         return redirect(url_for('buyer.cart'))
 
     # Создаем заказ на доставку
-    order_id = create_order(session['user']['id'], cart, status='delivery')
+    order_id = create_order(session['user']['id'], cart, status='pending_moderation')
     if order_id:
         session['cart'] = {}
         flash('Заказ на доставку создан успешно!')
@@ -267,7 +281,7 @@ def create_production_order():
 
     # Создаем заказ на производство
     items = {product_id: {'qty': qty, 'ral': ''}}  # Для производства RAL не нужен
-    order_id = create_order(session['user']['id'], items, status='production')
+    order_id = create_order(session['user']['id'], items, status='pending_moderation')
     if order_id:
         flash('Заказ на производство создан успешно!')
         return redirect(url_for("buyer.orders"))
@@ -281,16 +295,17 @@ def add_to_cart():
     product_id = request.form.get('product_id')
     qty = int(request.form.get('qty', 1))
     ral = request.form.get('ral', '')
+    id_stock = request.form.get('id_stock')
 
     if not product_id:
         flash('Неверный товар.')
         return redirect(url_for('buyer.catalog'))
 
     cart = session.get('cart', {})
-    cart_key = f"{product_id}_{ral}" if ral else product_id
+    cart_key = f"{product_id}_{ral}_{id_stock}" if id_stock else (f"{product_id}_{ral}" if ral else product_id)
 
     if cart_key not in cart:
-        cart[cart_key] = {'qty': 0, 'ral': ral, 'product_id': product_id}
+        cart[cart_key] = {'qty': 0, 'ral': ral, 'product_id': product_id, 'id_stock': id_stock}
     cart[cart_key]['qty'] += qty
     session['cart'] = cart
     session.modified = True
@@ -336,8 +351,35 @@ def orders():
         flash('Пожалуйста, войдите в систему.')
         return redirect(url_for('buyer.login'))
 
-    user_orders = get_orders_by_user(session['user']['id'])
-    return render_template("orders.html", orders=user_orders)
+    from ..models import Order, ProductOrder, Product
+    user_orders = Order.query.filter_by(id_user=session['user']['id']).all()
+
+    orders_data = []
+    for order in user_orders:
+        items = []
+        total = 0
+        product_orders = ProductOrder.query.filter_by(id_order=order.id_order).all()
+        for po in product_orders:
+            product = Product.query.get(po.id_product)
+            qty = po.count
+            price = float(product.price_product)
+            items.append({
+                'title': product.title_product,
+                'price': price,
+                'qty': qty,
+                'product_id': product.id_product
+            })
+            total += price * qty
+
+        orders_data.append({
+            'id': f"order_{order.id_order}",
+            'created_at': order.created_at_order.isoformat(),
+            'status': order.status_order,
+            'items': items,
+            'total': total
+        })
+
+    return render_template("orders.html", orders=orders_data)
 
 
 @bp.route("/stock")
@@ -430,7 +472,8 @@ def stock_detail(id_stock):
     stock_info = {
         'nomenclature_ral': stock_series.nomenclature_ral,
         'series_info': stock_series.series_info,
-        'remaining_quantity': stock_series.remaining_quantity
+        'remaining_quantity': stock_series.remaining_quantity,
+        'id_stock': stock_series.id_stock
     }
 
     # Вернуть шаблон stock_detail.html

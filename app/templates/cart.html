@@ -10,50 +10,107 @@
         </div>
     </div>
 
-    {% if items %}
+    {% if stock_items or production_items %}
     <div class="cart-content">
         <!-- Список товаров -->
         <div class="cart-items">
-            {% for it in items %}
-            <div class="cart-item" data-product-id="{{ it.product.id_product }}">
-                <div class="item-image">
-                    <img src="https://via.placeholder.com/80x80/4a5568/ffffff?text=Product"
-                         alt="{{ it.title }}"
-                         class="product-img">
-                </div>
+            {% if stock_items %}
+            <div class="cart-section">
+                <h3 class="section-title">📦 Остатки (с ограничением по количеству)</h3>
+                {% for it in stock_items %}
+                <div class="cart-item stock-item" data-product-id="{{ it.product.id_product }}">
+                    <div class="item-image">
+                        <img src="https://via.placeholder.com/80x80/4a5568/ffffff?text=Product"
+                             alt="{{ it.title }}"
+                             class="product-img">
+                    </div>
 
-                <div class="item-details">
-                    <h3 class="item-title">{{ it.title }}</h3>
-                    <div class="item-category">{{ it.product.category_product }}</div>
-                    <div class="item-price">{{ it.product.price_product }} ₽/шт</div>
-                </div>
+                    <div class="item-details">
+                        <h3 class="item-title">{{ it.title }}</h3>
+                        <div class="item-category">{{ it.product.category_product }}</div>
+                        <div class="item-price">{{ it.product.price_product }} ₽/шт</div>
+                        {% if it.stock_info %}
+                        <div class="item-stock-info">{{ it.stock_info }}</div>
+                        {% endif %}
+                    </div>
 
-                <div class="item-quantity">
-                    <form method="post" action="{{ url_for('buyer.update_cart') }}" class="quantity-form">
-                        <input type="hidden" name="product_id" value="{{ it.product_id }}">
-                        <div class="quantity-controls">
-                            <button type="submit" name="change" value="-1" class="quantity-btn minus-btn"
-                                    {% if it.qty <= 1 %}disabled{% endif %}>−</button>
-                            <span class="quantity-display">{{ it.qty }}</span>
-                            <button type="submit" name="change" value="1" class="quantity-btn plus-btn">+</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="item-quantity">
+                        <form method="post" action="{{ url_for('buyer.update_cart') }}" class="quantity-form">
+                            <input type="hidden" name="product_id" value="{{ it.product_id }}">
+                            <div class="quantity-controls">
+                                <button type="submit" name="change" value="-1" class="quantity-btn minus-btn"
+                                        {% if it.qty <= 1 %}disabled{% endif %}>−</button>
+                                <span class="quantity-display">{{ it.qty }}</span>
+                                <button type="submit" name="change" value="1" class="quantity-btn plus-btn">+</button>
+                            </div>
+                        </form>
+                    </div>
 
-                <div class="item-sum">
-                    <div class="sum-amount">{{ it.sum }} ₽</div>
-                </div>
+                    <div class="item-sum">
+                        <div class="sum-amount">{{ it.sum }} ₽</div>
+                    </div>
 
-                <div class="item-actions">
-                    <a href="{{ url_for('buyer.remove_from_cart', cart_key=it.product_id) }}"
-                       class="remove-btn"
-                       title="Удалить из корзины"
-                       onclick="return confirm('Вы уверены, что хотите удалить товар из корзины?')">
-                        🗑️
-                    </a>
+                    <div class="item-actions">
+                        <a href="{{ url_for('buyer.remove_from_cart', cart_key=it.product_id) }}"
+                           class="remove-btn"
+                           title="Удалить из корзины"
+                           onclick="return confirm('Вы уверены, что хотите удалить товар из корзины?')">
+                            🗑️
+                        </a>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            {% endif %}
+
+            {% if production_items %}
+            <div class="cart-section">
+                <h3 class="section-title">🏭 Производство (без ограничения по количеству)</h3>
+                {% for it in production_items %}
+                <div class="cart-item production-item" data-product-id="{{ it.product.id_product }}">
+                    <div class="item-image">
+                        <img src="https://via.placeholder.com/80x80/4a5568/ffffff?text=Product"
+                             alt="{{ it.title }}"
+                             class="product-img">
+                    </div>
+
+                    <div class="item-details">
+                        <h3 class="item-title">{{ it.title }}</h3>
+                        <div class="item-category">{{ it.product.category_product }}</div>
+                        <div class="item-price">{{ it.product.price_product }} ₽/шт</div>
+                        {% if it.ral %}
+                        <div class="item-ral-info">RAL: {{ it.ral }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="item-quantity">
+                        <form method="post" action="{{ url_for('buyer.update_cart') }}" class="quantity-form">
+                            <input type="hidden" name="product_id" value="{{ it.product_id }}">
+                            <div class="quantity-controls">
+                                <button type="submit" name="change" value="-1" class="quantity-btn minus-btn"
+                                        {% if it.qty <= 1 %}disabled{% endif %}>−</button>
+                                <span class="quantity-display">{{ it.qty }}</span>
+                                <button type="submit" name="change" value="1" class="quantity-btn plus-btn">+</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="item-sum">
+                        <div class="sum-amount">{{ it.sum }} ₽</div>
+                    </div>
+
+                    <div class="item-actions">
+                        <a href="{{ url_for('buyer.remove_from_cart', cart_key=it.product_id) }}"
+                           class="remove-btn"
+                           title="Удалить из корзины"
+                           onclick="return confirm('Вы уверены, что хотите удалить товар из корзины?')">
+                            🗑️
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
 
         <!-- Итоговая панель -->
@@ -61,10 +118,10 @@
             <div class="summary-card">
                 <h3 class="summary-title">Ваш заказ</h3>
 
-                <div class="summary-row">
-                    <span>Товары ({{ items|length }})</span>
-                    <span>{{ total }} ₽</span>
-                </div>
+            <div class="summary-row">
+                <span>Товары ({{ stock_items|length + production_items|length }})</span>
+                <span>{{ total }} ₽</span>
+            </div>
 
                 <div class="summary-row">
                     <span>Доставка</span>
@@ -78,9 +135,11 @@
                     <span class="total-amount">{{ total }} ₽</span>
                 </div>
 
-                <a href="{{ url_for('buyer.create_order_route') }}" class="checkout-btn">
-                    📦 Отправить заказ на модерацию
-                </a>
+                <form method="post" action="{{ url_for('buyer.create_order_route') }}" style="margin: 0;">
+                    <button type="submit" class="checkout-btn">
+                        📦 Отправить заказ на модерацию
+                    </button>
+                </form>
 
                 <div class="security-notice">
                     <div class="security-icon">🛡️</div>
@@ -572,6 +631,33 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.cart-section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    color: #2d3748;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.item-stock-info {
+    color: #48bb78;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.item-ral-info {
+    color: #667eea;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 5px;
 }
 
 .cart-item {

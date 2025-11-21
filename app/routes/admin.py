@@ -336,8 +336,33 @@ def stocks():
 
 @bp.route("/orders")
 def admin_orders():
-    orders = list_json(ORDERS)
-    return render_template("admin_orders.html", orders=orders)
+    from ..db_helpers import get_all_orders
+    orders = get_all_orders()
+    # Prepare orders data for template
+    orders_data = []
+    for order in orders:
+        order_dict = {
+            'id': order.id_order,
+            'user_id': order.id_user,
+            'status': order.status_order,
+            'created_at': order.created_at_order.isoformat() if order.created_at_order else '',
+            'total': 0,
+            'items': []
+        }
+        # Calculate total and get items
+        for item in order.items:
+            product = item.product
+            item_dict = {
+                'product_id': item.id_product,
+                'title': product.title_product if product else 'Unknown Product',
+                'qty': item.count,
+                'price': float(product.price_product) if product else 0,
+                'ral': item.ral
+            }
+            order_dict['items'].append(item_dict)
+            order_dict['total'] += item_dict['qty'] * item_dict['price']
+        orders_data.append(order_dict)
+    return render_template("admin_orders.html", orders=orders_data)
 
 
 @bp.route("/order/approve/<order_id>")

@@ -81,6 +81,7 @@ class ProductOrder(db.Model):
     __tablename__ = 'product-order'
     id_product = db.Column(db.Integer, db.ForeignKey('products.id_product'), primary_key=True)
     id_order = db.Column(db.Integer, db.ForeignKey('orders.id_order'), primary_key=True)
+    ral = db.Column(db.String(4), primary_key=True)
+    id_stock = db.Column(db.Integer, db.ForeignKey('stocks.id_stock'), nullable=True)
     count = db.Column(db.Integer, nullable=False)
-    ral = db.Column(db.String(4), nullable=True)
     creating_date = db.Column(db.Date, nullable=False, default=datetime.utcnow().date)

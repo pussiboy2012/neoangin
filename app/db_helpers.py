@@ -91,6 +91,7 @@ def get_order_by_id(order_id):
     return Order.query.get(order_id)
 
 def create_order(user_id, items, status='pending_moderation'):
+    from .models import Product
     order = Order(
         id_user=user_id,
         status_order=status,
@@ -99,15 +100,65 @@ def create_order(user_id, items, status='pending_moderation'):
     db.session.add(order)
     db.session.flush()  # to get order.id_order
 
-    for item in items:
+    order_items = {}
+    for cart_key, item_data in items.items():
+        if cart_key[0].isdigit():
+            product_id = int(cart_key.split('_')[0])
+            ral = item_data.get('ral', '')
+            id_stock = item_data.get('id_stock')
+        else:
+            # nomenclature_ral format
+            if ' RAL ' in cart_key:
+                base_nomenclature, ral = cart_key.split(' RAL ', 1)
+            else:
+                base_nomenclature = cart_key
+                ral = ''
+            product = Product.query.filter_by(nomenclature_product=base_nomenclature).first()
+            if not product:
+                continue
+            product_id = product.id_product
+            id_stock = item_data.get('id_stock')
+
+        # Get product for RAL extraction
+        product = Product.query.get(product_id)
+        if not product:
+            continue
+
+        # Extract RAL code if ral is series_info or too long
+        if ral and len(ral) > 4:
+            import re
+            ral_match = re.search(r'RAL (\d+)', product.nomenclature_product)
+            ral = ral_match.group(1) if ral_match else ''
+        elif ral and len(ral) > 4:
+            # Truncate if still too long
+            ral = ral[:4]
+
+        key = (product_id, ral, id_stock)
+        if key in order_items:
+            order_items[key]['qty'] += item_data['qty']
+        else:
+            order_items[key] = {'qty': item_data['qty'], 'ral': ral, 'id_stock': id_stock}
+
+    for key, data in order_items.items():
+        product_id, ral, id_stock = key
         po = ProductOrder(
-            id_product=item['product_id'],
+            id_product=product_id,
             id_order=order.id_order,
-            count=item['qty'],
-            ral=item.get('ral'),
+            count=data['qty'],
+            ral=ral,
+            id_stock=id_stock,
             creating_date=datetime.utcnow().date()
         )
         db.session.add(po)
+
+        # Уменьшить остатки в stocks, если товар из остатков
+        if id_stock:
+            stock = Stock.query.get(id_stock)
+            if stock:
+                stock.count_stock -= data['qty']
+                if stock.count_stock < 0:
+                    stock.count_stock = 0
+                db.session.add(stock)
 
     db.session.commit()
     return order

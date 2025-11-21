@@ -1,0 +1,10 @@
+{
+  "user_id": 5,
+  "user_name": "Покупатель",
+  "user_company": "ООО ДАБАТА",
+  "created_at": "2025-11-21T19:58:55.916162",
+  "messages": [],
+  "bot_enabled": true,
+  "assigned_manager": null,
+  "status": "active"
+}

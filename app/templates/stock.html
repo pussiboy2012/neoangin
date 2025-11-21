@@ -210,6 +210,7 @@
                                 </a>
                                 <form method="POST" action="{{ url_for('buyer.add_to_cart') }}" class="d-inline">
                                     <input type="hidden" name="product_id" value="{{ item.product_id }}">
+                                    <input type="hidden" name="ral" value="{{ item.nomenclature_ral.split(' RAL ')[1] if ' RAL ' in item.nomenclature_ral else '' }}">
                                     <input type="hidden" name="qty" value="1">
                                     <button type="submit" class="btn-details">
                                         <i class="fas fa-cart-plus"></i>
