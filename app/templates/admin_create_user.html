@@ -836,12 +836,6 @@
         <form id="buyerForm" method="post">
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label" for="buyer_username">Логин пользователя *</label>
-                    <input type="text" id="buyer_username" name="username" class="form-input" required>
-                    <div class="input-hint">Минимум 3 символа</div>
-                </div>
-
-                <div class="form-group">
                     <label class="form-label" for="buyer_full_name">ФИО контактного лица *</label>
                     <input type="text" id="buyer_full_name" name="full_name" class="form-input" required>
                 </div>
@@ -910,11 +904,7 @@
 
         <form id="staffForm" method="post">
             <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label" for="staff_username">Логин пользователя *</label>
-                    <input type="text" id="staff_username" name="username" class="form-input" required>
-                    <div class="input-hint">Минимум 3 символа</div>
-                </div>
+
 
                 <div class="form-group">
                     <label class="form-label" for="staff_full_name">ФИО сотрудника *</label>
@@ -990,11 +980,6 @@
             <input type="hidden" id="edit_user_id" name="user_id">
 
             <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label" for="edit_username">Логин пользователя *</label>
-                    <input type="text" id="edit_username" name="username" class="form-input" required>
-                </div>
-
                 <div class="form-group">
                     <label class="form-label" for="edit_full_name">ФИО *</label>
                     <input type="text" id="edit_full_name" name="full_name" class="form-input" required>
@@ -1281,7 +1266,6 @@
         isEditMode = true;
 
         document.getElementById('edit_user_id').value = userId;
-        document.getElementById('edit_username').value = username;
         document.getElementById('edit_role').value = role;
         document.getElementById('edit_full_name').value = fullName || '';
         document.getElementById('edit_email').value = email || '';
@@ -1346,7 +1330,6 @@
 
     // Добавьте эти функции валидации
     function validateBuyerForm() {
-        const username = document.getElementById('buyer_username').value.trim();
         const email = document.getElementById('buyer_email').value.trim();
         const fullName = document.getElementById('buyer_full_name').value.trim();
         const inn = document.getElementById('buyer_inn').value.trim();
@@ -1368,7 +1351,6 @@
     }
 
     function validateStaffForm() {
-        const username = document.getElementById('staff_username').value.trim();
         const email = document.getElementById('staff_email').value.trim();
         const fullName = document.getElementById('staff_full_name').value.trim();
         const phone = document.getElementById('staff_phone').value.trim();
@@ -1424,7 +1406,7 @@
             formData.append('csrf_token', csrfToken);
         }
 
-        const url = type === 'edit' ? '{{ url_for("admin.update_user") }}' : '{{ url_for("admin.create_user") }}';
+    const url = type === 'edit' ? '{{ url_for("admin.update_user") }}' : '{{ url_for("admin.create_user_route") }}';
 
         fetch(url, {
             method: 'POST',

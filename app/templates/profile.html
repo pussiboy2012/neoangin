@@ -7,7 +7,7 @@
         </div>
         <div class="profile-info">
             <h1 class="profile-title">Личный кабинет</h1>
-            <p class="profile-subtitle">Добро пожаловать, {{ user.full_name }}!</p>
+            <p class="profile-subtitle">Добро пожаловать, {{ user.fullname_user }}!</p>
         </div>
     </div>
 
@@ -23,7 +23,7 @@
                         <i class="fas fa-building"></i>
                         Компания:
                     </div>
-                    <div class="info-value">{{ user.company_name }}</div>
+                    <div class="info-value">{{ user.company_name_user }}</div>
                 </div>
                 <!-- В блоке card-body добавьте: -->
                 <div class="info-row">
@@ -31,22 +31,22 @@
                         <i class="fas fa-id-card"></i>
                         ИНН компании:
                     </div>
-                    <div class="info-value">{{ user.inn }}</div>
+                    <div class="info-value">{{ user.inn_user }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">
                         <i class="fas fa-shield-alt"></i>
                         Роль:
                     </div>
-                    <div class="info-value role-badge role-{{ user.role }}">
-                        {% if user.role == 'buyer' %}
+                    <div class="info-value role-badge role-{{ user.role_user }}">
+                        {% if user.role_user == 'buyer' %}
                             Покупатель
-                        {% elif user.role == 'manager' %}
+                        {% elif user.role_user == 'manager' %}
                             Менеджер
-                        {% elif user.role == 'admin' %}
+                        {% elif user.role_user == 'admin' %}
                             Администратор
                         {% else %}
-                            {{ user.role }}
+                            {{ user.role_user }}
                         {% endif %}
                     </div>
                 </div>
@@ -56,16 +56,16 @@
                         <i class="fas fa-envelope"></i>
                         Email:
                     </div>
-                    <div class="info-value">{{ user.email }}</div>
+                    <div class="info-value">{{ user.email_user }}</div>
                 </div>
                 {% endif %}
-                {% if user.phone %}
+                {% if user.phone_user %}
                 <div class="info-row">
                     <div class="info-label">
                         <i class="fas fa-phone"></i>
                         Телефон:
                     </div>
-                    <div class="info-value">{{ user.phone }}</div>
+                    <div class="info-value">{{ user.phone_user }}</div>
                 </div>
                 {% endif %}
                 {% if user.full_name %}
@@ -74,7 +74,7 @@
                         <i class="fas fa-signature"></i>
                         Полное имя:
                     </div>
-                    <div class="info-value">{{ user.full_name }}</div>
+                    <div class="info-value">{{ user.fullname_user }}</div>
                 </div>
                 {% endif %}
             </div>

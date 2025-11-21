@@ -9,16 +9,16 @@
                     <span class="back-icon">←</span>
                     <span class="back-text">Назад</span>
                 </a>
-                <div class="category-badge">{{ product.category }}</div>
+                <div class="category-badge">{{ product.category_product }}</div>
             </div>
-            <h1 class="product-title">{{ product.title }}</h1>
+            <h1 class="product-title">{{ product.title_product }}</h1>
         </div>
 
         <div class="product-content">
             <!-- Левая колонка - изображение товара -->
             <div class="product-image-section">
                 <div class="product-image">
-                    <img class="product-image-product" src="../../static/images/products.svg" alt="{{ product.title }}">
+                    <img class="product-image-product" src="../../static/images/products.svg" alt="{{ product.title_product }}">
                 </div>
                 <div class="image-thumbnails">
                     <div class="thumbnail active" style="background: #4a5568;"></div>
@@ -31,7 +31,7 @@
             <div class="product-info-section">
                 <!-- Цена и наличие -->
                 <div class="price-section">
-                    <div class="current-price">{{ "%.2f"|format(product.price) }} ₽</div>
+                <div class="current-price">{{ "%.2f"|format(product.price_product) }} ₽</div>
                 </div>
 
                 <div class="stock-info">
@@ -65,7 +65,8 @@
                 </div>
 
                 <!-- Форма добавления в корзину -->
-                <form method="post" action="{{ url_for('buyer.add_to_cart', product_id=product.id) }}" class="cart-form">
+                <form method="post" action="{{ url_for('buyer.add_to_cart') }}" class="cart-form">
+                    <input type="hidden" name="product_id" value="{{ product.id_product }}">
                     <div class="quantity-section">
                         <label class="quantity-label">Количество:</label>
                         <div class="quantity-controls">
@@ -105,7 +106,7 @@
         <div class="product-description">
             <h3 class="description-title">Описание товара</h3>
             <div class="description-content">
-                <p class="description-text">{{ product.description }}</p>
+                <p class="description-text">{{ product.description_product }}</p>
 
                 <div class="tech-specs">
                     <h4>Технические преимущества:</h4>

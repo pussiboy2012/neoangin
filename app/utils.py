@@ -165,24 +165,6 @@ def get_chat(user_id):
     return None
 
 
-def create_chat(user_id, user_name):
-    """Создает новый чат"""
-    chat_data = {
-        "user_id": user_id,
-        "user_name": user_name,
-        "created_at": datetime.utcnow().isoformat(),
-        "messages": [],
-        "bot_enabled": True,
-        "assigned_manager": None,
-        "status": "active",
-        "last_activity": datetime.utcnow().isoformat()
-    }
-
-    chat_file = Path(CHATS) / f"{user_id}.json"
-    write_json(chat_file, chat_data)
-    return chat_data
-
-
 def add_message_to_chat(user_id, role, content, sender_name=None):
     """Добавляет сообщение в чат"""
     chat = get_chat(user_id)
@@ -190,10 +172,12 @@ def add_message_to_chat(user_id, role, content, sender_name=None):
         # Создаем новый чат если его нет
         user_file = Path(USERS) / f"{user_id}.json"
         user_name = "Покупатель"
+        company_name = "ООО ДАБАТА"
         if user_file.exists():
             user_data = read_json(user_file)
             user_name = user_data.get('username', user_data.get('full_name', 'Покупатель'))
-        chat = create_chat(user_id, user_name)
+            company_name = user_data.get('company_name', 'ООО ДАБАТА')
+        chat = create_chat(user_id, user_name, company_name)
 
     # Создаем сообщение
     message = {
@@ -214,35 +198,6 @@ def add_message_to_chat(user_id, role, content, sender_name=None):
     chat_file = Path(CHATS) / f"{user_id}.json"
     write_json(chat_file, chat)
 
-    return message
-
-def get_chat(user_id):
-    """Получает чат пользователя"""
-    chat_file = get_user_chat_file(user_id)
-    if chat_file.exists():
-        return read_json(chat_file)
-    return None
-
-
-def add_message_to_chat(user_id, role, content, message_type="text"):
-    """Добавляет сообщение в чат"""
-    chat = get_chat(user_id)
-    if not chat:
-        return None
-
-    message = {
-        "id": gen_id("msg_"),
-        "role": role,  # "user", "assistant", "manager"
-        "content": content,
-        "type": message_type,
-        "timestamp": datetime.utcnow().isoformat(),
-        "sender_name": get_sender_name(role, user_id)
-    }
-
-    chat["messages"].append(message)
-    chat["last_activity"] = datetime.utcnow().isoformat()
-
-    write_json(get_user_chat_file(user_id), chat)
     return message
 
 
@@ -467,10 +422,8 @@ def login_required(role=None):
     return decorator
 
 def get_user_by_username(username):
-    for u in list_json(USERS):
-        if u.get("username") == username:
-            return u
-    return None
+    from .models import User
+    return User.query.filter_by(email_user=username).first()
 
 
 def get_all_users():

@@ -1,8 +1,8 @@
 import os
 import requests
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
-from ..utils import PRODUCTS, USERS, ORDERS, STOCKS, read_json, write_json, list_json, gen_id, login_required, \
-    get_user_by_username
+from ..db_helpers import get_all_products, get_all_users, get_all_orders, create_order, get_orders_by_user, get_stock_by_product_id, create_user, verify_user, update_stock, get_user_by_id, get_product_by_id
+from ..models import db, Product
 from pathlib import Path
 from datetime import datetime
 import re
@@ -39,7 +39,7 @@ def validate_inn(inn):
 
         return control1 == int(inn[10]) and control2 == int(inn[11])
 
-    return
+    return False
 
 # Домены, которые разрешены для регистрации
 ALLOWED_DOMAINS = ['company.com', 'organization.ru', 'firma.org']  # замените на ваши домены
@@ -83,367 +83,183 @@ def verify_inn():
                 })
             else:
                 return jsonify({'success': False, 'error': 'Компания с таким ИНН не найдена'})
+        elif response.status_code == 403:
+            return jsonify({'success': False, 'error': 'Неверный токен доступа к сервису'})
+        elif response.status_code == 429:
+            return jsonify({'success': False, 'error': 'Превышен лимит запросов к сервису'})
         else:
-            return jsonify({'success': False, 'error': 'Ошибка сервиса проверки ИНН'})
+            return jsonify({'success': False, 'error': f'Ошибка сервиса проверки ИНН: {response.status_code}'})
 
     except requests.exceptions.RequestException as e:
         return jsonify({'success': False, 'error': 'Ошибка подключения к сервису'})
     except Exception as e:
         return jsonify({'success': False, 'error': 'Внутренняя ошибка сервера'})
 
-def hash_password(password):
-    """Хеширование пароля"""
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
-def validate_corporate_email(email):
-    """Проверка корпоративной почты"""
-    try:
-        # Валидация email
-        valid = validate_email(email)
-        email = valid.email
-
-        # Проверка домена
-        domain = email.split('@')[1]
-        if domain not in ALLOWED_DOMAINS:
-            return False, f"Разрешены только корпоративные почты доменов: {', '.join(ALLOWED_DOMAINS)}"
-
-        return True, email
-    except EmailNotValidError as e:
-        return False, str(e)
-
-
-def validate_phone_number(phone):
-    """Валидация номера телефона"""
-    try:
-        parsed_number = phonenumbers.parse(phone, "RU")
-        if phonenumbers.is_valid_number(parsed_number):
-            return True, phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
-        else:
-            return False, "Неверный номер телефона"
-    except:
-        return False, "Неверный формат номера телефона"
-
-bp = Blueprint("buyer", __name__)
-
 
 @bp.route("/")
 def index():
-    # Получаем продукты для главной страницы
-    products = list_json(PRODUCTS)
-    # Берем только первые 6 товаров для показа на главной
-    featured_products = products[:6] if products else []
+    return render_template("index.html")
 
-    return render_template("index.html", products=featured_products)
 
-# ---- auth ----
-@bp.route("/register", methods=["GET", "POST"])
+@bp.route("/register", methods=['GET', 'POST'])
 def register():
-    if request.method == "POST":
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        name = request.form['full_name']
+        email = request.form['email']
+        password = request.form['password']
+        inn = request.form.get('inn', '')
+        company_name = request.form.get('company_name', '')
+        phone = request.form.get('phone', '')
+
         try:
-            print("penis")
-            # Получаем данные из формы (используем правильные имена полей)
-            full_name = request.form["full_name"].strip()
-            inn = request.form["inn"].strip()
-            email = request.form["email"].strip().lower()
-            phone = request.form["phone"].strip()
-            password = request.form["password"]
-            confirm_password = request.form["confirm_password"]
-
-            # Валидации
-            errors = []
-
-            # Проверка ИНН
-            if not validate_inn(inn):
-                errors.append("Неверный формат ИНН")
-
-            # Остальные валидации...
-            if len(full_name) < 2:
-                errors.append("ФИО должно содержать минимум 2 символа")
-
-            # Проверка email, телефона, пароля...
-            is_valid_email, email_error = validate_corporate_email(email)
-            if not is_valid_email:
-                errors.append(email_error)
-
-            is_valid_phone, phone_error = validate_phone_number(phone)
-            if not is_valid_phone:
-                errors.append(phone_error)
-
-            if len(password) < 8:
-                errors.append("Пароль должен содержать минимум 8 символов")
-            if password != confirm_password:
-                errors.append("Пароли не совпадают")
-
-            # Проверка существующего пользователя - используем email как username
-            if get_user_by_username(email):
-                errors.append("Пользователь с таким email уже существует")
-
-            # Если есть ошибки
-            if errors:
-                # Если это AJAX запрос (из модального окна)
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    print(errors)
-                    return jsonify({'success': False, 'errors': errors})
-                else:
-                    # Обычная форма
-                    for error in errors:
-                        flash(error)
-                    return redirect(url_for("buyer.register"))
-
-            # Получаем название компании из DaData
-            company_name = get_company_name_by_inn(inn)
-
-            # Создание пользователя - используем email как username
-            user = {
-                "id": gen_id("u_"),
-                "username": email,  # Используем email как username
-                "email": email,
-                "full_name": full_name,
-                "company_name": company_name,  # Сохраняем название компании
-                "inn": inn,
-                "phone": phone,
-                "password": hash_password(password),
-                "role": "buyer",
-                "created_at": datetime.utcnow().isoformat(),
-                "company_verified": bool(company_name)  # Верифицируем если получили название
-            }
-
-            write_json(Path(USERS) / f"{user['id']}.json", user)
-            
-            # Если это AJAX запрос
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({
-                    'success': True, 
-                    'message': 'Регистрация успешна! Компания зарегистрирована.',
-                })
+            user = create_user(email, name, inn, company_name, phone, password, 'buyer')
+            if is_ajax:
+                return jsonify({'success': True, 'message': 'Регистрация успешна!'})
             else:
-                # Обычная форма
-                flash("Регистрация успешна! Компания зарегистрирована.")
-                return 0
-
-        except KeyError as e:
-            # Обработка ошибки отсутствующего поля
-            missing_field = str(e).replace("'", "")
-            error_msg = f"Отсутствует обязательное поле: {missing_field}"
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'errors': [error_msg]})
+                flash('Регистрация успешна!')
+                return redirect(url_for('buyer.login'))
+        except Exception as e:
+            if is_ajax:
+                return jsonify({'success': False, 'message': str(e)})
             else:
-                flash(error_msg)
-                return redirect(url_for("buyer.register"))
+                flash('Ошибка при регистрации: ' + str(e))
 
-    # GET запрос - показываем страницу регистрации (для прямой ссылки)
-    return render_template("register.html")
-
-def get_company_name_by_inn(inn):
-    """Получает название компании по ИНН из DaData"""
-    if not DADATA_TOKEN:
-        return None
-
-    try:
-        response = requests.post(
-            'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party',
-            headers={
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': f'Token {DADATA_TOKEN}'
-            },
-            json={'query': inn},
-            timeout=10
-        )
-
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('suggestions'):
-                company = data['suggestions'][0]
-                return company.get('value', '')  # Возвращаем название компании
-    except:
-        pass  # В случае ошибки возвращаем None
-
-    return None
+    return render_template('register.html', title="Регистрация")
 
 
-@bp.route("/login", methods=["GET", "POST"])
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
-    # Для AJAX запросов
-    if request.method == "POST" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        email = request.form["username"].strip().lower()
-        password = request.form["login-password"]  # Обратите внимание на имя поля
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        email = request.form.get('email')
+        password = request.form.get('password')
 
-        user = get_user_by_username(email)
-        
-        if not user or user.get("password") != hash_password(password):
-            return jsonify({
-                'success': False,
-                'message': 'Неверные учётные данные'
-            }), 401
+        user = verify_user(email, password)
+        if user:
+            session['user_id'] = user.id_user
+            session['user_name'] = user.fullname_user
+            session['user_role'] = user.role_user
+            session['user'] = {
+                'id': user.id_user,
+                'name': user.fullname_user,
+                'role': user.role_user,
+                'email': user.email_user
+            }
+            if is_ajax:
+                return jsonify({'success': True, 'redirect': url_for('buyer.index')})
+            else:
+                flash('Добро пожаловать, ' + user.fullname_user + '!')
+                return redirect(url_for('buyer.index'))
+        else:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'Неверный email или пароль.'})
+            else:
+                flash('Неверный email или пароль.')
 
-        # Обновляем сессию
-        session["user"] = {
-            "id": user["id"],
-            "username": user["username"],
-            "email": user["email"],
-            "full_name": user.get("full_name", ""),
-            "phone": user.get("phone", ""),
-            "inn": user.get("inn", ""),
-            "role": user["role"],
-            "company_name": user["company_name"],
-            "company_verified": user.get("company_verified", False)
-        }
-        session.setdefault("cart", {})
-        
-        return jsonify({
-            'success': True,
-            'message': 'Вход выполнен успешно',
-            'redirect': url_for('buyer.index')
-        })
+    return render_template('login.html', title="Авторизация")
 
-    # Для обычных запросов (на случай, если JavaScript отключен)
-    if request.method == "POST":
-        email = request.form["username"].strip().lower()
-        password = request.form["login-password"]
-
-        user = get_user_by_username(email)
-        if not user or user.get("password") != hash_password(password):
-            flash("Неверные учётные данные")
-            return redirect(url_for("buyer.login"))
-
-        session["user"] = {
-            "id": user["id"],
-            "username": user["username"],
-            "email": user["email"],
-            "full_name": user.get("full_name", ""),
-            "phone": user.get("phone", ""),
-            "inn": user.get("inn", ""),
-            "role": user["role"],
-            "company_name": user["company_name"],
-            "company_verified": user.get("company_verified", False)
-        }
-        session.setdefault("cart", {})
-        flash("Вход выполнен")
-        return redirect(url_for("buyer.index"))
-
-    return render_template("login.html")
-
-@bp.route("/logout")
+@bp.route('/logout')
 def logout():
     session.clear()
-    flash("Выход")
-    return redirect(url_for("buyer.index"))
+    flash('Вы успешно вышли из системы.')
+    return redirect(url_for('buyer.index'))
 
-# ---- catalog ----
+@bp.route('/profile')
+def profile():
+    if 'user' not in session:
+        flash('Пожалуйста, войдите в систему.')
+        return redirect(url_for('buyer.login'))
+
+    user = get_user_by_id(session['user']['id'])
+    return render_template('profile.html', title="Профиль", user=user)
+
+
 @bp.route("/catalog")
 def catalog():
-    category = request.args.get('category', '')
-    products = list_json(PRODUCTS)
+    products = get_all_products()
+    return render_template("catalog.html", products=products)
 
-    # Фильтрация по категории
-    if category:
-        products = [p for p in products if p.get('category') == category]
 
-    stocks = {p.get("id"): read_json(Path(STOCKS) / f"{p.get('id')}.json") for p in products}
-    return render_template("catalog.html", products=products, stocks=stocks, current_category=category)
-@bp.route("/product/<product_id>")
+@bp.route("/product/<int:product_id>")
 def product_detail(product_id):
-    p = read_json(Path(PRODUCTS) / f"{product_id}.json")
-    stock = read_json(Path(STOCKS) / f"{product_id}.json") or {"qty": 0}
-    if not p:
-        flash("Товар не найден")
-        return redirect(url_for("buyer.catalog"))
-    return render_template("product.html", product=p, stock=stock)
+    product = get_product_by_id(product_id)
+    if not product:
+        flash('Товар не найден.')
+        return redirect(url_for('buyer.catalog'))
 
-# ---- cart ----
+    stock = get_stock_by_product_id(product_id)
+    stock_qty = stock.count_stock if stock else 0
+
+    return render_template("product.html", product=product, stock={"qty": stock_qty})
+
+
 @bp.route("/cart")
 def cart():
     cart = session.get("cart", {})
     items = []
     total = 0
+
     for pid, qty in cart.items():
-        prod = read_json(Path(PRODUCTS) / f"{pid}.json")
-        if prod:
-            items.append({"product": prod, "qty": qty, "sum": prod.get("price", 0)*qty})
-            total += prod.get("price",0)*qty
+        try:
+            product_id = int(pid)
+            product = get_product_by_id(product_id)
+            if product:
+                price = float(product.price_product)
+                items.append({
+                    "product_id": pid,
+                    "title": product.title_product,
+                    "qty": qty,
+                    "price": price,
+                    "sum": price * qty
+                })
+                total += price * qty
+        except (ValueError, TypeError):
+            # Skip invalid product IDs
+            continue
+
     return render_template("cart.html", items=items, total=total)
 
-@bp.route("/cart/add/<product_id>", methods=["POST","GET"])
-def add_to_cart(product_id):
-    qty = int(request.form.get("qty", 1)) if request.method=="POST" else 1
-    cart = session.setdefault("cart", {})
-    cart[product_id] = cart.get(product_id,0) + qty
-    session["cart"] = cart
-    flash("Добавлено в корзину")
-    return redirect(url_for("buyer.cart"))
 
-@bp.route("/cart/remove/<product_id>")
-def remove_from_cart(product_id):
+@bp.route('/create_order', methods=['POST'])
+def create_order_route():
+    if 'user' not in session:
+        flash('Пожалуйста, войдите в систему.')
+        return redirect(url_for('buyer.login'))
+
     cart = session.get("cart", {})
-    if product_id in cart:
-        cart.pop(product_id)
-        session["cart"] = cart
-    return redirect(url_for("buyer.cart"))
+    if not cart:
+        flash('Корзина пуста.')
+        return redirect(url_for('buyer.cart'))
 
-# ---- order ----
-@bp.route("/order/create", methods=["GET", "POST"])
-@login_required()
-def create_order():
-    # Инициализируем переменные для GET запроса
-    items = []
-    total = 0
-
-    if request.method == "POST":
-        cart = session.get("cart", {})
-        if not cart:
-            flash("Корзина пуста")
-            return redirect(url_for("buyer.cart"))
-
-        order_id = gen_id("o_")
-        items = []
-        total = 0
-
-        for pid, qty in cart.items():
-            p = read_json(Path(PRODUCTS) / f"{pid}.json")
-            price = p.get("price", 0) if p else 0
-            items.append({"product_id": pid, "title": p.get("title") if p else "?", "qty": qty, "price": price})
-            total += price * qty
-
-        order = {
-            "id": order_id,
-            "user_id": session["user"]["id"],
-            "items": items,
-            "total": total,
-            "status": "pending_moderation",
-            "created_at": datetime.utcnow().isoformat()
-        }
-        write_json(Path(ORDERS) / f"{order_id}.json", order)
-
-        # Очистка корзины
-        session["cart"] = {}
-        session.modified = True
-
-        flash("Заказ отправлен на модерацию")
+    # Создаем заказ
+    order_id = create_order(session['user']['id'], cart)
+    if order_id:
+        session['cart'] = {}
+        flash('Заказ создан успешно!')
         return redirect(url_for("buyer.orders"))
+    else:
+        flash('Ошибка при создании заказа.')
+        return redirect(url_for('buyer.cart'))
 
-    # GET запрос - показываем страницу подтверждения
-    # Для GET запроса нужно получить данные из корзины
-    cart = session.get("cart", {})
-    items = []
-    total = 0
 
-    for pid, qty in cart.items():
-        p = read_json(Path(PRODUCTS) / f"{pid}.json")
-        if p:
-            price = p.get("price", 0)
-            items.append({
-                "product_id": pid,
-                "title": p.get("title", "Неизвестный товар"),
-                "qty": qty,
-                "price": price,
-                "sum": price * qty
-            })
-            total += price * qty
+@bp.route('/add_to_cart', methods=['POST'])
+def add_to_cart():
+    product_id = request.form.get('product_id')
+    qty = int(request.form.get('qty', 1))
 
-    return render_template("order_create.html", items=items, total=total)
+    if not product_id:
+        flash('Неверный товар.')
+        return redirect(url_for('buyer.catalog'))
+
+    cart = session.get('cart', {})
+    cart[product_id] = cart.get(product_id, 0) + qty
+    session['cart'] = cart
+    session.modified = True
+
+    flash('Товар добавлен в корзину!')
+    return redirect(url_for('buyer.cart'))
+
 
 @bp.route('/update_cart', methods=['POST'])
 def update_cart():
@@ -465,41 +281,45 @@ def update_cart():
 
     return redirect(url_for('buyer.cart'))
 
-@bp.route("/orders")
-@login_required()
-def orders():
-    all_orders = list_json(ORDERS)
-    user_orders = [o for o in all_orders if o.get("user_id")==session["user"]["id"]]
-    return render_template("orders.html", orders=user_orders)
 
-# ---- profile ----
-@bp.route("/profile")
-@login_required()
-def profile():
-    return render_template("profile.html", user=session.get("user"))
+@bp.route("/orders")
+def orders():
+    if 'user' not in session:
+        flash('Пожалуйста, войдите в систему.')
+        return redirect(url_for('buyer.login'))
+
+    user_orders = get_orders_by_user(session['user']['id'])
+    return render_template("orders.html", orders=user_orders)
 
 
 @bp.route("/stock")
 def stock():
-    products = list_json(PRODUCTS)
+    from sqlalchemy import text
 
-    # Получаем остатки для всех товаров
-    stocks = {}
-    for product in products:
-        product_id = product.get("id")
-        stock_file = Path(STOCKS) / f"{product_id}.json"
-        if stock_file.exists():
-            stock_data = read_json(stock_file)
-            stocks[product_id] = stock_data
-        else:
-            stocks[product_id] = {"qty": 0}
+    # Получаем данные из представления product_stock_series
+    stock_series = db.session.execute(text("""
+        SELECT nomenclature_ral, series_info, remaining_quantity
+        FROM product_stock_series
+        ORDER BY nomenclature_ral, series_info
+    """)).fetchall()
 
-    # Фильтруем только товары с остатком > 0
-    in_stock_products = []
-    for product in products:
-        product_id = product.get("id")
-        stock_qty = stocks.get(product_id, {}).get("qty", 0)
-        if stock_qty > 0:
-            in_stock_products.append(product)
+    # Получаем все продукты для сопоставления названий
+    products = get_all_products()
+    product_names = {p.nomenclature_product: p.title_product for p in products}
+    product_ids = {p.nomenclature_product: p.id_product for p in products}
 
-    return render_template("stock.html", products=in_stock_products, stocks=stocks)
+    # Подготавливаем данные для шаблона
+    stock_data = []
+    for series in stock_series:
+        product_name = product_names.get(series.nomenclature_ral, series.nomenclature_ral)
+        product_id = product_ids.get(series.nomenclature_ral, series.nomenclature_ral)
+        if product_id is not None:
+            stock_data.append({
+                'product_name': product_name,
+                'nomenclature_ral': series.nomenclature_ral,
+                'series_info': series.series_info,
+                'remaining_quantity': series.remaining_quantity,
+                'product_id': product_id
+            })
+
+    return render_template("stock.html", stock_data=stock_data)

@@ -88,6 +88,7 @@
         width: 100%;
         padding: 1rem 1.25rem;
         border: 2px solid #e9ecef;
+        color: black;
         border-radius: 12px;
         font-size: 1rem;
         transition: all 0.3s ease;
@@ -310,6 +311,8 @@
         color: #e74c3c;
         border-left: 4px solid #e74c3c;
     }
+
+
 </style>
 
 <section class="stocks-management-section">
@@ -375,12 +378,20 @@
                         <label class="form-label" for="product_id">
                             <i class="fas fa-cube me-2"></i>Выберите товар
                         </label>
-                        <select id="product_id" name="product_id" class="form-select" required>
-                            <option value="">-- Выберите товар --</option>
+                        <input type="text"
+                               id="product_search"
+                               name="product_search"
+                               class="form-input"
+                               placeholder="Начните вводить название товара..."
+                               list="products-list"
+                               autocomplete="off"
+                               required>
+                        <datalist id="products-list">
                             {% for p in products %}
-                                <option value="{{ p.id }}">{{ p.title }} - {{ p.price }} ₽</option>
+                                <option value="{{ p.title }} ({{ p.nomenclature_product }}) - {{ p.price_product }} ₽" data-id="{{ p.id }}" data-qty="{{ stocks[p.id].qty if p.id in stocks else 0 }}" data-ral="{{ stocks[p.id].ral if p.id in stocks and stocks[p.id].ral else '' }}" data-date="{{ stocks[p.id].date.strftime('%Y-%m-%d') if p.id in stocks and stocks[p.id].date else '' }}">
                             {% endfor %}
-                        </select>
+                        </datalist>
+                        <input type="hidden" id="nomenclature" name="nomenclature">
                     </div>
 
                     <div class="form-group">
@@ -394,6 +405,32 @@
                                placeholder="Введите количество"
                                min="0"
                                required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="ral">
+                            <i class="fas fa-palette me-2"></i>RAL код (опционально)
+                        </label>
+                        <input type="text"
+                               id="ral"
+                               name="ral"
+                               class="form-input"
+                               placeholder="Например: 1015"
+                               maxlength="4"
+                               pattern="[0-9]{4}">
+                        <small class="text-muted">4-значный код цвета RAL</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="date">
+                            <i class="fas fa-calendar me-2"></i>Дата производства партии
+                        </label>
+                        <input type="date"
+                               id="date"
+                               name="date"
+                               class="form-input"
+                               required>
+                        <small class="text-muted">Дата производства партии товара</small>
                     </div>
 
                     <button type="submit" class="btn-update">
@@ -410,32 +447,38 @@
                     Текущие остатки
                 </h3>
 
-                {% if products %}
-                    <div class="stocks-grid">
-                        {% for p in products %}
-                            {% set stock_qty = stocks[p.id].qty if p.id in stocks else 0 %}
-                            {% set stock_class = 'stock-high' if stock_qty > 10 else 'stock-medium' if stock_qty > 0 else 'stock-zero' %}
-
-                            <div class="stock-item">
-                                <div class="product-name">{{ p.title }}</div>
-                                <div class="stock-info">
-                                    <div class="stock-qty {{ stock_class }}">
-                                        {{ stock_qty }} шт.
-                                    </div>
-                                    <div class="product-price">
-                                        {{ p.price }} ₽
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
+                {% if stock_series %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Номенклатура RAL</th>
+                                    <th scope="col">Серия</th>
+                                    <th scope="col">Остаток</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stock_series %}
+                                    <tr>
+                                        <td>{{ item.nomenclature_ral }}</td>
+                                        <td>{{ item.series_info }}</td>
+                                        <td>
+                                            <span class="badge {% if item.remaining_quantity > 10 %}bg-success{% elif item.remaining_quantity > 0 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {{ item.remaining_quantity }} шт.
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 {% else %}
                     <div class="empty-state">
                         <div class="empty-icon">
                             <i class="fas fa-box-open"></i>
                         </div>
-                        <h4>Товары не найдены</h4>
-                        <p>Добавьте товары в каталог для управления остатками</p>
+                        <h4>Остатки не найдены</h4>
+                        <p>Добавьте товары на склад для просмотра остатков</p>
                     </div>
                 {% endif %}
             </div>
@@ -444,17 +487,81 @@
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const productSelect = document.getElementById('product_id');
-        const qtyInput = document.getElementById('qty');
+    const products = [
+        {% for p in products %}
+        {
+            id: '{{ p.id }}',
+            title: '{{ p.title }} ({{ p.nomenclature_product }}) - {{ p.price_product }} ₽',
+            qty: {{ stocks[p.id].qty if p.id in stocks else 0 }},
+            ral: '{{ stocks[p.id].ral if p.id in stocks and stocks[p.id].ral else '' }}',
+            date: '{{ stocks[p.id].date.strftime('%Y-%m-%d') if p.id in stocks and stocks[p.id].date else '' }}'
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
 
-        // Автозаполнение текущего количества при выборе товара
-        productSelect.addEventListener('change', function() {
-            const selectedProduct = this.value;
-            if (selectedProduct) {
-                // Здесь можно добавить AJAX запрос для получения текущего количества
-                // или использовать data-атрибуты
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('product_search');
+        const qtyInput = document.getElementById('qty');
+        const submitBtn = document.querySelector('button[type="submit"]');
+
+        // Отключить кнопку отправки по умолчанию
+        submitBtn.disabled = true;
+
+        // Функция обновления состояния формы
+        function updateFormState(value) {
+            const product = products.find(p => p.title === value);
+            if (product) {
+                // Извлекаем номенклатуру из строки value
+                const match = value.match(/\(([^)]+)\)/);
+                const nomenclature = match ? match[1] : '';
+
+                document.getElementById('nomenclature').value = nomenclature;
+                qtyInput.value = product.qty;
+                document.getElementById('ral').value = product.ral;
+                document.getElementById('date').value = product.date;
                 qtyInput.focus();
+                submitBtn.disabled = false;
+
+                // Подсветка выбранного товара в списке
+                document.querySelectorAll('.stock-item').forEach(item => {
+                    item.style.background = '#f8f9fa';
+                });
+                const selectedItem = document.querySelector(`[data-product-id="${product.id}"]`);
+                if (selectedItem) {
+                    selectedItem.style.background = 'rgba(102, 126, 234, 0.1)';
+                    selectedItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                document.getElementById('nomenclature').value = '';
+                qtyInput.value = '';
+                document.getElementById('ral').value = '';
+                document.getElementById('date').value = '';
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Обработчик ввода
+        searchInput.addEventListener('input', function(e) {
+            updateFormState(e.target.value);
+        });
+
+        // Обработчик изменения (для надежности)
+        searchInput.addEventListener('change', function(e) {
+            updateFormState(e.target.value);
+        });
+
+        // Дополнительная проверка при потере фокуса
+        searchInput.addEventListener('blur', function(e) {
+            updateFormState(e.target.value);
+        });
+
+        // Валидация формы перед отправкой
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!document.getElementById('nomenclature').value) {
+                e.preventDefault();
+                alert('Пожалуйста, выберите товар из списка.');
+                searchInput.focus();
+                return false;
             }
         });
 
@@ -462,23 +569,6 @@
         qtyInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/[^\d]/g, '');
             e.target.value = value;
-        });
-
-        // Подсветка выбранного товара в списке
-        productSelect.addEventListener('change', function() {
-            // Убираем подсветку у всех
-            document.querySelectorAll('.stock-item').forEach(item => {
-                item.style.background = '#f8f9fa';
-            });
-
-            // Подсвечиваем выбранный
-            if (this.value) {
-                const selectedItem = document.querySelector(`[data-product-id="${this.value}"]`);
-                if (selectedItem) {
-                    selectedItem.style.background = 'rgba(102, 126, 234, 0.1)';
-                    selectedItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
         });
     });
 </script>

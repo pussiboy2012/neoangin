@@ -1,5 +1,6 @@
 {% block modal%}
 <div class="modal" id="auth-form">
+            <div id="login-error" class="error-message" style="display: none;"></div>
     <div class="container figma-glass light auth">
         <div class="auth-header">
             <img src="../../static/images/LOGO.svg" alt="">
@@ -7,19 +8,26 @@
             <i class="bi bi-x-lg close-btn" onclick="closeform('auth-form')"></i>
         </div>
 
-        <form method="post" class="auth-form" action="{{ url_for('buyer.login') }}">
+        <form method="post" class="auth-form" action="{{ url_for('buyer.login') }}" id="login-form">
+            <!-- Блок для вывода ошибок -->
+            
             <div class="input-group">
-                <input name="username" placeholder="Логин" required class="form-input" id="login-form">
+                <input name="email" placeholder="Email" required class="form-input" id="login-email">
             </div>
             <div class="input-group">
                 <div class="input-wrapper">
-                    <input name="login-password" placeholder="Пароль" type="password" required class="form-input" id="login-password">
+                    <input name="password" placeholder="Пароль" type="password" required class="form-input" id="login-password">
                     <button type="button" class="form-input-button" id="LogintogglePassword">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
-            <button type="submit" class="btn-auth btn-register authorize" id="submitBtn" >Войти</button>
+            <button type="submit" class="btn-auth btn-register authorize" id="login-submit">
+                <span class="btn-text">Войти</span>
+                <span class="btn-loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i> Вход...
+                </span>
+            </button>
         </form>
         <div class="auth-footer">
             <h3 class="login-link bigger" onclick="openRegModal()">Регистрация</h3>
@@ -27,6 +35,7 @@
         </div>
     </div>
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
@@ -62,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Скрываем предыдущие ошибки
         loginError.style.display = 'none';
         loginError.textContent = '';
+        loginError.className = 'error-message';
         
         // Показываем индикатор загрузки
         const btnText = loginSubmit.querySelector('.btn-text');
@@ -73,38 +83,50 @@ document.addEventListener('DOMContentLoaded', function() {
         // Собираем данные формы
         const formData = new FormData(loginForm);
         
+        // Добавляем параметр next для возврата на текущую страницу
+        const currentUrl = window.location.href;
+        const urlWithNext = '{{ url_for("buyer.login") }}?next=' + encodeURIComponent(currentUrl);
+        
         // Отправляем AJAX запрос
-        fetch('{{ url_for("buyer.login") }}', {
+        fetch(urlWithNext, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest' // Помечаем как AJAX запрос
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => {
+            // Проверяем статус ответа
+            if (response.status === 401) {
+                // Неавторизован - показываем ошибку
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Неверные учетные данные');
+                });
+            }
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Ошибка сети: ' + response.statusText);
             }
             return response.json();
         })
         .then(data => {
             if (data.success) {
-                // Успешный вход - перезагружаем страницу или перенаправляем
+                // Успешный вход
                 if (data.redirect) {
                     window.location.href = data.redirect;
                 } else {
                     window.location.reload();
                 }
             } else {
-                // Показываем ошибку
-                loginError.textContent = data.message || 'Произошла ошибка при входе';
-                loginError.style.display = 'block';
+                // Показываем ошибку из ответа сервера
+                throw new Error(data.message || 'Произошла ошибка при входе');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            loginError.textContent = 'Ошибка соединения с сервером';
+            // Показываем ошибку пользователю
+            loginError.textContent = error.message;
             loginError.style.display = 'block';
+            loginError.className = 'error-message active';
         })
         .finally(() => {
             // Восстанавливаем кнопку
@@ -119,6 +141,12 @@ function closeform(id) {
     const modal = document.getElementById(id);
     if (modal) {
         modal.style.display = 'none';
+        // Очищаем ошибки при закрытии модального окна
+        const errorElement = document.getElementById('login-error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+            errorElement.textContent = '';
+        }
     }
 }
 
@@ -133,25 +161,44 @@ function openRegModal(){
     closeform('auth-form')
     showForm('reg-form')
 }
+
+// Функция для очистки ошибок при открытии формы
+function clearLoginErrors() {
+    const errorElement = document.getElementById('login-error');
+    if (errorElement) {
+        errorElement.style.display = 'none';
+        errorElement.textContent = '';
+    }
+}
+
+// Очищаем ошибки при открытии модального окна (если у вас есть такая функция)
+// document.getElementById('auth-form').addEventListener('show', clearLoginErrors);
 </script>
 
 <style>
-.error-message {
-    color: #ff4444;
-    background-color: #ffebee;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 10px 0;
-    border: 1px solid #ffcdd2;
-}
 
 .btn-loading {
     display: none;
 }
 
-
 .auth-form .input-group {
     margin-bottom: 15px;
+}
+
+/* Анимация для появления ошибки */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-message.active {
+    animation: slideDown 0.3s ease-out;
 }
 </style>
 {% endblock %}

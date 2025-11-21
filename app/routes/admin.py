@@ -1,12 +1,16 @@
 import os
 import requests
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from werkzeug.utils import secure_filename
 from ..utils import PRODUCTS, STOCKS, ORDERS, USERS, read_json, write_json, gen_id, get_user_by_username, list_json
 from pathlib import Path
 from datetime import datetime
 from ..utils import get_all_chats, get_chat, add_message_to_chat, toggle_bot_for_chat, assign_manager_to_chat, create_chat, mark_all_messages_as_read
 from ..chatbot import chatbot
 import hashlib
+from ..models import db, Product, Stock, User, Analyzis
+from ..db_helpers import create_product, update_stock, create_user
+from sqlalchemy import text
 
 bp = Blueprint("admin", __name__, template_folder="../templates")
 
@@ -23,37 +27,49 @@ def admin_index():
 
 
 @bp.route("/create_product", methods=["GET", "POST"])
-def create_product():
+def create_product_page():
     if request.method == "POST":
         title = request.form["title"]
         price = float(request.form.get("price", 0))
-        pid = gen_id("p_")
-        product = {"id": pid, "title": title, "price": price, "created_at": datetime.utcnow().isoformat()}
-        write_json(Path(PRODUCTS) / f"{pid}.json", product)
-        # init stock
-        stock = {"product_id": pid, "qty": int(request.form.get("qty", 0))}
-        write_json(Path(STOCKS) / f"{pid}.json", stock)
+        category = request.form["category"]
+        description = request.form["description"]
+        expiration_month = int(request.form["expiration_month"])
+        nomenclature = request.form["nomenclature"]
+        # Handle image upload
+        img_file = request.files.get("img_file")
+        img_path = None
+        if img_file and img_file.filename:
+            # Create uploads directory if it doesn't exist
+            uploads_dir = os.path.join(bp.root_path, '../..', 'static', 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+
+            # Secure filename and save
+            filename = secure_filename(img_file.filename)
+            img_file.save(os.path.join(uploads_dir, filename))
+            img_path = f"uploads/{filename}"
+
+        # Create product in DB
+        product = create_product(title, price, category, description, img_path, expiration_month, nomenclature)
+
         flash("Товар создан")
-        return redirect(url_for("admin.create_product"))
+        return redirect(url_for("admin.create_product_page"))
     return render_template("admin_create_product.html")
 
 
-# ОБЪЕДИНЕННЫЙ МАРШРУТ - УДАЛИТЬ ДУБЛИКАТЫ
 @bp.route("/create_user", methods=["POST"])
-def create_user():
+def create_user_route():
     try:
         # Получаем данные из формы
-        username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip().lower()
         full_name = request.form.get("full_name", "").strip()
         phone = request.form.get("phone", "").strip()
         role = request.form.get("role", "").strip()
         password = request.form.get("password", "").strip()
 
-        print(f"=== DEBUG: Получены данные - username: {username}, email: {email}, role: {role}")
+        print(f"=== DEBUG: Получены данные - email: {email}, role: {role}")
 
         # Проверяем обязательные поля
-        if not all([username, email, full_name, phone, role, password]):
+        if not all([email, full_name, phone, role, password]):
             return jsonify({"success": False, "error": "Все обязательные поля должны быть заполнены"})
 
         # Для покупателей получаем ИНН и название компании
@@ -66,39 +82,23 @@ def create_user():
             company_name = "ООО \"Прайм-Топ\""
 
         # Проверка существующего пользователя
-        if get_user_by_username(username):
-            return jsonify({"success": False, "error": "Пользователь с таким логином уже существует"})
-
-        if get_user_by_username(email):
+        from ..db_helpers import get_user_by_email
+        if get_user_by_email(email):
             return jsonify({"success": False, "error": "Пользователь с таким email уже существует"})
 
-        # Создание пользователя с правильной структурой
-        user = {
-            "id": gen_id("u_"),
-            "username": username,
-            "email": email,
-            "full_name": full_name,
-            "inn": inn,
-            "company_name": company_name,
-            "phone": phone,
-            "password": hash_password(password),
-            "role": role,
-            "created_at": datetime.utcnow().isoformat(),
-            "company_verified": True
-        }
-
-        write_json(Path(USERS) / f"{user['id']}.json", user)
+        # Создание пользователя через DB
+        create_user(email, full_name, inn, company_name, phone, password, role)
         return jsonify({"success": True})
 
     except Exception as e:
         print(f"=== DEBUG: Ошибка при создании пользователя: {str(e)}")
+        db.session.rollback()
         return jsonify({"success": False, "error": f"Внутренняя ошибка сервера: {str(e)}"})
 
 @bp.route("/update_user", methods=["POST"])
 def update_user():
     try:
         user_id = request.form["user_id"]
-        username = request.form["username"].strip()
         email = request.form["email"].strip().lower()
         full_name = request.form["full_name"].strip()
         inn = request.form["inn"].strip()
@@ -108,31 +108,28 @@ def update_user():
         password = request.form.get("password", "")
 
         # Загружаем существующего пользователя
-        user_path = Path(USERS) / f"{user_id}.json"
-        if not user_path.exists():
+        user = User.query.filter_by(id_user=user_id).first()
+        if not user:
             return jsonify({"success": False, "error": "Пользователь не найден"})
 
-        user = read_json(user_path)
-
         # Обновляем данные
-        user.update({
-            "username": username,
-            "email": email,
-            "full_name": full_name,
-            "inn": inn,
-            "company_name": company_name,
-            "phone": phone,
-            "role": role
-        })
+        user.email_user = email
+        user.fullname_user = full_name
+        user.inn_user = inn
+        user.company_name_user = company_name
+        user.phone_user = phone
+        user.role_user = role
 
         # Обновляем пароль если указан новый
         if password:
-            user["password"] = hash_password(password)
+            hashed, salt = hash_password(password)
+            user.password_hash_user = hashed + ':' + salt
 
-        write_json(user_path, user)
+        db.session.commit()
         return jsonify({"success": True})
 
     except Exception as e:
+        db.session.rollback()
         return jsonify({"success": False, "error": str(e)})
 
 def validate_inn(inn):
@@ -236,7 +233,15 @@ def hash_password(password):
 
 @bp.route("/stocks", methods=["GET", "POST"])
 def stocks():
-    products = list_json(PRODUCTS)
+    # Получаем данные из представления product_stock_series
+    stock_series = db.session.execute(text("""
+        SELECT nomenclature_ral, series_info, remaining_quantity
+        FROM product_stock_series
+        ORDER BY nomenclature_ral, series_info
+    """)).fetchall()
+
+    # Получаем все продукты для формы обновления
+    products = Product.query.all()
 
     # Подготавливаем данные для шаблона
     stocks_data = {}
@@ -245,20 +250,26 @@ def stocks():
     out_of_stock_count = 0
 
     for product in products:
-        product_id = product["id"]
-        stock_file = Path(STOCKS) / f"{product_id}.json"
+        stock = Stock.query.filter_by(id_product=product.id_product).first()
+        stock_qty = stock.count_stock if stock else 0
+        ral = stock.ral_stock if stock else None
+        date = stock.date_stock if stock else None
+        analyzis = None
+        if stock and stock.id_analyzis:
+            analyzis = Analyzis.query.get(stock.id_analyzis)
 
-        if stock_file.exists():
-            stock_data = read_json(stock_file)
-            stock_qty = stock_data.get("qty", 0) if stock_data else 0
-        else:
-            stock_qty = 0
+        # Сохраняем остатки с дополнительными данными
+        stocks_data[product.id_product] = {
+            "qty": stock_qty,
+            "ral": ral,
+            "date": date,
+            "analyzis": analyzis
+        }
 
-        # Сохраняем остатки
-        stocks_data[product_id] = {"qty": stock_qty}
-
-        # Добавляем stock_qty к продукту для статистики
-        product["stock_qty"] = stock_qty
+        # Добавляем данные к продукту для статистики
+        product.stock_qty = stock_qty
+        product.stock_ral = ral
+        product.analyzis = analyzis
 
         # Считаем статистику
         total_stock += stock_qty
@@ -268,16 +279,57 @@ def stocks():
             out_of_stock_count += 1
 
     if request.method == "POST":
-        pid = request.form["product_id"]
+        nomenclature = request.form.get("nomenclature", "").strip()
         qty = int(request.form.get("qty", 0))
-        write_json(Path(STOCKS) / f"{pid}.json", {"product_id": pid, "qty": qty})
+        ral = request.form.get("ral", "").strip() or None
+        date_str = request.form.get("date", "").strip()
+
+        if not date_str:
+            flash("Дата производства партии обязательна")
+            return redirect(url_for("admin.stocks"))
+
+        try:
+            date_stock = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash("Неверный формат даты")
+            return redirect(url_for("admin.stocks"))
+
+        # Найти продукт по номенклатуре
+        product = Product.query.filter_by(nomenclature_product=nomenclature).first()
+        if not product:
+            flash("Товар с такой номенклатурой не найден")
+            return redirect(url_for("admin.stocks"))
+
+        pid = product.id_product
+
+        # Проверить, существует ли уже запись с таким же продуктом, RAL и датой
+        existing_stock = Stock.query.filter_by(
+            id_product=pid,
+            ral_stock=ral,
+            date_stock=date_stock
+        ).first()
+
+        if existing_stock:
+            # Если запись существует, суммируем количества
+            existing_stock.count_stock += qty
+        else:
+            # Создаем новую запись
+            new_stock = Stock(
+                id_product=pid,
+                count_stock=qty,
+                ral_stock=ral,
+                date_stock=date_stock
+            )
+            db.session.add(new_stock)
+
+        db.session.commit()
         flash("Остаток обновлён")
         return redirect(url_for("admin.stocks"))
-
 
     return render_template("admin_stocks.html",
                            products=products,
                            stocks=stocks_data,
+                           stock_series=stock_series,
                            total_stock=total_stock,
                            in_stock_count=in_stock_count,
                            out_of_stock_count=out_of_stock_count)
@@ -304,22 +356,24 @@ def approve_order(order_id):
 @bp.route("/users")
 def users_management():
     """Страница управления пользователями"""
-    users = []
-    users_path = Path(USERS)
+    users = User.query.all()
+    # Преобразуем в формат, ожидаемый шаблоном
+    users_data = []
+    for user in users:
+        users_data.append({
+            "id": user.id_user,
+            "username": user.email_user,
+            "email": user.email_user,
+            "full_name": user.fullname_user,
+            "inn": user.inn_user,
+            "company_name": user.company_name_user,
+            "phone": user.phone_user,
+            "role": user.role_user,
+            "created_at": user.created_at_user.isoformat() if user.created_at_user else "",
+            "company_verified": user.company_verified_user
+        })
 
-    print(f"=== DEBUG: Путь к пользователям: {users_path}")
-    print(f"=== DEBUG: Существует ли папка: {users_path.exists()}")
-
-    if users_path.exists():
-        for user_file in users_path.glob("*.json"):
-            try:
-                user_data = read_json(user_file)
-                if user_data:  # Проверяем, что файл не пустой
-                    users.append(user_data)
-            except Exception as e:
-                print(f"=== DEBUG: Ошибка чтения файла {user_file}: {e}")
-
-    return render_template("admin_create_user.html", users=users)
+    return render_template("admin_create_user.html", users=users_data)
 
 @bp.route("/delete_user", methods=["POST"])
 def delete_user():
@@ -331,19 +385,20 @@ def delete_user():
         if not user_id:
             return jsonify({"success": False, "error": "ID пользователя не указан"})
 
-        user_file = Path(USERS) / f"{user_id}.json"
-
         # Нельзя удалить самого себя
-        if session.get("user") and session["user"]["id"] == user_id:
+        if session.get("user") and str(session["user"]["id"]) == str(user_id):
             return jsonify({"success": False, "error": "Нельзя удалить свой собственный аккаунт"})
 
-        if user_file.exists():
-            user_file.unlink()  # Удаляем файл пользователя
+        user = User.query.filter_by(id_user=user_id).first()
+        if user:
+            db.session.delete(user)
+            db.session.commit()
             return jsonify({"success": True})
         else:
             return jsonify({"success": False, "error": "Пользователь не найден"})
 
     except Exception as e:
+        db.session.rollback()
         return jsonify({"success": False, "error": str(e)})
 
 
@@ -351,15 +406,19 @@ def delete_user():
 def get_user(user_id):
     """Получение данных пользователя для редактирования"""
     try:
-        user_file = Path(USERS) / f"{user_id}.json"
-        if user_file.exists():
-            user = read_json(user_file)
+        user = User.query.filter_by(id_user=user_id).first()
+        if user:
             # Не возвращаем пароль
             user_data = {
-                "id": user["id"],
-                "username": user["username"],
-                "role": user["role"],
-                "created_at": user.get("created_at", "")
+                "id": user.id_user,
+                "username": user.username_user,
+                "email": user.email_user,
+                "full_name": user.fullname_user,
+                "inn": user.inn_user,
+                "company_name": user.company_name_user,
+                "phone": user.phone_user,
+                "role": user.role_user,
+                "created_at": user.created_at_user.isoformat() if user.created_at_user else ""
             }
             return jsonify({"success": True, "user": user_data})
         else:

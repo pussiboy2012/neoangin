@@ -89,6 +89,7 @@
         width: 100%;
         padding: 1rem 1.25rem;
         border: 2px solid #e9ecef;
+        color: black;
         border-radius: 12px;
         font-size: 1rem;
         transition: all 0.3s ease;
@@ -207,6 +208,83 @@
         background: rgba(39, 174, 96, 0.02);
     }
 
+    /* Стили для загрузки файла */
+    .file-upload-container {
+        position: relative;
+    }
+
+    .file-input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .file-upload-area {
+        border: 2px dashed #e9ecef;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .file-upload-area:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.02);
+    }
+
+    .file-upload-area.dragover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+        transform: scale(1.02);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        transition: color 0.3s ease;
+    }
+
+    .file-upload-area:hover .upload-icon {
+        color: #667eea;
+    }
+
+    .upload-text {
+        margin-bottom: 1rem;
+    }
+
+    .upload-main-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-sub-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .file-name {
+        font-size: 0.95rem;
+        color: #27ae60;
+        font-weight: 600;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+    }
+
+    .file-name.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     /* Адаптивность */
     @media (max-width: 576px) {
         .form-container {
@@ -223,6 +301,22 @@
             height: 60px;
             font-size: 1.5rem;
         }
+
+        .file-upload-area {
+            padding: 1.5rem 1rem;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+        }
+
+        .upload-main-text {
+            font-size: 1rem;
+        }
+
+        .upload-sub-text {
+            font-size: 0.85rem;
+        }
     }
 </style>
 
@@ -237,7 +331,7 @@
                 <p class="form-subtitle">Добавьте новый товар в каталог магазина</p>
             </div>
 
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label class="form-label" for="title">
                         <i class="fas fa-tag me-2"></i>Название товара
@@ -267,17 +361,80 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="qty">
-                        <i class="fas fa-boxes me-2"></i>Количество на складе
+                    <label class="form-label" for="category">
+                        <i class="fas fa-tag me-2"></i>Категория
+                    </label>
+                    <input type="text"
+                           id="category"
+                           name="category"
+                           class="form-input"
+                           placeholder="Введите категорию товара"
+                           required>
+                    <i class="fas fa-tags input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description">
+                        <i class="fas fa-align-left me-2"></i>Описание
+                    </label>
+                    <textarea id="description"
+                              name="description"
+                              class="form-input"
+                              placeholder="Введите описание товара"
+                              rows="4"
+                              required></textarea>
+                    <i class="fas fa-edit input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="expiration_month">
+                        <i class="fas fa-calendar-alt me-2"></i>Срок годности (месяцы)
                     </label>
                     <input type="number"
-                           id="qty"
-                           name="qty"
+                           id="expiration_month"
+                           name="expiration_month"
                            class="form-input"
-                           placeholder="Укажите начальное количество"
-                           min="0"
+                           placeholder="Укажите срок годности в месяцах"
+                           min="1"
                            required>
-                    <i class="fas fa-warehouse input-icon"></i>
+                    <i class="fas fa-clock input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="nomenclature">
+                        <i class="fas fa-list me-2"></i>Номенклатура
+                    </label>
+                    <input type="text"
+                           id="nomenclature"
+                           name="nomenclature"
+                           class="form-input"
+                           placeholder="Введите номенклатуру товара"
+                           required>
+                    <i class="fas fa-tags input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="img_file">
+                        <i class="fas fa-image me-2"></i>Изображение товара
+                    </label>
+                    <div class="file-upload-container">
+                        <input type="file"
+                               id="img_file"
+                               name="img_file"
+                               class="file-input"
+                               accept="image/*"
+                               required>
+                        <div class="file-upload-area">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <span class="upload-main-text">Перетащите изображение сюда или нажмите для выбора</span>
+                                <span class="upload-sub-text">Поддерживаются JPG, PNG, GIF (макс. 5MB)</span>
+                            </div>
+                            <div class="file-name" id="file-name"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-submit">
@@ -299,7 +456,9 @@
     // Добавляем маску для цены
     document.addEventListener('DOMContentLoaded', function() {
         const priceInput = document.getElementById('price');
-        const qtyInput = document.getElementById('qty');
+        const fileInput = document.getElementById('img_file');
+        const fileUploadArea = document.querySelector('.file-upload-area');
+        const fileNameDisplay = document.getElementById('file-name');
 
         // Форматирование цены при вводе
         priceInput.addEventListener('input', function(e) {
@@ -317,11 +476,55 @@
             e.target.value = value;
         });
 
-        // Валидация количества
-        qtyInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^\d]/g, '');
-            e.target.value = value;
+        // Обработка загрузки файла
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameDisplay.textContent = `Выбран файл: ${file.name}`;
+                fileNameDisplay.classList.add('show');
+            } else {
+                fileNameDisplay.classList.remove('show');
+            }
         });
+
+        // Drag and drop для файла
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            fileUploadArea.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            fileUploadArea.classList.remove('dragover');
+        }
+
+        fileUploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileNameDisplay.textContent = `Выбран файл: ${files[0].name}`;
+                fileNameDisplay.classList.add('show');
+            }
+        }
 
         // Анимация при фокусе
         const inputs = document.querySelectorAll('.form-input');

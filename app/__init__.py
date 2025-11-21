@@ -3,16 +3,19 @@ import os
 from flask import Flask
 from .utils import ensure_data_dirs
 from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
 
 # Загружаем переменные окружения
 load_dotenv()
 
 def create_app():
-    app = Flask(__name__)
-    
-def create_app():
     app = Flask(__name__, static_folder="../static", template_folder="templates")
     app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:admin@localhost:5432/primetop')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    from .models import db
+    db.init_app(app)
 
     ensure_data_dirs()
 
