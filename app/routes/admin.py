@@ -23,7 +23,17 @@ def check_admin():
 
 @bp.route("/")
 def admin_index():
-    return render_template("admin_dashboard.html")
+    # Query real stats from database
+    new_orders = Order.query.count()
+    products_count = db.session.query(Stock.id_product).distinct().count()
+    active_users = User.query.filter(User.role_user == 'buyer').count()
+    low_stock = Stock.query.filter(Stock.count_stock < 10).count()
+
+    return render_template("admin_dashboard.html",
+                           new_orders=new_orders,
+                           products_count=products_count,
+                           active_users=active_users,
+                           low_stock=low_stock)
 
 
 @bp.route("/create_product", methods=["GET", "POST"])

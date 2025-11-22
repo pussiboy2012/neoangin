@@ -36,19 +36,19 @@
 
           {% if session.user %}
             {% if session.user.role == 'buyer' %}
-              <a href="{{ url_for('buyer.cart') }}" class="nav-link nav-link-badge {{ 'active' if request.endpoint == 'buyer.cart' }}">
-                <i class="fas fa-shopping-cart me-1"></i>Корзина
+              <a href="{{ url_for('buyer.cart') }}" class="nav-link-hard nav-right {{ 'active' if request.endpoint == 'buyer.cart' }}">
+                <i class="fas fa-shopping-cart me-1 back-icon {{ 'active' if 'cart' in request.endpoint }}"></i> <p class="nav-text">Корзина</p>
               </a>
-              <a href="{{ url_for('buyer.profile') }}" class="nav-link {{ 'active' if request.endpoint == 'buyer.profile' }}">
-                <i class="fas fa-user me-1"></i>Личный кабинет
+              <a href="{{ url_for('buyer.profile') }}" class="nav-link-hard nav-right {{ 'active' if request.endpoint == 'buyer.profile' }}">
+                <i class="fas fa-user me-1 back-icon {{ 'active' if 'profile' in request.endpoint }}"></i> <p class="nav-text">Личный кабинет</p>
               </a>
             {% elif session.user.role == 'manager' %}
-              <a href="{{ url_for('manager.manager_index') }}" class="nav-link {{ 'active' if 'manager' in request.endpoint }}">
-                <i class="fas fa-tachometer-alt me-1"></i>Панель менеджера
+              <a href="{{ url_for('manager.manager_index') }}" class="nav-link-hard nav-right {{ 'active' if 'manager' in request.endpoint }}">
+                <i class="fas fa-tachometer-alt me-1 back-icon {{ 'active' if 'manager' in request.endpoint }}"></i><p class="nav-text">Панель менеджера</p>
               </a>
             {% elif session.user.role == 'admin' %}
-              <a href="{{ url_for('admin.admin_index') }}" class="nav-link {{ 'active' if 'admin' in request.endpoint }}">
-                <i class="fas fa-cogs me-1"></i>Панель админа
+              <a href="{{ url_for('admin.admin_index') }}" class="nav-link-hard nav-right {{ 'active' if 'admin' in request.endpoint }}">
+                <i class="fas fa-cogs me-1 back-icon {{ 'active' if 'admin' in request.endpoint }}"></i><p class="nav-text"> Панель админа</p>
               </a>
             {% endif %}
 

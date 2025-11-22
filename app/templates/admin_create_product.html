@@ -117,7 +117,7 @@
     .input-icon {
         position: absolute;
         right: 1.25rem;
-        top: 50%;
+        top: 70%;
         transform: translateY(-50%);
         color: #6c757d;
         font-size: 1.1rem;
@@ -289,6 +289,29 @@
         transform: translateY(0);
     }
 
+    .btn-choose-file {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        display: inline-block;
+    }
+
+    .btn-choose-file:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-choose-file:active {
+        transform: translateY(0);
+    }
+
     /* Адаптивность */
     @media (max-width: 576px) {
         .form-container {
@@ -436,6 +459,9 @@
                                 <span class="upload-main-text">Перетащите изображение сюда или нажмите для выбора</span>
                                 <span class="upload-sub-text">Поддерживаются JPG, PNG, GIF (макс. 5MB)</span>
                             </div>
+                            <button type="button" class="btn-choose-file" id="choose-file-btn">
+                                <i class="fas fa-folder-open me-2"></i>Выбрать файл
+                            </button>
                             <div class="file-name" id="file-name"></div>
                         </div>
                     </div>
@@ -529,6 +555,12 @@
                 fileNameDisplay.classList.add('show');
             }
         }
+
+        // Обработка кнопки выбора файла
+        const chooseFileBtn = document.getElementById('choose-file-btn');
+        chooseFileBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
 
         // Анимация при фокусе
         const inputs = document.querySelectorAll('.form-input');

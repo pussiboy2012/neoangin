@@ -190,10 +190,12 @@ body {
     display: flex;
     gap: 1.5rem;
     flex-wrap: wrap;
+    margin: 0 1.5rem;
 }
 .based{
     flex: 1;
     align-items: center;
+    margin: 0;
 }
 
 .nav-link {
@@ -235,8 +237,22 @@ body {
         linear-gradient(#222222, #222222) padding-box,
         linear-gradient(270deg, #eA7720 0%, #b64652 51%, #f59B17 100%) border-box;
 }
-
-
+.nav-right{
+    overflow: hidden;
+}
+.nav-text   {
+        margin: 1rem 0;
+    z-index: 2;
+}
+.back-icon {
+    position: absolute;
+    color: #373737;
+    font-size: 70px;
+    z-index: 1;
+}
+.back-icon.active {
+    color: #37373737;
+}
 .nav-link-hard:hover {
     background: 
         linear-gradient(#424242, #424242) padding-box,
@@ -304,7 +320,6 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-left: 1rem;
 }
 
 .btn-auth {
