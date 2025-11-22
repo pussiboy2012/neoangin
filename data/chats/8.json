@@ -11,7 +11,7 @@
       "type": "text",
       "timestamp": "2025-11-22T00:28:59.952301",
       "sender_name": "Покупатель",
-      "read": false
+      "read": true
     },
     {
       "id": "msg_292c7588",
@@ -29,7 +29,7 @@
       "type": "text",
       "timestamp": "2025-11-22T00:31:35.764290",
       "sender_name": "Покупатель",
-      "read": false
+      "read": true
     },
     {
       "id": "msg_efd3b106",
@@ -39,10 +39,28 @@
       "timestamp": "2025-11-22T00:31:36.412589",
       "sender_name": "Система",
       "read": true
+    },
+    {
+      "id": "msg_83059923",
+      "role": "user",
+      "content": "5552522",
+      "type": "text",
+      "timestamp": "2025-11-22T01:21:34.696271",
+      "sender_name": "Покупатель",
+      "read": true
+    },
+    {
+      "id": "msg_3d87b6d6",
+      "role": "bot",
+      "content": "Извините, сервис временно недоступен. Попробуйте позже.",
+      "type": "text",
+      "timestamp": "2025-11-22T01:21:35.357166",
+      "sender_name": "Система",
+      "read": true
     }
   ],
   "bot_enabled": true,
   "assigned_manager": null,
   "status": "active",
-  "last_activity": "2025-11-22T00:31:36.412589"
+  "last_activity": "2025-11-22T01:21:35.357166"
 }

@@ -11,7 +11,7 @@
       "type": "text",
       "timestamp": "2025-11-20T21:26:17.505098",
       "sender_name": "Покупатель",
-      "read": false
+      "read": true
     },
     {
       "id": "msg_47732cbe",
@@ -29,7 +29,7 @@
       "type": "text",
       "timestamp": "2025-11-20T23:00:13.875068",
       "sender_name": "Покупатель",
-      "read": false
+      "read": true
     },
     {
       "id": "msg_c06a2a8c",

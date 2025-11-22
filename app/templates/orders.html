@@ -70,6 +70,12 @@
                     <button class="action-btn details-btn">
                         📊 Детали
                     </button>
+                    <!-- В блоке order-actions, после существующих кнопок -->
+                    {% if o['status'] == 'approved' %}
+                    <a href="{{ url_for('buyer.generate_invoice', order_id=o['id']) }}" class="action-btn invoice-btn" target="_blank">
+                        📄 Счет на оплату
+                    </a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -156,6 +162,18 @@
 /* Убрал дергание карточки при наведении */
 .order-card:hover {
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+}
+
+.invoice-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+}
+
+.invoice-btn:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e9e8a 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
 }
 
 .order-header {

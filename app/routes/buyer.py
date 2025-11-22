@@ -1,16 +1,237 @@
 import os
 import requests
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, make_response
 from ..db_helpers import get_all_products, get_all_users, get_all_orders, create_order, get_orders_by_user, get_stock_by_product_id, create_user, verify_user, update_stock, get_user_by_id, get_product_by_id
 from ..models import db, Product
+from datetime import datetime
 from pathlib import Path
 from datetime import datetime
 import re
 import hashlib
 import phonenumbers
 from email_validator import validate_email, EmailNotValidError
+import io
 
 bp = Blueprint("buyer", __name__)
+
+
+@bp.route("/generate_invoice/<order_id>")
+def generate_invoice(order_id):
+    if 'user' not in session:
+        flash('Пожалуйста, войдите в систему.')
+        return redirect(url_for('buyer.login'))
+
+    # Извлекаем номер заказа из order_id (формат: order_123)
+    try:
+        order_number = order_id.split('_')[1]
+    except IndexError:
+        flash('Неверный формат номера заказа.')
+        return redirect(url_for('buyer.orders'))
+
+    # Получаем данные заказа
+    from ..models import Order, ProductOrder, StockOrder, Product, Stock, User
+    order = Order.query.filter_by(id_order=order_number).first()
+
+    if not order or order.id_user != session['user']['id']:
+        flash('Заказ не найден.')
+        return redirect(url_for('buyer.orders'))
+
+    # Проверяем, что заказ подтвержден
+    if order.status_order != 'approved':
+        flash('Счет можно сформировать только для подтвержденных заказов.')
+        return redirect(url_for('buyer.orders'))
+
+    # Получаем данные пользователя (покупателя)
+    buyer_user = User.query.get(session['user']['id'])
+
+    # Получаем полные данные покупателя через DaData
+    buyer_data = get_company_data_by_inn(buyer_user.inn_user)
+    if not buyer_data:
+        flash('Не удалось получить данные организации через сервис проверки ИНН.')
+        return redirect(url_for('buyer.orders'))
+
+    # Получаем данные поставщика (вашей компании) через DaData
+    # Замените ИНН вашей компании на реальный
+    supplier_inn = "4802024282"  # ИНН из примера счета
+    supplier_data = get_company_data_by_inn(supplier_inn)
+    if not supplier_data:
+        flash('Не удалось получить данные поставщика через сервис проверки ИНН.')
+        return redirect(url_for('buyer.orders'))
+
+    # Добавляем банковские реквизиты поставщика (это можно хранить в настройках)
+    supplier_data.update({
+        'bank_name': 'АО "Стоун банк" Г. МОСКВА',
+        'bank_account': '40702810900000002453',
+        'correspondent_account': '30101810200000000700',
+        'bik': '040525700',
+        'phone': '+7 (495) 123-45-67'  # Ваш телефон
+    })
+
+    # Формируем данные для счета
+    items = []
+    total = 0
+
+    # Получаем товары заказа из product-order
+    product_orders = ProductOrder.query.filter_by(id_order=order.id_order).all()
+    for po in product_orders:
+        product = Product.query.get(po.id_product)
+        price = float(product.price_product)
+        item_total = price * po.count
+        total += item_total
+
+        items.append({
+            'name': f"{product.title_product}{f' RAL {po.ral}' if po.ral else ''}",
+            'quantity': po.count,
+            'unit': 'шт.',
+            'price': price,
+            'total': item_total
+        })
+
+    # Получаем товары со склада из stock-order
+    stock_orders = StockOrder.query.filter_by(id_order=order.id_order).all()
+    for so in stock_orders:
+        stock = Stock.query.get(so.id_stock)
+        product = Product.query.get(stock.id_product)
+        price = float(product.price_product)
+        item_total = price * so.count_order
+        total += item_total
+
+        items.append({
+            'name': f"{product.nomenclature_product}{f' RAL {stock.ral_stock}' if stock.ral_stock else ''} (п.{stock.id_stock})",
+            'quantity': so.count_order,
+            'unit': 'шт.',
+            'price': price,
+            'total': item_total
+        })
+
+    # Рассчитываем НДС (20%)
+    vat_amount = round(total * 0.2, 2)
+    total_with_vat = total
+
+    # Генерируем HTML для счета
+    invoice_html = render_template(
+        "invoice_template.html",
+        invoice_number=f"{order_number}/{datetime.now().year}",
+        invoice_date=datetime.now().strftime("%d.%m.%Y"),
+        supplier=supplier_data,
+        buyer=buyer_data,
+        basis=f"Заказ №{order_number} от {order.created_at_order.strftime('%d.%m.%Y')}",
+        items=items,
+        total=total,
+        vat_amount=vat_amount,
+        total_with_vat=total_with_vat,
+        total_words=num2words(total, lang='ru')
+    )
+
+    return invoice_html
+
+
+def get_company_data_by_inn(inn):
+    """Получение данных компании по ИНН через DaData API"""
+    if not DADATA_TOKEN:
+        return None
+
+    try:
+        response = requests.post(
+            'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party',
+            headers={
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': f'Token {DADATA_TOKEN}'
+            },
+            json={'query': inn},
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('suggestions'):
+                company = data['suggestions'][0]
+                company_data = company.get('data', {})
+                address_data = company_data.get('address', {})
+
+                return {
+                    'name': company.get('value', ''),
+                    'full_name': company_data.get('name', {}).get('full', ''),
+                    'inn': company_data.get('inn', ''),
+                    'kpp': company_data.get('kpp', ''),
+                    'address': address_data.get('value', ''),
+                    'postal_code': address_data.get('data', {}).get('postal_code', ''),
+                    'city': address_data.get('data', {}).get('city', ''),
+                    'address_line': address_data.get('data', {}).get('street_with_type', ''),
+                    'house': address_data.get('data', {}).get('house', '')
+                }
+        return None
+    except Exception as e:
+        print(f"Ошибка при получении данных компании: {e}")
+        return None
+
+
+def num2words(num, lang='ru'):
+    """Упрощенная конвертация числа в пропись"""
+    # Для полноценной реализации установите библиотеку: pip install num2words
+    try:
+        from num2words import num2words as n2w
+        return n2w(num, lang='ru')
+    except ImportError:
+        # Запасной вариант если библиотека не установлена
+        integer_part = int(num)
+        decimal_part = int(round((num - integer_part) * 100))
+
+        # Простая реализация для основных чисел
+        units = ['', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять']
+        teens = ['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать',
+                 'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать']
+        tens = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят',
+                'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто']
+        hundreds = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот',
+                    'шестьсот', 'семьсот', 'восемьсот', 'девятьсот']
+
+        def convert_number(n):
+            if n == 0:
+                return 'ноль'
+
+            words = []
+            if n >= 1000:
+                thousands = n // 1000
+                if thousands == 1:
+                    words.append('одна тысяча')
+                elif thousands == 2:
+                    words.append('две тысячи')
+                elif thousands in [3, 4]:
+                    words.append(units[thousands] + ' тысячи')
+                else:
+                    words.append(convert_number(thousands) + ' тысяч')
+                n %= 1000
+
+            if n >= 100:
+                words.append(hundreds[n // 100])
+                n %= 100
+
+            if n >= 20:
+                words.append(tens[n // 10])
+                n %= 10
+
+            if n >= 10:
+                words.append(teens[n - 10])
+                n = 0
+
+            if n > 0:
+                words.append(units[n])
+
+            return ' '.join(filter(None, words))
+
+        result = convert_number(integer_part)
+        # Склонение рублей
+        last_digit = integer_part % 10
+        if last_digit == 1 and integer_part % 100 != 11:
+            ruble_word = 'рубль'
+        elif last_digit in [2, 3, 4] and integer_part % 100 not in [12, 13, 14]:
+            ruble_word = 'рубля'
+        else:
+            ruble_word = 'рублей'
+
+        return f"{result} {ruble_word} {decimal_part:02d} копеек"
 
 
 def validate_inn(inn):
@@ -47,6 +268,15 @@ ALLOWED_DOMAINS = ['company.com', 'organization.ru', 'firma.org']  # замен�
 # Загрузка токена из .env
 DADATA_TOKEN = os.environ.get("DADATA_TOKEN")
 
+
+@bp.route("/settings")
+def settings():
+    if 'user' not in session:
+        flash('Пожалуйста, войдите в систему.')
+        return redirect(url_for('buyer.login'))
+
+    user = get_user_by_id(session['user']['id'])
+    return render_template("buyer_settings.html", title="Настройки", user=user)
 
 @bp.route("/verify_inn", methods=["POST"])
 def verify_inn():

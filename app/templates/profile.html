@@ -111,15 +111,30 @@
 
             <div class="action-card figma-glass">
                 <div class="action-icon">
+                    <i class="fas fa-comments me-2"></i>
+                </div>
+                <div class="action-content">
+                    <h4>Сообщения</h4>
+                    <p>Общайтесь с менеджером по заказам и не только</p>
+                    <a href="#" class="action-btn disabled">
+                        <span>Скоро доступно</span>
+                        <i class="fas fa-clock"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="action-card figma-glass">
+                <div class="action-icon">
                     <i class="fas fa-cog"></i>
                 </div>
                 <div class="action-content">
                     <h4>Настройки</h4>
                     <p>Изменение личных данных и пароля</p>
-                    <a href="#" class="action-btn disabled">
-                        <span>Скоро доступно</span>
-                        <i class="fas fa-clock"></i>
-                    </a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('buyer.settings') }}">
+                            <i class="fas fa-cog"></i> Настройки
+                        </a>
+                    </li>
                 </div>
             </div>
 
