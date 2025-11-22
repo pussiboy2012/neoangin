@@ -1,0 +1,497 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    :root {
+        --admin-primary: #2c3e50;
+        --admin-secondary: #34495e;
+        --admin-accent: #e74c3c;
+        --admin-success: #27ae60;
+        --admin-warning: #f39c12;
+        --admin-info: #3498db;
+    }
+
+    body {
+        background:
+            radial-gradient(circle at 20% 80%, rgba(44, 62, 80, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(52, 73, 94, 0.1) 0%, transparent 50%),
+            linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: var(--admin-primary);
+    }
+
+    .analytics-hero {
+        padding-top: 30px;
+        padding-bottom: 20px;
+    }
+
+    .analytics-badge {
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+    }
+
+    .filters-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .filters-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--admin-primary);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--admin-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .filter-input, .filter-select {
+        padding: 0.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .filter-input:focus, .filter-select:focus {
+        outline: none;
+        border-color: var(--admin-info);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .btn-apply-filters {
+        background: linear-gradient(135deg, var(--admin-info), #3498db);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-apply-filters:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chart-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--admin-primary), var(--admin-accent), var(--admin-info));
+        background-size: 200% 100%;
+        animation: analyticsGradientShift 4s ease infinite;
+    }
+
+    @keyframes analyticsGradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    }
+
+    .chart-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--admin-primary);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-container {
+        min-height: 400px;
+    }
+
+    .analytics-stats {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 3rem;
+    }
+
+    .stats-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--admin-primary);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 15px;
+        background: #f8f9fa;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Подключаем Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<!-- Герой секция аналитики -->
+<section class="analytics-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="analytics-badge">
+                    <i class="fas fa-chart-line"></i>
+                    Аналитика системы
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Анализ данных</h1>
+                <p class="lead mb-0">Подробная статистика продаж, товаров и пользователей для принятия решений</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="text-muted">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    <span id="current-date">Обновлено: {{ current_date or "только что" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Фильтры -->
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter"></i>
+            Фильтры аналитики
+        </h3>
+        <form id="analytics-filters" method="GET">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Дата начала</label>
+                    <input type="date" name="start_date" class="filter-input" value="{{ current_filters.start_date }}">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Дата окончания</label>
+                    <input type="date" name="end_date" class="filter-input" value="{{ current_filters.end_date }}">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Категория товара</label>
+                    <select name="category" class="filter-select">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if current_filters.category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Роль пользователя</label>
+                    <select name="user_role" class="filter-select">
+                        <option value="">Все роли</option>
+                        <option value="buyer" {% if current_filters.user_role == 'buyer' %}selected{% endif %}>Покупатель</option>
+                        <option value="manager" {% if current_filters.user_role == 'manager' %}selected{% endif %}>Менеджер</option>
+                        <option value="admin" {% if current_filters.user_role == 'admin' %}selected{% endif %}>Администратор</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Товар</label>
+                    <select name="product_id" class="filter-select">
+                        <option value="">Все товары</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}" {% if current_filters.product_id == product.id|string %}selected{% endif %}>{{ product.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">RAL цвет</label>
+                    <select name="ral" class="filter-select">
+                        <option value="">Все цвета</option>
+                        {% for ral_color in ral_colors %}
+                        <option value="{{ ral_color }}" {% if current_filters.ral == ral_color %}selected{% endif %}>RAL {{ ral_color }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Группировка</label>
+                    <select name="group_by" class="filter-select">
+                        <option value="day" {% if current_filters.group_by == 'day' %}selected{% endif %}>По дням</option>
+                        <option value="week" {% if current_filters.group_by == 'week' %}selected{% endif %}>По неделям</option>
+                        <option value="month" {% if current_filters.group_by == 'month' %}selected{% endif %}>По месяцам</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Метрика X (анализ)</label>
+                    <select name="metric_x" class="filter-select">
+                        <option value="glitter" {% if current_filters.metric_x == 'glitter' %}selected{% endif %}>Блеск</option>
+                        <option value="viskosity" {% if current_filters.metric_x == 'viskosity' %}selected{% endif %}>Вязкость</option>
+                        <option value="delta_e" {% if current_filters.metric_x == 'delta_e' %}selected{% endif %}>Delta E</option>
+                        <option value="drying_time" {% if current_filters.metric_x == 'drying_time' %}selected{% endif %}>Время высыхания</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Метрика Y (анализ)</label>
+                    <select name="metric_y" class="filter-select">
+                        <option value="glitter" {% if current_filters.metric_y == 'glitter' %}selected{% endif %}>Блеск</option>
+                        <option value="viskosity" {% if current_filters.metric_y == 'viskosity' %}selected{% endif %}>Вязкость</option>
+                        <option value="delta_e" {% if current_filters.metric_y == 'delta_e' %}selected{% endif %}>Delta E</option>
+                        <option value="drying_time" {% if current_filters.metric_y == 'drying_time' %}selected{% endif %}>Время высыхания</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-apply-filters">
+                <i class="fas fa-search me-2"></i>
+                Применить фильтры
+            </button>
+        </form>
+    </div>
+
+    <!-- Основные метрики -->
+    <div class="analytics-stats">
+        <h3 class="stats-title">
+            <i class="fas fa-chart-bar"></i>
+            Ключевые метрики
+        </h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ "%.0f"|format(metrics.total_revenue) }}</div>
+                <div class="stat-label">Общая выручка (руб.)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ metrics.orders_count }}</div>
+                <div class="stat-label">Всего заказов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ metrics.active_users }}</div>
+                <div class="stat-label">Активных пользователей</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ "%.0f"|format(metrics.avg_order_value) }}</div>
+                <div class="stat-label">Средний чек (руб.)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="charts-grid">
+        <!-- Тренды продаж -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-chart-line"></i>
+                Тренды продаж
+            </h3>
+            <div class="chart-container">
+                {% if sales_trends_chart %}
+                {{ sales_trends_chart|safe }}
+                {% else %}
+                <div class="no-data">Нет данных для отображения</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Популярность товаров -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-star"></i>
+                Популярность товаров
+            </h3>
+            <div class="chart-container">
+                {% if product_popularity_chart %}
+                {{ product_popularity_chart|safe }}
+                {% else %}
+                <div class="no-data">Нет данных для отображения</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Активность пользователей -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-users"></i>
+                Активность пользователей
+            </h3>
+            <div class="chart-container">
+                {% if user_activity_chart %}
+                {{ user_activity_chart|safe }}
+                {% else %}
+                <div class="no-data">Нет данных для отображения</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Уровни запасов -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-warehouse"></i>
+                Уровни запасов
+            </h3>
+            <div class="chart-container">
+                {% if stock_levels_chart %}
+                {{ stock_levels_chart|safe }}
+                {% else %}
+                <div class="no-data">Нет данных для отображения</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Статусы заказов -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-pie-chart"></i>
+                Статусы заказов
+            </h3>
+            <div class="chart-container">
+                {% if order_status_chart %}
+                {{ order_status_chart|safe }}
+                {% else %}
+                <div class="no-data">Нет данных для отображения</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Анализ выручки -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-dollar-sign"></i>
+                Анализ выручки
+            </h3>
+            <div class="chart-container">
+                {% if revenue_analysis_chart %}
+                {{ revenue_analysis_chart|safe }}
+                {% else %}
+                <div class="no-data">Нет данных для отображения</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Анализ качества -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-flask"></i>
+                Анализ качества
+            </h3>
+            <div class="chart-container">
+                {% if analyzis_chart %}
+                {{ analyzis_chart|safe }}
+                {% else %}
+                <div class="no-data">Нет данных для отображения</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Обновление даты
+function updateDate() {
+    const now = new Date();
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    document.getElementById('current-date').textContent = 'Обновлено: ' + now.toLocaleDateString('ru-RU', options);
+}
+
+updateDate();
+setInterval(updateDate, 60000); // Обновлять каждую минуту
+</script>
+{% endblock %}

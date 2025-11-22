@@ -772,3 +772,93 @@ def assign_chat_manager(user_id):
         return jsonify({'success': True})
     else:
         return jsonify({'error': 'Чат не найден'}), 404
+    
+@bp.route("/analytics")
+def analytics():
+    """Страница аналитики для администратора"""
+    from ..analytics import (
+        get_sales_trends, get_product_popularity, get_user_activity_metrics,
+        get_stock_levels, get_order_status_distribution, get_revenue_analysis,
+        get_analyzis_visualization, get_dashboard_metrics
+    )
+
+    # Получаем параметры фильтров из запроса
+    filters = {
+        'start_date': request.args.get('start_date'),
+        'end_date': request.args.get('end_date'),
+        'category': request.args.get('category'),
+        'user_role': request.args.get('user_role'),
+        'product_id': request.args.get('product_id'),
+        'ral': request.args.get('ral'),
+        'group_by': request.args.get('group_by', 'month'),
+        'metric_x': request.args.get('metric_x', 'glitter'),
+        'metric_y': request.args.get('metric_y', 'viskosity')
+    }
+
+    # Получаем данные для фильтров
+    categories = db.session.query(Product.category_product).distinct().all()
+    categories = [cat[0] for cat in categories if cat[0]]
+
+    products = Product.query.all()
+
+    ral_colors = db.session.query(Stock.ral_stock).distinct().all()
+    ral_colors = [ral[0] for ral in ral_colors if ral[0]]
+
+    # Генерируем графики
+    sales_trends_chart = get_sales_trends(
+        start_date=filters['start_date'],
+        end_date=filters['end_date'],
+        category=filters['category'],
+        user_role=filters['user_role']
+    )
+
+    product_popularity_chart = get_product_popularity(
+        start_date=filters['start_date'],
+        end_date=filters['end_date']
+    )
+
+    user_activity_chart = get_user_activity_metrics(
+        start_date=filters['start_date'],
+        end_date=filters['end_date'],
+        role=filters['user_role']
+    )
+
+    stock_levels_chart = get_stock_levels(
+        product_id=filters['product_id'],
+        ral=filters['ral']
+    )
+
+    order_status_chart = get_order_status_distribution(
+        start_date=filters['start_date'],
+        end_date=filters['end_date']
+    )
+
+    revenue_analysis_chart = get_revenue_analysis(
+        start_date=filters['start_date'],
+        end_date=filters['end_date'],
+        group_by=filters['group_by']
+    )
+
+    analyzis_chart = get_analyzis_visualization(
+        product_id=filters['product_id'],
+        metric_x=filters['metric_x'],
+        metric_y=filters['metric_y']
+    )
+
+    # Получаем метрики для дашборда
+    metrics = get_dashboard_metrics()
+
+    return render_template("admin_analytics.html",
+                         sales_trends_chart=sales_trends_chart,
+                         product_popularity_chart=product_popularity_chart,
+                         user_activity_chart=user_activity_chart,
+                         stock_levels_chart=stock_levels_chart,
+                         order_status_chart=order_status_chart,
+                         revenue_analysis_chart=revenue_analysis_chart,
+                         analyzis_chart=analyzis_chart,
+                         metrics=metrics,
+                         categories=categories,
+                         products=products,
+                         ral_colors=ral_colors,
+                         current_filters=filters,
+                         current_date=datetime.now().strftime('%d.%m.%Y %H:%M'))
