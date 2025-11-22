@@ -146,7 +146,7 @@
         {%endif%}
     </div>
   </div>
-
+{% if not session.user or session.user.role == 'buyer'%}
   <footer class="text-white py-4">
     <div class="container footer">
       <div class="footer-column">
@@ -186,7 +186,7 @@
       </div>
     </div>
   </footer>
-
+{%endif%}
   <script>
     function toggleMobileMenu() {
       const mobileNav = document.getElementById('mobileNav');

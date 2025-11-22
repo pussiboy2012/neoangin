@@ -112,6 +112,15 @@ def register():
         company_name = request.form.get('company_name', '')
         phone = request.form.get('phone', '')
 
+        # Проверяем, что название компании указано (т.е. ИНН был проверен)
+        if not company_name:
+            error_msg = 'Пожалуйста, проверьте ИНН перед регистрацией для получения названия компании.'
+            if is_ajax:
+                return jsonify({'success': False, 'message': error_msg})
+            else:
+                flash(error_msg)
+                return render_template('register.html', title="Регистрация")
+
         try:
             user = create_user(email, name, inn, company_name, phone, password, 'buyer')
             if is_ajax:

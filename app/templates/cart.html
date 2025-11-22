@@ -20,7 +20,7 @@
                 {% for it in stock_items %}
                 <div class="cart-item stock-item" data-product-id="{{ it.product.id_product }}">
                     <div class="item-image">
-                        <img src="https://via.placeholder.com/80x80/4a5568/ffffff?text=Product"
+                        <img src="../../static/{{ it.product.img_path_product }}"
                              alt="{{ it.title }}"
                              class="product-img">
                     </div>
@@ -69,7 +69,7 @@
                 {% for it in production_items %}
                 <div class="cart-item production-item" data-product-id="{{ it.product.id_product }}">
                     <div class="item-image">
-                        <img src="https://via.placeholder.com/80x80/4a5568/ffffff?text=Product"
+                        <img src="../../static/{{ it.product.img_path_product }}"
                              alt="{{ it.title }}"
                              class="product-img">
                     </div>

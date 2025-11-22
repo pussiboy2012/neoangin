@@ -281,10 +281,19 @@
       "timestamp": "2025-11-14T23:32:39.148086",
       "sender_name": "Менеджер",
       "read": true
+    },
+    {
+      "id": "msg_99b9b3d6",
+      "role": "manager",
+      "content": "секс секс секс",
+      "type": "text",
+      "timestamp": "2025-11-22T01:15:08.702378",
+      "sender_name": "Система",
+      "read": true
     }
   ],
   "bot_enabled": false,
   "assigned_manager": null,
   "status": "active",
-  "last_activity": "2025-11-14T23:32:39.148097"
+  "last_activity": "2025-11-22T01:15:08.702390"
 }

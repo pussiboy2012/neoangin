@@ -91,6 +91,10 @@ def create_user_route():
             inn = ""
             company_name = "ООО \"Прайм-Топ\""
 
+        # Проверяем обязательные поля для покупателей
+        if role == 'buyer' and not company_name:
+            return jsonify({"success": False, "error": "Название компании обязательно для покупателей. Пожалуйста, проверьте ИНН."})
+
         # Проверка существующего пользователя
         from ..db_helpers import get_user_by_email
         if get_user_by_email(email):
@@ -257,7 +261,7 @@ def stocks():
         FROM stocks s
         JOIN products p ON s.id_product = p.id_product
         WHERE s.count_stock > 0
-        ORDER BY p.nomenclature_product, s.ral_stock, s.date_stock
+        ORDER BY p.title_product, s.ral_stock, s.date_stock
     """)).fetchall()
 
     # Получаем все продукты для формы обновления

@@ -45,6 +45,9 @@
                 <div class="input-hint">Формат: +7 (XXX) XXX-XX-XX</div>
             </div>
 
+            <!-- Скрытое поле для названия компании -->
+            <input type="hidden" name="company_name" id="companyName">
+
             <!-- Безопасность -->
 
             <!-- Пароль -->
@@ -408,11 +411,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 if (data.company_name) {
                     showInnStatus(`✓ ${data.company_name}`, 'verified');
+                    // Сохраняем название компании в скрытое поле
+                    document.getElementById('companyName').value = data.company_name;
                 } else {
                     showInnStatus('✓ ИНН проверен', 'verified');
                 }
             } else {
                 showInnStatus(data.error || 'Ошибка проверки ИНН', 'error');
+                // Очищаем название компании при ошибке
+                document.getElementById('companyName').value = '';
             }
         } catch (error) {
             console.error('Ошибка проверки ИНН:', error);
