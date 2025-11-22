@@ -65,7 +65,7 @@
                         <i class="fas fa-phone"></i>
                         Телефон:
                     </div>
-                    <div class="info-value">{{ user.phone_user }}</div>
+                    <div class="info-value" id="phoneDisplay">{{ user.phone_user }}</div>
                 </div>
                 {% endif %}
                 {% if user.full_name %}
@@ -512,5 +512,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Форматируем телефон при загрузке страницы
+    const phoneDisplay = document.getElementById('phoneDisplay');
+    if (phoneDisplay) {
+        const originalPhone = phoneDisplay.textContent;
+        const formattedPhone = formatPhoneNumberDisplay(originalPhone);
+        if (formattedPhone) {
+            phoneDisplay.textContent = formattedPhone;
+        }
+    }
+
+    // Подтверждение выхода
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            if (!confirm('Вы уверены, что хотите выйти из аккаунта?')) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+
+// Функция для форматирования телефона
+function formatPhoneNumberDisplay(phone) {
+    if (!phone) return '';
+
+    // Убираем все нецифровые символы
+    let digits = phone.replace(/\D/g, '');
+
+    // Если номер начинается с 7 или 8, убираем первую цифру
+    if (digits.startsWith('7') || digits.startsWith('8')) {
+        digits = digits.substring(1);
+    }
+
+    // Форматируем в красивый вид
+    let formatted = '+7 ';
+
+    if (digits.length > 0) {
+        formatted += '(' + digits.substring(0, 3);
+    }
+    if (digits.length > 3) {
+        formatted += ') ' + digits.substring(3, 6);
+    }
+    if (digits.length > 6) {
+        formatted += '-' + digits.substring(6, 8);
+    }
+    if (digits.length > 8) {
+        formatted += '-' + digits.substring(8, 10);
+    }
+
+    return formatted;
+}
 </script>
 {% endblock %}
