@@ -18,7 +18,8 @@
       "content": "Извините, сервис временно недоступен. Попробуйте позже.",
       "type": "text",
       "timestamp": "2025-11-14T18:28:06.092388",
-      "sender_name": "Неизвестный"
+      "sender_name": "Неизвестный",
+      "read": true
     },
     {
       "id": "msg_ba03731f",
@@ -35,7 +36,8 @@
       "content": "Извините, сервис временно недоступен. Попробуйте позже.",
       "type": "text",
       "timestamp": "2025-11-14T18:28:09.561641",
-      "sender_name": "Неизвестный"
+      "sender_name": "Неизвестный",
+      "read": true
     },
     {
       "id": "msg_a3cc9350",
@@ -52,7 +54,8 @@
       "content": "Извините, сервис временно недоступен. Попробуйте позже.",
       "type": "text",
       "timestamp": "2025-11-14T18:29:13.716887",
-      "sender_name": "Неизвестный"
+      "sender_name": "Неизвестный",
+      "read": true
     },
     {
       "id": "msg_d06862f1",
@@ -69,7 +72,8 @@
       "content": "Извините, сервис временно недоступен. Попробуйте позже.",
       "type": "text",
       "timestamp": "2025-11-14T18:29:14.977245",
-      "sender_name": "Неизвестный"
+      "sender_name": "Неизвестный",
+      "read": true
     },
     {
       "id": "msg_87f11455",
@@ -86,7 +90,8 @@
       "content": "Извините, сервис временно недоступен. Попробуйте позже.",
       "type": "text",
       "timestamp": "2025-11-14T18:31:37.828937",
-      "sender_name": "Неизвестный"
+      "sender_name": "Неизвестный",
+      "read": true
     },
     {
       "id": "msg_f0767dd8",
@@ -103,7 +108,8 @@
       "content": "Здравствуйте! Я рад помочь вам с выбором красок и отделочных материалов для вашего проекта. Однако, я не совсем понял ваш запрос. Введите, пожалуйста, более конкретный вопрос или запрос, и я постараюсь помочь вам в кратчайшие сроки.\n\nНапример, вам может потребоваться помощь в выборе цвета для стен, или вы хотите узнать о типах покрытий для деревянных поверхностей, или вам нужно рассчитать расход материалов для вашего проекта? Я готов помочь вам в любом из этих вопросов.",
       "type": "text",
       "timestamp": "2025-11-14T18:33:46.379432",
-      "sender_name": "Неизвестный"
+      "sender_name": "Неизвестный",
+      "read": true
     },
     {
       "id": "msg_61124e40",
@@ -111,7 +117,8 @@
       "content": "привет, сегодня мы не работаем, поэтому ты пока спишь !",
       "type": "text",
       "timestamp": "2025-11-14T22:15:23.888359",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_fe9bcb6a",
@@ -119,7 +126,8 @@
       "content": "ты лох, или не лох ?",
       "type": "text",
       "timestamp": "2025-11-14T22:25:22.874681",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_dc18d1ec",
@@ -127,7 +135,8 @@
       "content": "лох",
       "type": "text",
       "timestamp": "2025-11-14T22:26:24.138695",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_6acbdb81",
@@ -135,7 +144,8 @@
       "content": "хоз",
       "type": "text",
       "timestamp": "2025-11-14T22:26:34.883754",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_39f370f7",
@@ -143,7 +153,8 @@
       "content": "лох",
       "type": "text",
       "timestamp": "2025-11-14T22:37:13.966672",
-      "sender_name": "manager"
+      "sender_name": "manager",
+      "read": true
     },
     {
       "id": "msg_09484a21",
@@ -151,7 +162,8 @@
       "content": "лох",
       "type": "text",
       "timestamp": "2025-11-14T22:37:29.418578",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_a3989536",
@@ -159,7 +171,8 @@
       "content": "лох",
       "type": "text",
       "timestamp": "2025-11-14T22:37:36.985824",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_1118d281",
@@ -167,7 +180,8 @@
       "content": "хлвжлвыужлв",
       "type": "text",
       "timestamp": "2025-11-14T22:37:58.387618",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_35d1cfe7",
@@ -175,7 +189,8 @@
       "content": "лох",
       "type": "text",
       "timestamp": "2025-11-14T22:46:38.843784",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_ca2744d3",
@@ -183,7 +198,8 @@
       "content": "вжух",
       "type": "text",
       "timestamp": "2025-11-14T22:46:50.284678",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_f92138e1",
@@ -191,7 +207,8 @@
       "content": "вжух",
       "type": "text",
       "timestamp": "2025-11-14T22:50:05.578009",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_4d442005",
@@ -199,7 +216,8 @@
       "content": "rora",
       "type": "text",
       "timestamp": "2025-11-14T22:50:57.957343",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_99d2550f",
@@ -207,7 +225,8 @@
       "content": "как какать ?",
       "type": "text",
       "timestamp": "2025-11-14T22:54:48.394631",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_1784a415",
@@ -215,7 +234,8 @@
       "content": "привет",
       "type": "text",
       "timestamp": "2025-11-14T23:02:36.914487",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_f977007f",
@@ -223,7 +243,8 @@
       "content": "привет",
       "type": "text",
       "timestamp": "2025-11-14T23:13:17.396002",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_6c82b4fe",
@@ -231,7 +252,8 @@
       "content": "вжух",
       "type": "text",
       "timestamp": "2025-11-14T23:20:28.154904",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_30ddd72a",
@@ -239,7 +261,8 @@
       "content": "Сас",
       "type": "text",
       "timestamp": "2025-11-14T23:23:45.930356",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_76a20538",
@@ -247,7 +270,8 @@
       "content": "Сас",
       "type": "text",
       "timestamp": "2025-11-14T23:30:20.617357",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     },
     {
       "id": "msg_de594dfe",
@@ -255,10 +279,11 @@
       "content": "привет",
       "type": "text",
       "timestamp": "2025-11-14T23:32:39.148086",
-      "sender_name": "Менеджер"
+      "sender_name": "Менеджер",
+      "read": true
     }
   ],
-  "bot_enabled": true,
+  "bot_enabled": false,
   "assigned_manager": null,
   "status": "active",
   "last_activity": "2025-11-14T23:32:39.148097"

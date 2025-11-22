@@ -346,25 +346,34 @@
             <p class="management-subtitle">Просмотр и управление всеми заказами в системе</p>
         </div>
 
-        <!-- Sorting and Filtering Controls -->
+        <!-- Фильтры и сортировка -->
         <div class="filters-section" style="background: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 2rem;">
-            <form method="GET" action="{{ url_for('admin.admin_orders') }}" class="d-flex gap-3 align-items-end flex-wrap">
+            <form method="GET" action="{{ url_for('manager.orders') }}" class="d-flex gap-3 align-items-end flex-wrap">
                 <div class="form-group">
                     <label for="sort_by" class="form-label fw-bold">Сортировка</label>
                     <select name="sort_by" id="sort_by" class="form-select">
                         <option value="date" {% if sort_by == 'date' %}selected{% endif %}>По дате</option>
-                        <option value="customer" {% if sort_by == 'customer' %}selected{% endif %}>По компании</option>
                         <option value="status" {% if sort_by == 'status' %}selected{% endif %}>По статусу</option>
+                        <option value="total" {% if sort_by == 'total' %}selected{% endif %}>По сумме</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="filter_customer" class="form-label fw-bold">Фильтр по компании</label>
-                    <input type="text" name="filter_customer" id="filter_customer" class="form-control" placeholder="Введите название компании" value="{{ filter_customer }}">
+                    <label for="filter_status" class="form-label fw-bold">Статус</label>
+                    <select name="filter_status" id="filter_status" class="form-select">
+                        <option value="">Все статусы</option>
+                        <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>На рассмотрении</option>
+                        <option value="approved" {% if filter_status == 'approved' %}selected{% endif %}>Одобрено</option>
+                        <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>Выполнено</option>
+                        <option value="rejected" {% if filter_status == 'rejected' %}selected{% endif %}>Отклонено</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search me-2"></i>Применить
                     </button>
+                    <a href="{{ url_for('manager.orders') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-refresh me-2"></i>Сбросить
+                    </a>
                 </div>
             </form>
         </div>

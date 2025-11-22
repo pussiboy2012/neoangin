@@ -5,6 +5,9 @@ from sqlalchemy import text
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from ..utils import USERS, read_json
+from pathlib import Path
+from ..utils import get_all_chats, get_chat, add_message_to_chat, toggle_bot_for_chat, assign_manager_to_chat, create_chat, mark_all_messages_as_read
 
 bp = Blueprint("manager", __name__, template_folder="../templates")
 
@@ -23,31 +26,43 @@ def manager_index():
 
 @bp.route("/orders")
 def orders():
-    """Страница управления заказами для менеджера"""
+    """Страница управления заказами для менеджера с фильтрацией"""
+    # Получаем параметры фильтрации
+    sort_by = request.args.get('sort_by', 'date')
+    filter_status = request.args.get('filter_status', '')
+
+    # Получаем все заказы
     orders = get_all_orders()
-    # Prepare orders data for template
+
+    # Применяем фильтрацию по статусу
+    if filter_status:
+        orders = [o for o in orders if o.status_order == filter_status]
+
+    # Сортируем заказы
+    if sort_by == 'date':
+        orders.sort(key=lambda x: x.created_at_order or datetime.min, reverse=True)
+    elif sort_by == 'status':
+        orders.sort(key=lambda x: x.status_order)
+    elif sort_by == 'total':
+        # Здесь нужно будет добавить расчет общей суммы заказа
+        pass
+
+    # Подготавливаем данные для шаблона (аналогично предыдущей версии)
     orders_data = []
     for order in orders:
-        # Создаем базовый словарь для заказа
         order_dict = {
             'id': order.id_order,
             'user_id': order.id_user,
             'status': order.status_order,
             'created_at': order.created_at_order.isoformat() if order.created_at_order else '',
             'total': 0,
-            'items': []  # Явно инициализируем как пустой список
+            'items': []
         }
-
-        # Отладочная информация
-        print(f"Order {order.id_order}:")
-        print(f"  Status: {order.status_order}")
-        print(f"  User: {order.id_user}")
 
         # Получаем товары из ProductOrder
         try:
             if hasattr(order, 'order_items'):
                 product_items = list(order.order_items)  # Преобразуем в список
-                print(f"  Product items: {len(product_items)}")
 
                 for item in product_items:
                     product = getattr(item, 'product', None)
@@ -75,7 +90,6 @@ def orders():
         try:
             if hasattr(order, 'stock_order_items'):
                 stock_items = list(order.stock_order_items)  # Преобразуем в список
-                print(f"  Stock items: {len(stock_items)}")
 
                 for item in stock_items:
                     stock = getattr(item, 'stock', None)
@@ -104,14 +118,12 @@ def orders():
         except Exception as e:
             print(f"  Error processing stock items: {e}")
 
-        print(f"  Total items: {len(order_dict['items'])}")
-        print(f"  Total amount: {order_dict['total']}")
-        print("---")
 
         orders_data.append(order_dict)
-
-    print(f"Total orders processed: {len(orders_data)}")
-    return render_template("manager_orders.html", orders=orders_data)
+    return render_template("manager_orders.html",
+                           orders=orders_data,
+                           sort_by=sort_by,
+                           filter_status=filter_status)
 
 @bp.route("/order/approve/<order_id>")
 def approve_order(order_id):
@@ -222,19 +234,24 @@ def edit_product(product_id):
     return render_template("manager_edit_product.html", product=product)
 
 
-@bp.route("/chats")
+# Переименовал для единообразия
+@bp.route('/chats')
 def chats():
-    """Страница чатов для менеджера"""
-    from ..utils import get_all_chats
+    """Страница со списком всех чатов"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return redirect(url_for('buyer.login'))
+
     chats = get_all_chats()
 
     # Обрабатываем данные для шаблона
     processed_chats = []
     for chat in chats:
         # Получаем информацию о пользователе
-        from ..db_helpers import get_user_by_id
-        user = get_user_by_id(chat['user_id'])
-        user_name = user.fullname_user if user else 'Покупатель'
+        user_file = Path(USERS) / f"{chat['user_id']}.json"
+        user_name = chat.get('user_name', 'Покупатель')
+        if user_file.exists():
+            user_data = read_json(user_file)
+            user_name = user_data.get('username', user_data.get('full_name', user_name))
 
         # Форматируем время последнего сообщения
         last_message_time = None
@@ -254,7 +271,7 @@ def chats():
     # Сортируем по времени последнего сообщения (сначала новые)
     processed_chats.sort(key=lambda x: x['last_message_time'] or '', reverse=True)
 
-    return render_template("manager_chats.html", chats=processed_chats)
+    return render_template('manager_chats.html', chats=processed_chats)  # <- исправлено на manager_chats.html
 
 
 def format_chat_time(timestamp):
@@ -268,6 +285,94 @@ def format_chat_time(timestamp):
         return timestamp
     except:
         return timestamp
+
+@bp.route('/api/chat/<user_id>/mark_read', methods=['POST'])
+def mark_chat_read(user_id):
+    """Помечает все сообщения в чате как прочитанные"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    try:
+        success = mark_all_messages_as_read(user_id)
+        return jsonify({'success': success})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/chat/<user_id>')
+def chat_detail(user_id):
+    """Детальная страница чата"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return redirect(url_for('buyer.login'))
+
+    chat = get_chat(user_id)
+    if not chat:
+        # Создаем чат если его нет
+        user_data = read_json(Path(USERS) / f"{user_id}.json")
+        user_name = user_data.get('full_name', 'Покупатель') if user_data else 'Покупатель'
+        company_name = user_data.get('company_name', 'ООО ДАБАТА') if user_data else 'ООО ДАБАТА'
+        chat = create_chat(user_id, user_name, company_name)
+
+    # ИСПРАВЛЕНИЕ: передаем chat (один чат) в шаблон деталей
+    return render_template('manager_chat_detail.html', chat=chat)  # <- передаем chat, а не chats
+
+
+@bp.route('/api/chat/<user_id>/message', methods=['POST'])
+def send_manager_message(user_id):
+    """Отправка сообщения от менеджера"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    message = request.json.get('message', '').strip()
+    if not message:
+        return jsonify({'error': 'Пустое сообщение'}), 400
+
+    # Сохраняем сообщение менеджера
+    add_message_to_chat(user_id, "manager", message)
+
+    return jsonify({'success': True})
+
+@bp.route('/api/chat/<user_id>/messages')
+def get_chat_messages(user_id):
+    """Получение сообщений чата (для AJAX обновления)"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    chat = get_chat(user_id)
+    if not chat:
+        return jsonify({'messages': []})
+
+    # Возвращаем все сообщения чата
+    return jsonify({'messages': chat.get('messages', [])})
+
+
+@bp.route('/api/chat/<user_id>/toggle_bot', methods=['POST'])
+def toggle_chat_bot(user_id):
+    """Включение/выключение бота для чата"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    enabled = request.json.get('enabled', False)
+    success = toggle_bot_for_chat(user_id, enabled)
+
+    if success:
+        return jsonify({'success': True, 'bot_enabled': enabled})
+    else:
+        return jsonify({'error': 'Чат не найден'}), 404
+
+
+@bp.route('/api/chat/<user_id>/assign', methods=['POST'])
+def assign_chat_manager(user_id):
+    """Назначение менеджера на чат"""
+    if session.get('user', {}).get('role') not in ['admin', 'manager']:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    manager_id = request.json.get('manager_id')
+    success = assign_manager_to_chat(user_id, manager_id)
+
+    if success:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'error': 'Чат не найден'}), 404
 
 
 @bp.route("/reports")

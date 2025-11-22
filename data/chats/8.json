@@ -1,0 +1,48 @@
+{
+  "user_id": 8,
+  "user_name": "креветка № 8",
+  "user_company": "ООО ДАБАТА",
+  "created_at": "2025-11-21T22:11:23.003704",
+  "messages": [
+    {
+      "id": "msg_8014c3af",
+      "role": "user",
+      "content": "ты лох",
+      "type": "text",
+      "timestamp": "2025-11-22T00:28:59.952301",
+      "sender_name": "Покупатель",
+      "read": false
+    },
+    {
+      "id": "msg_292c7588",
+      "role": "bot",
+      "content": "Извините, сервис временно недоступен. Попробуйте позже.",
+      "type": "text",
+      "timestamp": "2025-11-22T00:29:00.597800",
+      "sender_name": "Система",
+      "read": true
+    },
+    {
+      "id": "msg_20ae8fd0",
+      "role": "user",
+      "content": "соси лапу",
+      "type": "text",
+      "timestamp": "2025-11-22T00:31:35.764290",
+      "sender_name": "Покупатель",
+      "read": false
+    },
+    {
+      "id": "msg_efd3b106",
+      "role": "bot",
+      "content": "Извините, сервис временно недоступен. Попробуйте позже.",
+      "type": "text",
+      "timestamp": "2025-11-22T00:31:36.412589",
+      "sender_name": "Система",
+      "read": true
+    }
+  ],
+  "bot_enabled": true,
+  "assigned_manager": null,
+  "status": "active",
+  "last_activity": "2025-11-22T00:31:36.412589"
+}
