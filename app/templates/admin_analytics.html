@@ -12,113 +12,54 @@
 
     body {
         background:
-            radial-gradient(circle at 20% 80%, rgba(44, 62, 80, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(52, 73, 94, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 20% 80%, rgba(44, 62, 80, 0.12) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(52, 73, 94, 0.12) 0%, transparent 50%),
             linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         color: var(--admin-primary);
+        font-family: 'Arial', sans-serif;
     }
 
     .analytics-hero {
         padding-top: 30px;
         padding-bottom: 20px;
     }
-
-    .analytics-badge {
-        color: white;
-        padding: 0.5rem 1.5rem;
-        border-radius: 25px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
-    }
-
+    
+    /* Enhanced filter section */
     .filters-section {
-        background: white;
+        background: #ffffffdd;
         border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
+        padding: 2.5rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        margin-bottom: 2.5rem;
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .filters-section:hover {
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
     }
 
     .filters-title {
-        font-size: 1.3rem;
+        font-size: 1.45rem;
         font-weight: 700;
         color: var(--admin-primary);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.75rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.85rem;
     }
 
-    .filter-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .filter-label {
-        font-weight: 600;
-        color: var(--admin-primary);
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-    }
-
-    .filter-input, .filter-select {
-        padding: 0.5rem;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        transition: border-color 0.3s ease;
-    }
-
-    .filter-input:focus, .filter-select:focus {
-        outline: none;
-        border-color: var(--admin-info);
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
-
-    .btn-apply-filters {
-        background: linear-gradient(135deg, var(--admin-info), #3498db);
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-        margin-top: 1rem;
-    }
-
-    .btn-apply-filters:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-    }
-
-    .charts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
-    }
-
+    /* Chart card improvements */
     .chart-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        background: #ffffffdd;
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border: 1px solid rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.07);
         position: relative;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     .chart-card::before {
@@ -127,10 +68,12 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 4px;
+        height: 6px;
         background: linear-gradient(90deg, var(--admin-primary), var(--admin-accent), var(--admin-info));
-        background-size: 200% 100%;
-        animation: analyticsGradientShift 4s ease infinite;
+        background-size: 300% 100%;
+        animation: analyticsGradientShift 6s ease infinite;
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
     }
 
     @keyframes analyticsGradientShift {
@@ -140,80 +83,91 @@
     }
 
     .chart-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 55px rgba(0,0,0,0.15);
     }
 
     .chart-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--admin-primary);
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .chart-container {
-        min-height: 400px;
-    }
-
-    .analytics-stats {
-        background: white;
-        border-radius: 20px;
-        padding: 2.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin-bottom: 3rem;
-    }
-
-    .stats-title {
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--admin-primary);
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
+    }
+
+    .chart-container {
+        min-height: 420px;
+        flex-grow: 1;
+    }
+
+    /* Stats improvements */
+    .analytics-stats {
+        background: #ffffffdd;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        margin-bottom: 3.5rem;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .analytics-stats:hover {
+        box-shadow: 0 22px 60px rgba(0,0,0,0.18);
+    }
+
+    .stats-title {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: var(--admin-primary);
+        margin-bottom: 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
+        gap: 1.75rem;
     }
 
     .stat-item {
         text-align: center;
-        padding: 1.5rem;
-        border-radius: 15px;
-        background: #f8f9fa;
-        transition: transform 0.3s ease;
+        padding: 2rem;
+        border-radius: 18px;
+        background: #f0f2f5;
+        box-shadow: 0 8px 25px rgba(44,62,80,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .stat-item:hover {
-        transform: translateY(-5px);
+        transform: translateY(-8px);
+        box-shadow: 0 14px 38px rgba(44,62,80,0.12);
     }
 
     .stat-number {
-        font-size: 2.5rem;
-        font-weight: 800;
+        font-size: 3rem;
+        font-weight: 900;
         background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        letter-spacing: 0.05em;
     }
 
     .stat-label {
         color: #6c757d;
-        font-weight: 500;
-        font-size: 0.9rem;
+        font-weight: 600;
+        font-size: 1rem;
     }
 
     .no-data {
         text-align: center;
         color: #6c757d;
         font-style: italic;
-        padding: 2rem;
+        padding: 2.5rem;
+        font-size: 1.1rem;
     }
 
     @media (max-width: 768px) {
@@ -226,8 +180,9 @@
     }
 </style>
 
-<!-- Подключаем Plotly.js -->
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!-- Removed plotly.js -->
+<!-- Added chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- Герой секция аналитики -->
 <section class="analytics-hero">
@@ -342,6 +297,245 @@
         </form>
     </div>
 
+
+<script>
+    // Обновление даты
+    function updateDate() {
+        const now = new Date();
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        document.getElementById('current-date').textContent = 'Обновлено: ' + now.toLocaleDateString('ru-RU', options);
+    }
+    
+    updateDate();
+    setInterval(updateDate, 60000); // Обновлять каждую минуту
+
+    // Chart.js initialization
+
+    function createLineChart(ctx, labels, datasetLabel, data, borderColor, backgroundColor) {
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: datasetLabel,
+                    data: data,
+                    borderColor: borderColor,
+                    backgroundColor: backgroundColor,
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: { display: true, text: 'Время' }
+                    },
+                    y: {
+                        display: true,
+                        title: { display: true, text: datasetLabel },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: { mode: 'index', intersect: false }
+                }
+            }
+        });
+    }
+
+    function createBarChart(ctx, labels, datasetLabel, data, backgroundColor) {
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: datasetLabel,
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: { display: true, text: '' }
+                    },
+                    y: {
+                        display: true,
+                        title: { display: true, text: datasetLabel },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
+                }
+            }
+        });
+    }
+
+    function createPieChart(ctx, labels, data, backgroundColor) {
+        return new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: { enabled: true }
+                }
+            }
+        });
+    }
+
+    // Parse chart data from JSON safely (passed from Flask backend)
+    function parseChartData(jsonData) {
+        try {
+            return JSON.parse(jsonData);
+        } catch (e) {
+            console.error('Failed to parse chart data JSON:', e);
+            return null;
+        }
+    }
+
+    // Initialize charts if data is available
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if sales_trends_chart %}
+        const salesData = parseChartData('{{ sales_trends_chart | tojson | safe }}');
+        if (salesData) {
+            createLineChart(
+                document.getElementById('salesTrendsChart').getContext('2d'),
+                salesData.labels,
+                'Тренды продаж',
+                salesData.data,
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 0.2)'
+            );
+        }
+        {% endif %}
+
+        {% if product_popularity_chart %}
+        const productPopularityData = parseChartData('{{ product_popularity_chart | tojson | safe }}');
+        if (productPopularityData) {
+            createBarChart(
+                document.getElementById('productPopularityChart').getContext('2d'),
+                productPopularityData.labels,
+                'Популярность товаров',
+                productPopularityData.data,
+                'rgba(255, 206, 86, 0.7)'
+            );
+        }
+        {% endif %}
+
+        {% if user_activity_chart %}
+        const userActivityData = parseChartData('{{ user_activity_chart | tojson | safe }}');
+        if (userActivityData) {
+            createBarChart(
+                document.getElementById('userActivityChart').getContext('2d'),
+                userActivityData.labels,
+                'Активность пользователей',
+                userActivityData.data,
+                'rgba(75, 192, 192, 0.7)'
+            );
+        }
+        {% endif %}
+
+    {% if stock_levels_chart %}
+    const stockLevelsData = parseChartData('{{ stock_levels_chart | tojson | safe }}');
+    if (stockLevelsData) {
+        createBarChart(
+            document.getElementById('stockLevelsChart').getContext('2d'),
+            stockLevelsData.labels,
+            'Уровни запасов',
+            stockLevelsData.data,
+            'rgba(255, 159, 64, 0.7)'
+        );
+    }
+    {% endif %}
+
+    {% if order_status_chart %}
+    const orderStatusData = parseChartData('{{ order_status_chart | tojson | safe }}');
+    if (orderStatusData) {
+        createPieChart(
+            document.getElementById('orderStatusChart').getContext('2d'),
+            orderStatusData.labels,
+            orderStatusData.data,
+            [
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(153, 102, 255, 0.7)'
+            ]
+        );
+    }
+    {% endif %}
+
+    {% if revenue_analysis_chart %}
+    const revenueAnalysisData = parseChartData('{{ revenue_analysis_chart | tojson | safe }}');
+    if (revenueAnalysisData) {
+        createLineChart(
+            document.getElementById('revenueAnalysisChart').getContext('2d'),
+            revenueAnalysisData.labels,
+            'Анализ выручки',
+            revenueAnalysisData.data,
+            'rgba(255, 206, 86, 1)',
+            'rgba(255, 206, 86, 0.2)'
+        );
+    }
+    {% endif %}
+
+    {% if analyzis_chart %}
+    const analyzisData = parseChartData('{{ analyzis_chart | tojson | safe }}');
+    if (analyzisData) {
+        createScatterChart(
+            document.getElementById('analyzisChart').getContext('2d'),
+            analyzisData
+        );
+    }
+    {% endif %}
+});
+</script>
+
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Метрика Y (анализ)</label>
+                    <select name="metric_y" class="filter-select">
+                        <option value="glitter" {% if current_filters.metric_y == 'glitter' %}selected{% endif %}>Блеск</option>
+                        <option value="viskosity" {% if current_filters.metric_y == 'viskosity' %}selected{% endif %}>Вязкость</option>
+                        <option value="delta_e" {% if current_filters.metric_y == 'delta_e' %}selected{% endif %}>Delta E</option>
+                        <option value="drying_time" {% if current_filters.metric_y == 'drying_time' %}selected{% endif %}>Время высыхания</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-apply-filters">
+                <i class="fas fa-search me-2"></i>
+                Применить фильтры
+            </button>
+        </form>
+    </div>
+
     <!-- Основные метрики -->
     <div class="analytics-stats">
         <h3 class="stats-title">
@@ -378,7 +572,7 @@
             </h3>
             <div class="chart-container">
                 {% if sales_trends_chart %}
-                {{ sales_trends_chart|safe }}
+                <canvas id="salesTrendsChart"></canvas>
                 {% else %}
                 <div class="no-data">Нет данных для отображения</div>
                 {% endif %}
@@ -393,7 +587,7 @@
             </h3>
             <div class="chart-container">
                 {% if product_popularity_chart %}
-                {{ product_popularity_chart|safe }}
+                <canvas id="productPopularityChart"></canvas>
                 {% else %}
                 <div class="no-data">Нет данных для отображения</div>
                 {% endif %}
@@ -408,7 +602,7 @@
             </h3>
             <div class="chart-container">
                 {% if user_activity_chart %}
-                {{ user_activity_chart|safe }}
+                <canvas id="userActivityChart"></canvas>
                 {% else %}
                 <div class="no-data">Нет данных для отображения</div>
                 {% endif %}
@@ -423,7 +617,7 @@
             </h3>
             <div class="chart-container">
                 {% if stock_levels_chart %}
-                {{ stock_levels_chart|safe }}
+                <canvas id="stockLevelsChart"></canvas>
                 {% else %}
                 <div class="no-data">Нет данных для отображения</div>
                 {% endif %}
@@ -438,7 +632,7 @@
             </h3>
             <div class="chart-container">
                 {% if order_status_chart %}
-                {{ order_status_chart|safe }}
+                <canvas id="orderStatusChart"></canvas>
                 {% else %}
                 <div class="no-data">Нет данных для отображения</div>
                 {% endif %}
@@ -453,7 +647,7 @@
             </h3>
             <div class="chart-container">
                 {% if revenue_analysis_chart %}
-                {{ revenue_analysis_chart|safe }}
+                <canvas id="revenueAnalysisChart"></canvas>
                 {% else %}
                 <div class="no-data">Нет данных для отображения</div>
                 {% endif %}
@@ -468,7 +662,7 @@
             </h3>
             <div class="chart-container">
                 {% if analyzis_chart %}
-                {{ analyzis_chart|safe }}
+                <canvas id="analyzisChart"></canvas>
                 {% else %}
                 <div class="no-data">Нет данных для отображения</div>
                 {% endif %}
@@ -477,6 +671,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Обновление даты
 function updateDate() {
@@ -493,5 +688,87 @@ function updateDate() {
 
 updateDate();
 setInterval(updateDate, 60000); // Обновлять каждую минуту
+
+// Parse chart JSON safely
+function parseChartData(jsonData) {
+    try {
+        return JSON.parse(jsonData);
+    } catch (e) {
+        console.error('Failed to parse chart data JSON:', e);
+        return null;
+    }
+}
+
+// Create charts
+
+function createLineChart(ctx, chartData) {
+    return new Chart(ctx, {
+        type: 'line',
+        data: chartData.data,
+        options: chartData.options
+    });
+}
+
+function createBarChart(ctx, chartData) {
+    return new Chart(ctx, {
+        type: 'bar',
+        data: chartData.data,
+        options: chartData.options
+    });
+}
+
+function createPieChart(ctx, chartData) {
+    return new Chart(ctx, {
+        type: 'pie',
+        data: chartData.data,
+        options: chartData.options
+    });
+}
+
+function createScatterChart(ctx, chartData) {
+    return new Chart(ctx, {
+        type: 'scatter',
+        data: chartData.data,
+        options: chartData.options
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    {% if sales_trends_chart %}
+    const salesTrendsData = parseChartData({{ sales_trends_chart | tojson | safe }});
+    if (salesTrendsData) {
+        createLineChart(document.getElementById('salesTrendsChart').getContext('2d'), salesTrendsData);
+    }
+    {% endif %}
+
+    {% if product_popularity_chart %}
+    const productPopularityData = parseChartData({{ product_popularity_chart | tojson | safe }});
+    if (productPopularityData) {
+        createBarChart(document.getElementById('productPopularityChart').getContext('2d'), productPopularityData);
+    }
+    {% endif %}
+
+    {% if user_activity_chart %}
+    const userActivityData = parseChartData({{ user_activity_chart | tojson | safe }});
+    if (userActivityData) {
+        createLineChart(document.getElementById('userActivityChart').getContext('2d'), userActivityData);
+    }
+    {% endif %}
+
+    {% if stock_levels_chart %}
+    const stockLevelsData = parseChartData({{ stock_levels_chart | tojson | safe }});
+    if (stockLevelsData) {
+        createBarChart(document.getElementById('stockLevelsChart').getContext('2d'), stockLevelsData);
+    }
+    {% endif %}
+
+    {% if order_status_chart %}
+    const orderStatusData = parseChartData({{ order_status_chart | tojson | safe }});
+    if (orderStatusData) {
+        createPieChart(document.getElementById('orderStatusChart').getContext('2d'), orderStatusData);
+    }
+        {% endif %}
+    });
 </script>
+
 {% endblock %}

@@ -781,6 +781,7 @@ def analytics():
         get_stock_levels, get_order_status_distribution, get_revenue_analysis,
         get_analyzis_visualization, get_dashboard_metrics
     )
+    import json
 
     # Получаем параметры фильтров из запроса
     filters = {
@@ -848,14 +849,18 @@ def analytics():
     # Получаем метрики для дашборда
     metrics = get_dashboard_metrics()
 
+    # Serialize chart data to JSON for template JS usage
+    def safe_json(chart_obj):
+        return json.dumps(chart_obj) if chart_obj else None
+
     return render_template("admin_analytics.html",
-                         sales_trends_chart=sales_trends_chart,
-                         product_popularity_chart=product_popularity_chart,
-                         user_activity_chart=user_activity_chart,
-                         stock_levels_chart=stock_levels_chart,
-                         order_status_chart=order_status_chart,
-                         revenue_analysis_chart=revenue_analysis_chart,
-                         analyzis_chart=analyzis_chart,
+                         sales_trends_chart=safe_json(sales_trends_chart),
+                         product_popularity_chart=safe_json(product_popularity_chart),
+                         user_activity_chart=safe_json(user_activity_chart),
+                         stock_levels_chart=safe_json(stock_levels_chart),
+                         order_status_chart=safe_json(order_status_chart),
+                         revenue_analysis_chart=safe_json(revenue_analysis_chart),
+                         analyzis_chart=safe_json(analyzis_chart),
                          metrics=metrics,
                          categories=categories,
                          products=products,

@@ -1,14 +1,21 @@
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
 import pandas as pd
 from datetime import datetime, timedelta
-from sqlalchemy import func, extract, and_, or_
-from .models import db, User, Product, Stock, Analyzis, Order, ProductOrder, StockOrder
-from collections import defaultdict
+from sqlalchemy import func, extract
+from .models import db, User, Product, Stock, Analyzis, Order, ProductOrder
+
+# Define a consistent color palette based on CSS variables
+COLORS = {
+    'primary': '#2c3e50',  # dark blue
+    'accent': '#e74c3c',   # red
+    'info': '#3498db',     # blue
+    'success': '#27ae60',  # green
+    'warning': '#f39c12',  # orange
+    'purple': '#9b59b6',
+    'orange': '#e67e22'
+}
 
 def get_sales_trends(start_date=None, end_date=None, category=None, user_role=None):
-    """График трендов продаж с фильтрами"""
+    """График трендов продаж с фильтрами, возвращает данные для chart.js"""
     query = db.session.query(
         Order.created_at_order.label('date'),
         func.sum(ProductOrder.count * Product.price_product).label('revenue'),
@@ -36,41 +43,88 @@ def get_sales_trends(start_date=None, end_date=None, category=None, user_role=No
         return None
 
     df['date'] = pd.to_datetime(df['date'])
+    labels = df['date'].dt.strftime('%Y-%m-%d').tolist()
+    revenue_data = df['revenue'].tolist()
+    orders_count_data = df['orders_count'].tolist()
 
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-    fig.add_trace(
-        go.Scatter(x=df['date'], y=df['revenue'], name="Выручка",
-                  line=dict(color='#2ecc71', width=3)),
-        secondary_y=False,
-    )
-
-    fig.add_trace(
-        go.Bar(x=df['date'], y=df['orders_count'], name="Количество заказов",
-              marker_color='#3498db', opacity=0.7),
-        secondary_y=True,
-    )
-
-    fig.update_layout(
-        title="Тренды продаж",
-        xaxis_title="Дата",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False),
-        autosize=True,
-        margin=dict(l=0, r=0, t=50, b=0)
-    )
-
-    fig.update_yaxes(title_text="Выручка (руб.)", secondary_y=False, showgrid=False)
-    fig.update_yaxes(title_text="Количество заказов", secondary_y=True, showgrid=False)
-
-    return fig.to_html(full_html=False, include_plotlyjs=False)
+    data = {
+        'labels': labels,
+        'datasets': [
+            {
+                'label': 'Выручка',
+                'data': revenue_data,
+                'borderColor': COLORS['success'],
+                'backgroundColor': COLORS['success'],
+                'yAxisID': 'y',
+                'type': 'line',
+                'fill': False,
+                'tension': 0.3,
+                'pointRadius': 5
+            },
+            {
+                'label': 'Количество заказов',
+                'data': orders_count_data,
+                'backgroundColor': COLORS['info'],
+                'yAxisID': 'y1',
+                'type': 'bar',
+                'opacity': 0.8
+            }
+        ]
+    }
+    options = {
+        'responsive': True,
+        'interaction': {
+            'mode': 'index',
+            'intersect': False
+        },
+        'stacked': False,
+        'plugins': {
+            'title': {
+                'display': True,
+                'text': 'Тренды продаж',
+                'font': {'size': 24, 'family': 'Arial', 'color': COLORS['primary']}
+            }
+        },
+        'scales': {
+            'y': {
+                'type': 'linear',
+                'display': True,
+                'position': 'left',
+                'title': {
+                    'display': True,
+                    'text': 'Выручка (руб.)'
+                },
+                'grid': {
+                    'display': True,
+                    'color': 'rgba(0,0,0,0.05)'
+                }
+            },
+            'y1': {
+                'type': 'linear',
+                'display': True,
+                'position': 'right',
+                'title': {
+                    'display': True,
+                    'text': 'Количество заказов'
+                },
+                'grid': {
+                    'drawOnChartArea': False
+                }
+            },
+            'x': {
+                'grid': {
+                    'display': True,
+                    'color': 'rgba(0,0,0,0.05)'
+                }
+            }
+        }
+    }
+    return {'data': data, 'options': options}
 
 def get_product_popularity(limit=10, start_date=None, end_date=None):
-    """Популярность товаров"""
+    """Популярность товаров, возвращает данные для Chart.js"""
     query = db.session.query(
         Product.title_product,
-        Product.category_product,
         func.sum(ProductOrder.count).label('total_sold'),
         func.sum(ProductOrder.count * Product.price_product).label('total_revenue')
     ).join(ProductOrder, Product.id_product == ProductOrder.id_product)\
@@ -82,7 +136,7 @@ def get_product_popularity(limit=10, start_date=None, end_date=None):
     if end_date:
         query = query.filter(Order.created_at_order <= end_date)
 
-    query = query.group_by(Product.id_product, Product.title_product, Product.category_product)\
+    query = query.group_by(Product.id_product, Product.title_product)\
                  .order_by(func.sum(ProductOrder.count).desc())\
                  .limit(limit)
 
@@ -91,35 +145,56 @@ def get_product_popularity(limit=10, start_date=None, end_date=None):
     if df.empty:
         return None
 
-    fig = make_subplots(rows=1, cols=2, subplot_titles=('По количеству продаж', 'По выручке'))
+    labels = df['title_product'].tolist()
+    sold_data = df['total_sold'].tolist()
+    revenue_data = df['total_revenue'].tolist()
 
-    fig.add_trace(
-        go.Bar(x=df['title_product'], y=df['total_sold'],
-              marker_color='#e74c3c', name='Количество'),
-        row=1, col=1
-    )
-
-    fig.add_trace(
-        go.Bar(x=df['title_product'], y=df['total_revenue'],
-              marker_color='#f39c12', name='Выручка'),
-        row=1, col=2
-    )
-
-    fig.update_layout(
-        title="Популярность товаров",
-        showlegend=False,
-        autosize=True,
-        margin=dict(l=0, r=0, t=50, b=0)
-    )
-
-    fig.update_xaxes(tickangle=45, showgrid=False)
-    fig.update_yaxes(showgrid=False)
-
-    return fig.to_html(full_html=False, include_plotlyjs=False)
+    data = {
+        'labels': labels,
+        'datasets': [
+            {
+                'label': 'Количество продаж',
+                'data': sold_data,
+                'backgroundColor': COLORS['accent'],
+                'type': 'bar'
+            },
+            {
+                'label': 'Выручка',
+                'data': revenue_data,
+                'backgroundColor': COLORS['warning'],
+                'type': 'bar'
+            }
+        ]
+    }
+    options = {
+        'responsive': True,
+        'plugins': {
+            'title': {
+                'display': True,
+                'text': 'Популярность товаров',
+                'font': {'size': 24, 'family': 'Arial', 'color': COLORS['primary']}
+            },
+            'legend': {
+                'display': True,
+                'position': 'top'
+            }
+        },
+        'scales': {
+            'x': {
+                'ticks': {'autoSkip': False}
+            },
+            'y': {
+                'beginAtZero': True,
+                'grid': {
+                    'color': 'rgba(0,0,0,0.05)'
+                }
+            }
+        }
+    }
+    return {'data': data, 'options': options}
 
 def get_user_activity_metrics(start_date=None, end_date=None, role=None):
-    """Метрики активности пользователей"""
-    # Новые пользователи по месяцам
+    """Метрики активности пользователей, возвращает данные для Chart.js"""
     user_query = db.session.query(
         extract('year', User.created_at_user).label('year'),
         extract('month', User.created_at_user).label('month'),
@@ -140,7 +215,6 @@ def get_user_activity_metrics(start_date=None, end_date=None, role=None):
 
     user_df = pd.read_sql(user_query.statement, db.engine)
 
-    # Активные пользователи (с заказами)
     active_query = db.session.query(
         extract('year', Order.created_at_order).label('year'),
         extract('month', Order.created_at_order).label('month'),
@@ -165,39 +239,75 @@ def get_user_activity_metrics(start_date=None, end_date=None, role=None):
     if user_df.empty and active_df.empty:
         return None
 
-    fig = go.Figure()
+    # Construct labels as months YYYY-MM
+    def format_year_month(row):
+        return f"{int(row['year'])}-{int(row['month']):02d}"
 
-    if not user_df.empty:
-        user_df['date'] = pd.to_datetime(user_df[['year', 'month']].assign(day=1))
-        fig.add_trace(
-            go.Scatter(x=user_df['date'], y=user_df['new_users'],
-                      mode='lines+markers', name='Новые пользователи',
-                      line=dict(color='#27ae60', width=3))
-        )
+    user_labels = user_df.apply(format_year_month, axis=1).tolist() if not user_df.empty else []
+    active_labels = active_df.apply(format_year_month, axis=1).tolist() if not active_df.empty else []
 
-    if not active_df.empty:
-        active_df['date'] = pd.to_datetime(active_df[['year', 'month']].assign(day=1))
-        fig.add_trace(
-            go.Scatter(x=active_df['date'], y=active_df['active_users'],
-                      mode='lines+markers', name='Активные пользователи',
-                      line=dict(color='#3498db', width=3))
-        )
+    labels = sorted(set(user_labels) | set(active_labels))
 
-    fig.update_layout(
-        title="Активность пользователей",
-        xaxis_title="Месяц",
-        yaxis_title="Количество пользователей",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False),
-        autosize=True,
-        margin=dict(l=0, r=0, t=50, b=0)
-    )
+    def get_series(df, label_col, value_col):
+        series = []
+        for label in labels:
+            value = df[df.apply(format_year_month, axis=1) == label][value_col]
+            series.append(int(value.iloc[0]) if not value.empty else 0)
+        return series
 
-    return fig.to_html(full_html=False, include_plotlyjs=False)
+    new_users_data = get_series(user_df, 'year', 'new_users') if not user_df.empty else [0]*len(labels)
+    active_users_data = get_series(active_df, 'year', 'active_users') if not active_df.empty else [0]*len(labels)
+
+    data = {
+        'labels': labels,
+        'datasets': [
+            {
+                'label': 'Новые пользователи',
+                'data': new_users_data,
+                'borderColor': COLORS['success'],
+                'backgroundColor': COLORS['success'],
+                'fill': False,
+                'tension': 0.3,
+                'pointRadius': 5,
+                'type': 'line'
+            },
+            {
+                'label': 'Активные пользователи',
+                'data': active_users_data,
+                'borderColor': COLORS['info'],
+                'backgroundColor': COLORS['info'],
+                'fill': False,
+                'tension': 0.3,
+                'pointRadius': 5,
+                'type': 'line'
+            }
+        ]
+    }
+    options = {
+        'responsive': True,
+        'plugins': {
+            'title': {
+                'display': True,
+                'text': 'Активность пользователей',
+                'font': {'size': 24, 'family': 'Arial', 'color': COLORS['primary']}
+            },
+            'legend': {
+                'display': True,
+                'position': 'top'
+            }
+        },
+        'scales': {
+            'x': {'grid': {'color': 'rgba(0,0,0,0.05)'}},
+            'y': {
+                'beginAtZero': True,
+                'grid': {'color': 'rgba(0,0,0,0.05)'}
+            }
+        }
+    }
+    return {'data': data, 'options': options}
 
 def get_stock_levels(product_id=None, ral=None):
-    """Уровни запасов"""
+    """Уровни запасов, возвращает данные для Chart.js"""
     query = db.session.query(
         Product.title_product,
         Stock.ral_stock,
@@ -219,44 +329,67 @@ def get_stock_levels(product_id=None, ral=None):
     if df.empty:
         return None
 
-    # Группировка по товарам
+    # Group by products
     product_totals = df.groupby('title_product')['count_stock'].sum().reset_index()
     product_totals = product_totals.sort_values('count_stock', ascending=True)
 
-    fig = make_subplots(rows=1, cols=2, subplot_titles=('По товарам', 'По RAL цветам'))
-
-    # График по товарам
-    fig.add_trace(
-        go.Bar(y=product_totals['title_product'], x=product_totals['count_stock'],
-              orientation='h', marker_color='#9b59b6', name='Количество'),
-        row=1, col=1
-    )
-
-    # График по RAL цветам
+    # Group by ral_stock
+    ral_totals = None
     if 'ral_stock' in df.columns and not df['ral_stock'].isna().all():
         ral_totals = df.groupby('ral_stock')['count_stock'].sum().reset_index()
         ral_totals = ral_totals.sort_values('count_stock', ascending=True)
 
-        fig.add_trace(
-            go.Bar(y=ral_totals['ral_stock'], x=ral_totals['count_stock'],
-                  orientation='h', marker_color='#e67e22', name='Количество'),
-            row=1, col=2
-        )
+    data = {
+        'labels_product': product_totals['title_product'].tolist(),
+        'data_product': product_totals['count_stock'].tolist(),
+        'labels_ral': ral_totals['ral_stock'].tolist() if ral_totals is not None else [],
+        'data_ral': ral_totals['count_stock'].tolist() if ral_totals is not None else []
+    }
 
-    fig.update_layout(
-        title="Уровни запасов",
-        showlegend=False,
-        autosize=True,
-        margin=dict(l=0, r=0, t=50, b=0)
-    )
+    # For Chart.js, we can return two separate datasets or separate charts on front-end
+    datasets = []
 
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
+    if data['labels_product']:
+        datasets.append({
+            'label': 'По товарам',
+            'data': data['data_product'],
+            'backgroundColor': COLORS['purple'],
+            'type': 'bar',
+            'labels': data['labels_product'],
+        })
 
-    return fig.to_html(full_html=False, include_plotlyjs=False)
+    if data['labels_ral']:
+        datasets.append({
+            'label': 'По RAL цветам',
+            'data': data['data_ral'],
+            'backgroundColor': COLORS['orange'],
+            'type': 'bar',
+            'labels': data['labels_ral'],
+        })
+
+    options = {
+        'responsive': True,
+        'plugins': {
+            'title': {
+                'display': True,
+                'text': 'Уровни запасов',
+                'font': {'size': 24, 'family': 'Arial', 'color': COLORS['primary']}
+            },
+            'legend': {'display': False}
+        },
+        'scales': {
+            'x': {'grid': {'color': 'rgba(0,0,0,0.05)'}},
+            'y': {
+                'beginAtZero': True,
+                'grid': {'color': 'rgba(0,0,0,0.05)'}
+            }
+        }
+    }
+
+    return {'datasets': datasets, 'options': options}
 
 def get_order_status_distribution(start_date=None, end_date=None):
-    """Распределение статусов заказов"""
+    """Распределение статусов заказов, возвращает данные для Chart.js"""
     query = db.session.query(
         Order.status_order,
         func.count(Order.id_order).label('count')
@@ -274,7 +407,6 @@ def get_order_status_distribution(start_date=None, end_date=None):
     if df.empty:
         return None
 
-    # Перевод статусов на русский
     status_translation = {
         'pending_moderation': 'На модерации',
         'approved': 'Одобрен',
@@ -282,28 +414,34 @@ def get_order_status_distribution(start_date=None, end_date=None):
         'cancelled': 'Отменен'
     }
 
-    df['status_ru'] = df['status_order'].map(status_translation)
+    labels = df['status_order'].map(status_translation).tolist()
+    data_values = df['count'].tolist()
+    colors = [COLORS['warning'], COLORS['success'], COLORS['info'], COLORS['accent']]
 
-    colors = ['#f39c12', '#27ae60', '#3498db', '#e74c3c']
+    data = {
+        'labels': labels,
+        'datasets': [{
+            'data': data_values,
+            'backgroundColor': colors
+        }]
+    }
 
-    fig = go.Figure(data=[go.Pie(
-        labels=df['status_ru'],
-        values=df['count'],
-        marker_colors=colors,
-        textinfo='label+percent',
-        insidetextorientation='radial'
-    )])
+    options = {
+        'responsive': True,
+        'plugins': {
+            'title': {
+                'display': True,
+                'text': 'Распределение статусов заказов',
+                'font': {'size': 24, 'family': 'Arial', 'color': COLORS['primary']}
+            },
+            'legend': {'display': True, 'position': 'top'}
+        }
+    }
 
-    fig.update_layout(
-        title="Распределение статусов заказов",
-        autosize=True,
-        margin=dict(l=0, r=0, t=50, b=0)
-    )
-
-    return fig.to_html(full_html=False, include_plotlyjs=False)
+    return {'data': data, 'options': options}
 
 def get_revenue_analysis(start_date=None, end_date=None, group_by='month'):
-    """Анализ выручки"""
+    """Анализ выручки, возвращает данные для Chart.js"""
     if group_by == 'month':
         date_func = func.date_trunc('month', Order.created_at_order)
     elif group_by == 'week':
@@ -333,53 +471,58 @@ def get_revenue_analysis(start_date=None, end_date=None, group_by='month'):
         return None
 
     df['period'] = pd.to_datetime(df['period'])
+    labels = df['period'].dt.strftime('%Y-%m-%d').tolist()
+    revenue_data = df['revenue'].tolist()
+    avg_order_data = df['avg_order_value'].tolist()
 
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    data = {
+        'labels': labels,
+        'datasets': [
+            {
+                'label': 'Выручка',
+                'data': revenue_data,
+                'backgroundColor': COLORS['success'],
+                'type': 'bar'
+            },
+            {
+                'label': 'Средний чек',
+                'data': avg_order_data,
+                'borderColor': COLORS['accent'],
+                'backgroundColor': COLORS['accent'],
+                'fill': False,
+                'tension': 0.3,
+                'pointRadius': 5,
+                'type': 'line'
+            }
+        ]
+    }
 
-    fig.add_trace(
-        go.Bar(x=df['period'], y=df['revenue'], name="Выручка",
-              marker_color='#2ecc71'),
-        secondary_y=False,
-    )
+    options = {
+        'responsive': True,
+        'plugins': {
+            'title': {
+                'display': True,
+                'text': f"Анализ выручки (группировка по {group_by})",
+                'font': {'size': 24, 'family': 'Arial', 'color': COLORS['primary']}
+            },
+            'legend': {'display': True, 'position': 'top'}
+        },
+        'scales': {
+            'x': {'grid': {'color': 'rgba(0,0,0,0.05)'}},
+            'y': {
+                'beginAtZero': True,
+                'grid': {'color': 'rgba(0,0,0,0.05)'}
+            }
+        }
+    }
 
-    fig.add_trace(
-        go.Scatter(x=df['period'], y=df['avg_order_value'], name="Средний чек",
-                  mode='lines+markers', line=dict(color='#e74c3c', width=3)),
-        secondary_y=True,
-    )
-
-    fig.update_layout(
-        title=f"Анализ выручки (группировка по {group_by})",
-        xaxis_title="Период",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    )
-
-    fig.update_yaxes(title_text="Выручка (руб.)", secondary_y=False)
-    fig.update_yaxes(title_text="Средний чек (руб.)", secondary_y=True)
-
-    return fig.to_html(full_html=False, include_plotlyjs=False)
+    return {'data': data, 'options': options}
 
 def get_analyzis_visualization(product_id=None, metric_x='glitter', metric_y='viskosity'):
-    """Визуализация данных анализа"""
+    """Визуализация данных анализа, возвращает данные для Chart.js"""
     query = db.session.query(
         Analyzis.glitter,
         Analyzis.viskosity,
-        Analyzis.delta_e,
-        Analyzis.delta_l,
-        Analyzis.delta_a,
-        Analyzis.delta_b,
-        Analyzis.drying_time,
-        Analyzis.peak_metal_temperature,
-        Analyzis.thickness_for_soil,
-        Analyzis.adhesion,
-        Analyzis.solvent_resistance,
-        Analyzis.visual_flat_control,
-        Analyzis.appearance,
-        Analyzis.number_of_batch_samples,
-        Analyzis.degree_of_grinding,
-        Analyzis.solids_by_volume,
-        Analyzis.ground,
-        Analyzis.mass_fraction,
         Product.title_product
     ).join(Stock, Analyzis.id_stock == Stock.id_stock)\
      .join(Product, Stock.id_product == Product.id_product)
@@ -392,30 +535,52 @@ def get_analyzis_visualization(product_id=None, metric_x='glitter', metric_y='vi
     if df.empty:
         return None
 
-    # Очистка данных от None
     df = df.dropna(subset=[metric_x, metric_y])
 
     if df.empty:
         return None
 
-    fig = px.scatter(df, x=metric_x, y=metric_y, color='title_product',
-            title=f"Анализ качества: {metric_x} vs {metric_y}",
-            labels={metric_x: metric_x, metric_y: metric_y})
+    labels = df['title_product'].tolist()
+    x_data = df[metric_x].tolist()
+    y_data = df[metric_y].tolist()
 
-    fig.update_layout(
-        xaxis_title=metric_x,
-        yaxis_title=metric_y,
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False),
-        autosize=True,
-        margin=dict(l=0, r=0, t=50, b=0)
-    )
+    data = {
+        'labels': labels,
+        'datasets': [{
+            'label': f'{metric_y} vs {metric_x}',
+            'data': [{'x': x_data[i], 'y': y_data[i]} for i in range(len(x_data))],
+            'backgroundColor': COLORS['primary'],
+            'showLine': False,
+            'type': 'scatter'
+        }]
+    }
 
-    return fig.to_html(full_html=False, include_plotlyjs=False)
-        
+    options = {
+        'responsive': True,
+        'plugins': {
+            'title': {
+                'display': True,
+                'text': f"Анализ качества: {metric_x} vs {metric_y}",
+                'font': {'size': 24, 'family': 'Arial', 'color': COLORS['primary']}
+            },
+            'legend': {'display': False}
+        },
+        'scales': {
+            'x': {
+                'title': {'display': True, 'text': metric_x},
+                'grid': {'color': 'rgba(0,0,0,0.05)'}
+            },
+            'y': {
+                'title': {'display': True, 'text': metric_y},
+                'grid': {'color': 'rgba(0,0,0,0.05)'}
+            }
+        }
+    }
+
+    return {'data': data, 'options': options}
+
 def get_dashboard_metrics():
     """Метрики для дашборда"""
-    # Общая выручка
     revenue_query = db.session.query(
         func.sum(ProductOrder.count * Product.price_product).label('total_revenue')
     ).join(Order, ProductOrder.id_order == Order.id_order)\
@@ -424,13 +589,10 @@ def get_dashboard_metrics():
 
     revenue = revenue_query.scalar() or 0
 
-    # Количество заказов
     orders_count = Order.query.filter(Order.status_order.in_(['approved', 'completed'])).count()
 
-    # Активные пользователи
     active_users = User.query.filter(User.role_user == 'buyer').count()
 
-    # Популярные товары
     popular_query = db.session.query(
         Product.title_product,
         func.sum(ProductOrder.count).label('total_sold')
@@ -443,14 +605,12 @@ def get_dashboard_metrics():
 
     popular_products = pd.read_sql(popular_query.statement, db.engine)
 
-    # Заказы за последний месяц
     last_month = datetime.now() - timedelta(days=30)
     orders_this_month = Order.query.filter(
         Order.created_at_order >= last_month,
         Order.status_order.in_(['approved', 'completed'])
     ).count()
 
-    # Средний чек
     avg_order_query = db.session.query(
         func.avg(ProductOrder.count * Product.price_product).label('avg_order')
     ).join(Order, ProductOrder.id_order == Order.id_order)\
