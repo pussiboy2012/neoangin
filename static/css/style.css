@@ -5,7 +5,7 @@
 :root {
     /* Primary Colors */
     --primary-gradient: linear-gradient(270deg, #eA7720 0%, #b64652 51%, #f59B17 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --secondary-gradient: linear-gradient(135deg, #6C9FD4 0%, #423782 50%, #417EC1 100%);
     --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
     /* Admin Colors */
@@ -1086,42 +1086,6 @@ p.footer-link:hover{
     margin: 1rem 0;
 }
 
-.color-swatch {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    border: 3px solid white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-}
-
-.color-swatch:hover {
-    transform: scale(1.2) rotate(10deg);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-.color-swatch::after {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    background: var(--primary-gradient) border-box;
-    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.color-swatch:hover::after {
-    opacity: 1;
-}
 
 .feature-card {
     border-radius: 20px;

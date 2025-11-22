@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="product-container">
-    <div class="product-card">
+    <div class="figma-glass">
         <!-- Заголовок товара с кнопкой назад -->
         <div class="product-header">
             <div class="header-top">
                 <a href="javascript:history.back()" class="back-btn">
-                    <span class="back-icon">←</span>
+                    <i class="fa fa-arrow-left" aria-hidden="true"></i>
                     <span class="back-text">Назад</span>
                 </a>
                 <div class="category-badge">{{ product.category_product }}</div>
@@ -18,12 +18,7 @@
             <!-- Левая колонка - изображение товара -->
             <div class="product-image-section">
                 <div class="product-image">
-                    <img class="product-image-product" src="../../static/images/products.svg" alt="{{ product.title_product }}">
-                </div>
-                <div class="image-thumbnails">
-                    <div class="thumbnail active" style="background: #4a5568;"></div>
-                    <div class="thumbnail" style="background: #2d3748;"></div>
-                    <div class="thumbnail" style="background: #1a202c;"></div>
+                    <img class="product-image-product" src="../../static/{{product.img_path_product}}" alt="{{ product.title_product }}">
                 </div>
             </div>
 
@@ -34,18 +29,10 @@
                 <div class="current-price">{{ "%.2f"|format(product.price_product) }} ₽</div>
                 </div>
 
-                <div class="stock-info">
-                    <div class="stock-badge in-stock">
-                        ✅ В наличии
-                    </div>
-                    <span class="stock-qty">Остаток: {{ stock.qty }} шт.</span>
-                </div>
-
                 <!-- Выбор цвета RAL -->
                 <div class="ral-selection">
                     <label class="ral-label">
-                        <span class="label-icon">🎨</span>
-                        Цвет RAL:
+                        Цвет RAL (может отличаться):
                     </label>
                     
                     <!-- Кастомный селект -->
@@ -70,34 +57,10 @@
                     <!-- Предпросмотр цвета -->
                     <div id="ralColorPreview" class="ral-color-preview">
                         <div class="preview-content">
-                            <div class="color-swatch"></div>
-                            <div class="color-info">
+                            <div class="text-overlay">
                                 <span class="ral-code">RAL</span>
                                 <span class="color-name">Выберите цвет</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Характеристики -->
-                <div class="specifications">
-                    <h4 class="specs-title">Основные характеристики:</h4>
-                    <div class="specs-grid">
-                        <div class="spec-item">
-                            <span class="spec-icon">🛡️</span>
-                            <span class="spec-text">Защита от коррозии</span>
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-icon">🔥</span>
-                            <span class="spec-text">Устойчивость до 800°C</span>
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-icon">⚡</span>
-                            <span class="spec-text">Высокоскоростная сварка</span>
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-icon">🏭</span>
-                            <span class="spec-text">Для металлоконструкций</span>
                         </div>
                     </div>
                 </div>
@@ -110,7 +73,7 @@
                         <label class="quantity-label">Количество:</label>
                         <div class="quantity-controls">
                             <button type="button" class="quantity-btn minus-btn">-</button>
-                            <input name="qty" type="number" value="1" min="1" max="{{ stock.qty }}" class="quantity-input">
+                            <input name="qty" type="number" value="1" min="1" class="quantity-input">
                             <button type="button" class="quantity-btn plus-btn">+</button>
                         </div>
                     </div>
@@ -215,7 +178,7 @@
     align-items: center;
     gap: 10px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--secondary-gradient);
     color: white;
     text-decoration: none;
     border-radius: 12px;
@@ -228,7 +191,7 @@
 .back-btn:hover {
     transform: translateX(-5px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(135deg, #5a6fd8 0%, #6b46c1 100%);
+    background: linear-gradient(135deg, #4852d8ff 0%, #4e46c1ff 100%);
 }
 
 .back-icon {
@@ -247,7 +210,7 @@
 
 .category-badge {
     display: inline-block;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--secondary-gradient);
     color: white;
     padding: 8px 16px;
     border-radius: 20px;
@@ -256,7 +219,7 @@
 }
 
 .product-title {
-    color: #2d3748;
+    color: white;
     font-size: 36px;
     font-weight: 700;
     margin-bottom: 10px;
@@ -279,45 +242,9 @@
 .product-image {
     background: #f8fafc;
     border-radius: 16px;
-    padding: 40px;
     text-align: center;
-    border: 3px solid #e2e8f0;
     position: relative;
     overflow: hidden;
-}
-
-.product-image::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.image-thumbnails {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.thumbnail {
-    width: 70px;
-    height: 70px;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 3px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.thumbnail.active {
-    border-color: #667eea;
-    transform: scale(1.1);
-}
-
-.thumbnail:hover {
-    border-color: #667eea;
 }
 
 .price-section {
@@ -332,41 +259,15 @@
     font-size: 42px;
     font-weight: 700;
     color: #2d3748;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--secondary-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-}
-
-.stock-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-}
-
-.stock-badge {
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.stock-badge.in-stock {
-    background: #c6f6d5;
-    color: #22543d;
-    border: 2px solid #48bb78;
-}
-
-.stock-qty {
-    color: #718096;
-    font-size: 16px;
-    font-weight: 500;
 }
 
 /* Стили для выбора RAL */
 .ral-selection {
     margin-bottom: 25px;
+    position: relative;
 }
 
 .ral-label {
@@ -374,7 +275,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 12px;
-    color: #2d3748;
+    color: white;
     font-weight: 600;
     font-size: 16px;
 }
@@ -386,7 +287,8 @@
 /* Кастомный селект */
 .custom-select {
     position: relative;
-    margin-bottom: 15px;
+    margin-bottom: 0;
+    z-index: 20; /* Высокий z-index чтобы перекрывать preview */
 }
 
 .select-header {
@@ -396,14 +298,19 @@
     padding: 15px 20px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    background: white;
+    background: #272727;
     cursor: pointer;
     transition: all 0.3s ease;
     min-height: 56px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 25;
 }
 
 .select-header:hover {
     border-color: #667eea;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
 }
 
 .select-header.active {
@@ -412,12 +319,13 @@
 }
 
 .select-placeholder {
-    color: #718096;
+    color: #b8b8b8ff;
     font-size: 16px;
+    font-weight: 500;
 }
 
 .select-arrow {
-    color: #667eea;
+    color: #c2c2c2ff;
     font-size: 20px;
     transition: transform 0.3s ease;
 }
@@ -428,15 +336,14 @@
 
 .select-options {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     left: 0;
     right: 0;
-    background: white;
+    background: #272727;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    margin-top: 5px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+    z-index: 30; /* Самый высокий z-index для выпадающего списка */
     display: none;
     max-height: 400px;
     overflow: hidden;
@@ -462,7 +369,8 @@
     position: relative;
     padding: 15px;
     border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    background: #272727;
+    color: white;
 }
 
 .search-input {
@@ -472,6 +380,8 @@
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s ease;
+    background: #272727;
+    color: white;
 }
 
 .search-input:focus {
@@ -496,6 +406,7 @@
 }
 
 .option-item {
+    color: white;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -506,12 +417,12 @@
 }
 
 .option-item:hover {
-    background: #f7fafc;
+    background: #6b6b6bff;
     border-left-color: #667eea;
 }
 
 .option-item.selected {
-    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    background: var(--secondary-gradient);
     border-left-color: #667eea;
 }
 
@@ -522,10 +433,12 @@
     border: 2px solid #e2e8f0;
     flex-shrink: 0;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .option-item:hover .option-color {
     transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .option-info {
@@ -535,13 +448,13 @@
 
 .option-ral {
     font-weight: 700;
-    color: #2d3748;
+    color: white;
     font-size: 14px;
     margin-bottom: 2px;
 }
 
 .option-name {
-    color: #718096;
+    color: white;
     font-size: 13px;
     white-space: nowrap;
     overflow: hidden;
@@ -559,121 +472,65 @@
 .ral-color-preview {
     width: 100%;
     height: 80px;
-    border: 3px solid #e2e8f0;
-    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    background: #f8fafc;
+    background: #272727;
+    margin-top: -12px;
+    padding-top: 20px;
+    z-index: 10; /* Низкий z-index чтобы селект перекрывал */
 }
 
 .ral-color-preview.has-color {
     border-color: #667eea;
-    background: white;
+    background: var(--selected-color, #f8fafc);
+    border-top: none;
 }
 
-.ral-color-preview::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%);
-    background-size: 10px 10px;
-    z-index: 1;
-}
 
 .preview-content {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 0 20px;
+    justify-content: center;
     height: 100%;
     position: relative;
     z-index: 2;
 }
 
-.color-swatch {
-    width: 50px;
-    height: 50px;
+.text-overlay {
+    background-color: #27272780;
+    padding: 12px 20px;
     border-radius: 8px;
-    border: 3px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-
-.ral-color-preview.has-color .color-swatch {
-    transform: scale(1.05);
-}
-
-.color-info {
-    flex: 1;
-    min-width: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    backdrop-filter: blur(10px);
 }
 
 .ral-code {
     display: block;
     font-size: 18px;
     font-weight: 700;
-    color: #2d3748;
+    color: white;
     margin-bottom: 4px;
 }
 
 .color-name {
     display: block;
     font-size: 14px;
-    color: #718096;
+    color: white;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 200px;
 }
+
 
 .ral-color-preview:not(.has-color) .ral-code,
 .ral-color-preview:not(.has-color) .color-name {
     color: #a0aec0;
-}
-
-.specifications {
-    background: #f8fafc;
-    padding: 25px;
-    border-radius: 16px;
-    border: 2px solid #e2e8f0;
-    margin-bottom: 30px;
-}
-
-.specs-title {
-    color: #2d3748;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.specs-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.spec-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background: white;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-}
-
-.spec-icon {
-    font-size: 20px;
-}
-
-.spec-text {
-    color: #4a5568;
-    font-size: 14px;
-    font-weight: 500;
 }
 
 .quantity-section {
@@ -737,7 +594,7 @@
 
 .add-to-cart-btn {
     flex: 1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--secondary-gradient);
     color: white;
     border: none;
     padding: 20px 30px;
@@ -876,10 +733,6 @@
     .product-content {
         gap: 30px;
     }
-    
-    .specs-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 @media (max-width: 768px) {
@@ -924,16 +777,12 @@
 
     .ral-color-preview {
         height: 70px;
+        margin-top: -10px;
+        padding-top: 18px;
     }
     
-    .preview-content {
-        gap: 12px;
-        padding: 0 15px;
-    }
-    
-    .color-swatch {
-        width: 40px;
-        height: 40px;
+    .text-overlay {
+        padding: 10px 16px;
     }
     
     .ral-code {
@@ -942,6 +791,7 @@
     
     .color-name {
         font-size: 13px;
+        max-width: 150px;
     }
     
     .select-options {
@@ -971,16 +821,12 @@
 
     .ral-color-preview {
         height: 60px;
+        margin-top: -8px;
+        padding-top: 15px;
     }
     
-    .preview-content {
-        gap: 10px;
-        padding: 0 12px;
-    }
-    
-    .color-swatch {
-        width: 35px;
-        height: 35px;
+    .text-overlay {
+        padding: 8px 12px;
     }
     
     .ral-code {
@@ -989,6 +835,7 @@
     
     .color-name {
         font-size: 12px;
+        max-width: 120px;
     }
     
     .option-item {
@@ -1067,7 +914,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const minusBtn = document.querySelector('.minus-btn');
     const plusBtn = document.querySelector('.plus-btn');
     const quantityInput = document.querySelector('.quantity-input');
-    const maxQty = parseInt(quantityInput.getAttribute('max'));
 
     minusBtn.addEventListener('click', function() {
         let value = parseInt(quantityInput.value);
@@ -1078,16 +924,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     plusBtn.addEventListener('click', function() {
         let value = parseInt(quantityInput.value);
-        if (value < maxQty) {
-            quantityInput.value = value + 1;
-        }
+        quantityInput.value = value + 1;
     });
 
     // Ограничение ввода количества вручную
     quantityInput.addEventListener('change', function() {
         let value = parseInt(this.value);
         if (value < 1) this.value = 1;
-        if (value > maxQty) this.value = maxQty;
     });
 
     // Дополнительная функциональность для кнопки "Назад"
@@ -1106,7 +949,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const ralSearch = document.getElementById('ralSearch');
     const ralColorPreview = document.getElementById('ralColorPreview');
     const selectedRalInput = document.getElementById('selectedRal');
-    const colorSwatch = ralColorPreview.querySelector('.color-swatch');
     const ralCode = ralColorPreview.querySelector('.ral-code');
     const colorName = ralColorPreview.querySelector('.color-name');
     
@@ -1163,8 +1005,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Обновляем заголовок селекта
         selectHeader.querySelector('.select-placeholder').textContent = `RAL ${color.RAL} - ${color.name}`;
         
-        // Обновляем предпросмотр
-        colorSwatch.style.backgroundColor = color.HTML;
+        // Обновляем предпросмотр - устанавливаем CSS переменную для цвета
+        ralColorPreview.style.setProperty('--selected-color', color.HTML);
         ralCode.textContent = `RAL ${color.RAL}`;
         colorName.textContent = color.name;
         ralColorPreview.classList.add('has-color');
