@@ -269,6 +269,86 @@ ALLOWED_DOMAINS = ['company.com', 'organization.ru', 'firma.org']  # замен�
 DADATA_TOKEN = os.environ.get("DADATA_TOKEN")
 
 
+@bp.route("/change_password", methods=["POST"])
+def change_password():
+    """Смена пароля пользователя"""
+    if 'user' not in session:
+        return jsonify({'success': False, 'error': 'Пользователь не авторизован'})
+
+    try:
+        data = request.json
+        user_id = session['user']['id']
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+
+        # Получаем пользователя
+        from ..db_helpers import get_user_by_id, verify_user
+        user = get_user_by_id(user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'Пользователь не найден'})
+
+        # Проверяем текущий пароль
+        if not verify_user(user.email_user, current_password):
+            return jsonify({'success': False, 'error': 'Неверный текущий пароль'})
+
+        # Обновляем пароль
+        user.password_hash_user = hash_password(new_password)
+
+        # Сохраняем изменения
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Пароль успешно изменен'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Ошибка при смене пароля: {str(e)}'})
+
+def hash_password(password):
+    """Хеширование пароля"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+@bp.route("/update_profile", methods=["POST"])
+def update_profile():
+    """Обновление данных профиля пользователя"""
+    if 'user' not in session:
+        return jsonify({'success': False, 'error': 'Пользователь не авторизован'})
+
+    try:
+        data = request.json
+        user_id = session['user']['id']
+
+        # Получаем пользователя
+        from ..models import User
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'Пользователь не найден'})
+
+        # Обновляем данные
+        user.fullname_user = data.get('full_name', '')
+        user.email_user = data.get('email', '')
+        user.phone_user = data.get('phone', '')
+
+        # Сохраняем изменения
+        db.session.commit()
+
+        # Обновляем данные в сессии
+        session['user_name'] = user.fullname_user
+        session['user']['name'] = user.fullname_user
+        session['user']['email'] = user.email_user
+
+        return jsonify({
+            'success': True,
+            'message': 'Профиль успешно обновлен'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Ошибка при обновлении профиля: {str(e)}'})
+
 @bp.route("/settings")
 def settings():
     if 'user' not in session:
@@ -277,6 +357,48 @@ def settings():
 
     user = get_user_by_id(session['user']['id'])
     return render_template("buyer_settings.html", title="Настройки", user=user)
+
+
+@bp.route("/update_company", methods=["POST"])
+def update_company():
+    """Обновление данных компании пользователя"""
+    if 'user' not in session:
+        return jsonify({'success': False, 'error': 'Пользователь не авторизован'})
+
+    try:
+        data = request.json
+        user_id = session['user']['id']
+
+        # Получаем пользователя через существующую функцию
+        from ..db_helpers import get_user_by_id
+        user = get_user_by_id(user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'Пользователь не найден'})
+
+        # Обновляем данные компании
+        user.inn_user = data.get('inn', '')
+        user.company_name_user = data.get('company_name', '')
+
+        # Добавляем KPP и адрес если они есть в модели
+        if hasattr(user, 'kpp_user'):
+            user.kpp_user = data.get('kpp', '')
+        if hasattr(user, 'address_user'):
+            user.address_user = data.get('address', '')
+
+        # Сохраняем изменения
+        db.session.commit()
+
+        # Обновляем данные в сессии
+        session['user_name'] = user.fullname_user
+
+        return jsonify({
+            'success': True,
+            'message': 'Данные компании успешно обновлены'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Ошибка при обновлении: {str(e)}'})
 
 @bp.route("/verify_inn", methods=["POST"])
 def verify_inn():
