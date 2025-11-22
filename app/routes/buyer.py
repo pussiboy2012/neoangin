@@ -278,6 +278,48 @@ def settings():
     user = get_user_by_id(session['user']['id'])
     return render_template("buyer_settings.html", title="Настройки", user=user)
 
+
+@bp.route("/update_company", methods=["POST"])
+def update_company():
+    """Обновление данных компании пользователя"""
+    if 'user' not in session:
+        return jsonify({'success': False, 'error': 'Пользователь не авторизован'})
+
+    try:
+        data = request.json
+        user_id = session['user']['id']
+
+        # Получаем пользователя через существующую функцию
+        from ..db_helpers import get_user_by_id
+        user = get_user_by_id(user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'Пользователь не найден'})
+
+        # Обновляем данные компании
+        user.inn_user = data.get('inn', '')
+        user.company_name_user = data.get('company_name', '')
+
+        # Добавляем KPP и адрес если они есть в модели
+        if hasattr(user, 'kpp_user'):
+            user.kpp_user = data.get('kpp', '')
+        if hasattr(user, 'address_user'):
+            user.address_user = data.get('address', '')
+
+        # Сохраняем изменения
+        db.session.commit()
+
+        # Обновляем данные в сессии
+        session['user_name'] = user.fullname_user
+
+        return jsonify({
+            'success': True,
+            'message': 'Данные компании успешно обновлены'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Ошибка при обновлении: {str(e)}'})
+
 @bp.route("/verify_inn", methods=["POST"])
 def verify_inn():
     """Проверка ИНН через DaData API"""
