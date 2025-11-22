@@ -1,222 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="settings-container">
-    <div class="settings-header">
-        <h1 class="settings-title">⚙️ Настройки</h1>
-        <p class="settings-subtitle">Управление вашим аккаунтом и настройками</p>
-    </div>
-
-    <div class="settings-grid">
-        <!-- Карточка настроек профиля -->
-        <div class="action-card figma-glass">
-            <div class="action-icon">
-                <i class="fas fa-user-cog"></i>
-            </div>
-            <div class="action-content">
-                <h4>Настройки профиля</h4>
-                <p>Изменение личных данных и контактной информации</p>
-                <a href="#" class="action-btn disabled">
-                    <span>Скоро доступно</span>
-                    <i class="fas fa-clock"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Карточка безопасности -->
-        <div class="action-card figma-glass">
-            <div class="action-icon">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <div class="action-content">
-                <h4>Безопасность</h4>
-                <p>Смена пароля и настройки двухфакторной аутентификации</p>
-                <a href="#" class="action-btn disabled">
-                    <span>Скоро доступно</span>
-                    <i class="fas fa-clock"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Карточка уведомлений -->
-        <div class="action-card figma-glass">
-            <div class="action-icon">
-                <i class="fas fa-bell"></i>
-            </div>
-            <div class="action-content">
-                <h4>Уведомления</h4>
-                <p>Настройка email и push-уведомлений о заказах</p>
-                <a href="#" class="action-btn disabled">
-                    <span>Скоро доступно</span>
-                    <i class="fas fa-clock"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Карточка компании -->
-        <div class="action-card figma-glass">
-            <div class="action-icon">
-                <i class="fas fa-building"></i>
-            </div>
-            <div class="action-content">
-                <h4>Смена компании</h4>
-                <p>Изменить реквизиты организации на площадке</p>
-                <button class="action-btn company-btn" onclick="openCompanyModal()">
-                    <span>Сменить компанию</span>
-                    <i class="fas fa-exchange-alt"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Карточка интеграций -->
-        <div class="action-card figma-glass">
-            <div class="action-icon">
-                <i class="fas fa-plug"></i>
-            </div>
-            <div class="action-content">
-                <h4>Интеграции</h4>
-                <p>Подключение к CRM и бухгалтерским системам</p>
-                <a href="#" class="action-btn disabled">
-                    <span>Скоро доступно</span>
-                    <i class="fas fa-clock"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Карточка API -->
-        <div class="action-card figma-glass">
-            <div class="action-icon">
-                <i class="fas fa-code"></i>
-            </div>
-            <div class="action-content">
-                <h4>API доступ</h4>
-                <p>Ключи API для интеграции с вашими системами</p>
-                <a href="#" class="action-btn disabled">
-                    <span>Скоро доступно</span>
-                    <i class="fas fa-clock"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Текущая информация пользователя -->
-    <div class="current-info figma-glass">
-        <h3>Текущая информация</h3>
-        <div class="info-grid">
-            <div class="info-item">
-                <span class="info-label">Имя:</span>
-                <span class="info-value">{{ user.fullname_user }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Email:</span>
-                <span class="info-value">{{ user.email_user }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Компания:</span>
-                <span class="info-value">{{ user.company_name_user }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">ИНН:</span>
-                <span class="info-value">{{ user.inn_user }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Телефон:</span>
-                <span class="info-value">{{ user.phone_user }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Роль:</span>
-                <span class="info-value role-badge">{{ user.role_user }}</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для смены компании -->
-<div id="companyModal" class="modal">
-    <div class="modal-content figma-glass">
-        <div class="modal-header">
-            <h3>🏢 Смена компании</h3>
-            <span class="close" onclick="closeCompanyModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div class="current-company-info">
-                <h4>Текущая компания:</h4>
-                <div class="current-company-details">
-                    <p><strong>{{ user.company_name_user }}</strong></p>
-                    <p>ИНН: {{ user.inn_user }}</p>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <div class="form-group">
-                    <label for="innInput">Введите ИНН новой компании:</label>
-                    <div class="input-with-button">
-                        <input type="text" id="innInput" placeholder="10 или 12 цифр" maxlength="12"
-                               pattern="\d{10}|\d{12}" oninput="validateINN(this)">
-                        <button id="verifyBtn" onclick="verifyCompany()" disabled>
-                            <i class="fas fa-search"></i> Найти
-                        </button>
-                    </div>
-                    <div id="innError" class="error-message"></div>
-                </div>
-
-                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Ищем компанию в базе данных...</p>
-                </div>
-
-                <div id="companyResult" class="company-result" style="display: none;">
-                    <div class="result-success">
-                        <div class="success-header">
-                            <i class="fas fa-check-circle"></i>
-                            <h4>Компания найдена!</h4>
-                        </div>
-                        <div class="company-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Название:</span>
-                                <span id="companyName" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Полное название:</span>
-                                <span id="companyFullName" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">ИНН:</span>
-                                <span id="companyInn" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">КПП:</span>
-                                <span id="companyKpp" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Адрес:</span>
-                                <span id="companyAddress" class="detail-value"></span>
-                            </div>
-                        </div>
-                        <div class="result-actions">
-                            <button class="btn-primary" onclick="updateCompany()">
-                                <i class="fas fa-save"></i> Сохранить изменения
-                            </button>
-                            <button class="btn-secondary" onclick="clearForm()">
-                                <i class="fas fa-redo"></i> Найти другую компанию
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="companyError" class="company-error" style="display: none;">
-                    <div class="error-header">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h4>Компания не найдена</h4>
-                    </div>
-                    <p id="errorMessage"></p>
-                    <button class="btn-secondary" onclick="clearForm()">
-                        <i class="fas fa-redo"></i> Попробовать снова
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 <style>
 .settings-container {
     max-width: 1200px;
@@ -263,6 +46,80 @@
     border-radius: 20px;
     padding: 25px;
     transition: all 0.3s ease;
+}
+
+.security-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+}
+
+.security-btn:hover {
+    background: linear-gradient(135deg, #ff5252 0%, #e84118 100%);
+}
+
+.profile-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.profile-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6b46c1 100%);
+}
+
+.password-requirements {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.password-requirements p {
+    margin: 0 0 10px 0;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.password-requirements ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #4a5568;
+}
+
+.password-requirements li {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.password-requirements li.valid {
+    color: #48bb78;
+}
+
+.password-requirements li.invalid {
+    color: #a0aec0;
+}
+
+/* Стили для полей ввода пароля */
+input[type="password"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+    box-sizing: border-box;
+}
+
+input[type="password"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+input[type="password"].valid {
+    border-color: #48bb78;
+}
+
+input[type="password"].invalid {
+    border-color: #f56565;
 }
 
 .action-card {
@@ -405,6 +262,64 @@
 
 .current-info {
     animation: fadeInUp 0.8s ease-out;
+}
+
+/* Стили для формы редактирования профиля */
+#profileModal .form-group {
+    margin-bottom: 20px;
+}
+
+#profileModal label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+#profileModal input[type="text"],
+#profileModal input[type="email"],
+#profileModal input[type="tel"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+    box-sizing: border-box;
+}
+
+#profileModal input[type="text"]:focus,
+#profileModal input[type="email"]:focus,
+#profileModal input[type="tel"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#profileModal input[type="text"].valid,
+#profileModal input[type="email"].valid,
+#profileModal input[type="tel"].valid {
+    border-color: #48bb78;
+}
+
+#profileModal input[type="text"].invalid,
+#profileModal input[type="email"].invalid,
+#profileModal input[type="tel"].invalid {
+    border-color: #f56565;
+}
+
+/* Адаптивность для модального окна профиля */
+@media (max-width: 768px) {
+    #profileModal .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+
+    #profileModal .result-actions {
+        flex-direction: column;
+    }
 }
 
 /* Адаптивность */
@@ -1098,6 +1013,316 @@
 }
 </style>
 
+
+
+<div class="settings-container">
+    <div class="settings-header">
+        <h1 class="settings-title">⚙️ Настройки</h1>
+        <p class="settings-subtitle">Управление вашим аккаунтом и настройками</p>
+    </div>
+
+    <div class="settings-grid">
+        <!-- Карточка настроек профиля -->
+        <div class="action-card figma-glass">
+            <div class="action-icon">
+                <i class="fas fa-user-cog"></i>
+            </div>
+            <div class="action-content">
+                <h4>Настройки профиля</h4>
+                <p>Изменение личных данных и контактной информации</p>
+                <button class="action-btn profile-btn" onclick="openProfileModal()">
+                    <span>Редактировать профиль</span>
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Карточка безопасности -->
+        <div class="action-card figma-glass">
+            <div class="action-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="action-content">
+                <h4>Безопасность</h4>
+                <p>Смена пароля и настройки двухфакторной аутентификации</p>
+                <button class="action-btn security-btn" onclick="openSecurityModal()">
+                    <span>Сменить пароль</span>
+                    <i class="fas fa-key"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Карточка уведомлений -->
+        <div class="action-card figma-glass">
+            <div class="action-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div class="action-content">
+                <h4>Уведомления</h4>
+                <p>Настройка email и push-уведомлений о заказах</p>
+                <a href="#" class="action-btn disabled">
+                    <span>Скоро доступно</span>
+                    <i class="fas fa-clock"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Карточка компании -->
+        <div class="action-card figma-glass">
+            <div class="action-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="action-content">
+                <h4>Смена компании</h4>
+                <p>Изменить реквизиты организации на площадке</p>
+                <button class="action-btn company-btn" onclick="openCompanyModal()">
+                    <span>Сменить компанию</span>
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Карточка интеграций -->
+        <div class="action-card figma-glass">
+            <div class="action-icon">
+                <i class="fas fa-plug"></i>
+            </div>
+            <div class="action-content">
+                <h4>Интеграции</h4>
+                <p>Подключение к CRM и бухгалтерским системам</p>
+                <a href="#" class="action-btn disabled">
+                    <span>Скоро доступно</span>
+                    <i class="fas fa-clock"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Карточка API -->
+        <div class="action-card figma-glass">
+            <div class="action-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <div class="action-content">
+                <h4>API доступ</h4>
+                <p>Ключи API для интеграции с вашими системами</p>
+                <a href="#" class="action-btn disabled">
+                    <span>Скоро доступно</span>
+                    <i class="fas fa-clock"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Текущая информация пользователя -->
+    <div class="current-info figma-glass">
+        <h3>Текущая информация</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Имя:</span>
+                <span class="info-value">{{ user.fullname_user }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ user.email_user }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Компания:</span>
+                <span class="info-value">{{ user.company_name_user }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">ИНН:</span>
+                <span class="info-value">{{ user.inn_user }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Телефон:</span>
+                <span class="info-value">{{ user.phone_user }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Роль:</span>
+                <span class="info-value role-badge">{{ user.role_user }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для смены пароля -->
+<div id="securityModal" class="modal">
+    <div class="modal-content figma-glass">
+        <div class="modal-header">
+            <h3>🔒 Смена пароля</h3>
+            <span class="close" onclick="closeSecurityModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="currentPassword">Текущий пароль:</label>
+                    <input type="password" id="currentPassword" placeholder="Введите текущий пароль">
+                    <div id="currentPasswordError" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassword">Новый пароль:</label>
+                    <input type="password" id="newPassword" placeholder="Введите новый пароль">
+                    <div id="newPasswordError" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Подтвердите новый пароль:</label>
+                    <input type="password" id="confirmPassword" placeholder="Повторите новый пароль">
+                    <div id="confirmPasswordError" class="error-message"></div>
+                </div>
+
+                <div class="password-requirements">
+                    <p><strong>Требования к паролю:</strong></p>
+                    <ul>
+                        <li id="reqLength">Минимум 8 символов</li>
+                        <li id="reqUppercase">Хотя бы одна заглавная буква</li>
+                        <li id="reqLowercase">Хотя бы одна строчная буква</li>
+                        <li id="reqNumber">Хотя бы одна цифра</li>
+                        <li id="reqSpecial">Хотя бы один специальный символ</li>
+                    </ul>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn-primary" onclick="changePassword()">
+                        <i class="fas fa-save"></i> Сохранить новый пароль
+                    </button>
+                    <button class="btn-secondary" onclick="closeSecurityModal()">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования профиля -->
+<div id="profileModal" class="modal">
+    <div class="modal-content figma-glass">
+        <div class="modal-header">
+            <h3>👤 Редактирование профиля</h3>
+            <span class="close" onclick="closeProfileModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="profileFullName">ФИО:</label>
+                    <input type="text" id="profileFullName" placeholder="Введите ваше полное имя" value="{{ user.fullname_user }}">
+                    <div id="fullNameError" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profileEmail">Email:</label>
+                    <input type="email" id="profileEmail" placeholder="Введите ваш email" value="{{ user.email_user }}">
+                    <div id="emailError" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profilePhone">Телефон:</label>
+                    <input type="tel" id="profilePhone" placeholder="+7 (XXX) XXX-XX-XX" value="{{ user.phone_user }}">
+                    <div id="phoneError" class="error-message"></div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn-primary" onclick="updateProfile()">
+                        <i class="fas fa-save"></i> Сохранить изменения
+                    </button>
+                    <button class="btn-secondary" onclick="closeProfileModal()">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для смены компании -->
+<div id="companyModal" class="modal">
+    <div class="modal-content figma-glass">
+        <div class="modal-header">
+            <h3>🏢 Смена компании</h3>
+            <span class="close" onclick="closeCompanyModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="current-company-info">
+                <h4>Текущая компания:</h4>
+                <div class="current-company-details">
+                    <p><strong>{{ user.company_name_user }}</strong></p>
+                    <p>ИНН: {{ user.inn_user }}</p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="innInput">Введите ИНН новой компании:</label>
+                    <div class="input-with-button">
+                        <input type="text" id="innInput" placeholder="10 или 12 цифр" maxlength="12"
+                               pattern="\d{10}|\d{12}" oninput="validateINN(this)">
+                        <button id="verifyBtn" onclick="verifyCompany()" disabled>
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                    <div id="innError" class="error-message"></div>
+                </div>
+
+                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Ищем компанию в базе данных...</p>
+                </div>
+
+                <div id="companyResult" class="company-result" style="display: none;">
+                    <div class="result-success">
+                        <div class="success-header">
+                            <i class="fas fa-check-circle"></i>
+                            <h4>Компания найдена!</h4>
+                        </div>
+                        <div class="company-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Название:</span>
+                                <span id="companyName" class="detail-value"></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Полное название:</span>
+                                <span id="companyFullName" class="detail-value"></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">ИНН:</span>
+                                <span id="companyInn" class="detail-value"></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">КПП:</span>
+                                <span id="companyKpp" class="detail-value"></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Адрес:</span>
+                                <span id="companyAddress" class="detail-value"></span>
+                            </div>
+                        </div>
+                        <div class="result-actions">
+                            <button class="btn-primary" onclick="updateCompany()">
+                                <i class="fas fa-save"></i> Сохранить изменения
+                            </button>
+                            <button class="btn-secondary" onclick="clearForm()">
+                                <i class="fas fa-redo"></i> Найти другую компанию
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="companyError" class="company-error" style="display: none;">
+                    <div class="error-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h4>Компания не найдена</h4>
+                    </div>
+                    <p id="errorMessage"></p>
+                    <button class="btn-secondary" onclick="clearForm()">
+                        <i class="fas fa-redo"></i> Попробовать снова
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 // Переменная для хранения данных найденной компании
 let foundCompanyData = null;
@@ -1259,7 +1484,7 @@ function clearForm() {
 }
 
 // Вспомогательная функция для уведомлений
-function showNotification(message, type) {
+function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -1274,12 +1499,15 @@ function showNotification(message, type) {
         max-width: 400px;
     `;
 
-    if (type === 'success') {
-        notification.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-    } else {
-        notification.style.background = 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
-    }
+    // Цвета для разных типов уведомлений
+    const colors = {
+        success: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+        error: 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)',
+        info: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
+        warning: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)'
+    };
 
+    notification.style.background = colors[type] || colors.info;
     notification.textContent = message;
     document.body.appendChild(notification);
 
@@ -1288,11 +1516,392 @@ function showNotification(message, type) {
     }, 4000);
 }
 
+
+// Функции для модального окна профиля
+function openProfileModal() {
+    document.getElementById('profileModal').style.display = 'block';
+    document.getElementById('profileFullName').focus();
+
+    // Форматируем телефон при открытии модального окна
+    formatExistingPhone();
+}
+
+function formatExistingPhone() {
+    const phoneInput = document.getElementById('profilePhone');
+    const currentPhone = phoneInput.value;
+
+    // Если телефон в компактном формате (только цифры), форматируем его
+    if (currentPhone && /^\d+$/.test(currentPhone)) {
+        let value = currentPhone;
+
+        // Убираем код страны если есть
+        if (value.startsWith('7') || value.startsWith('8')) {
+            value = value.substring(1);
+        }
+
+        let formattedValue = '+7 ';
+
+        if (value.length > 0) {
+            formattedValue += '(' + value.substring(0, 3);
+        }
+        if (value.length > 3) {
+            formattedValue += ') ' + value.substring(3, 6);
+        }
+        if (value.length > 6) {
+            formattedValue += '-' + value.substring(6, 8);
+        }
+        if (value.length > 8) {
+            formattedValue += '-' + value.substring(8, 10);
+        }
+
+        phoneInput.value = formattedValue;
+    }
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none';
+    resetProfileForm();
+}
+
+function resetProfileForm() {
+    // Сбрасываем ошибки
+    document.getElementById('fullNameError').textContent = '';
+    document.getElementById('emailError').textContent = '';
+    document.getElementById('phoneError').textContent = '';
+
+    // Сбрасываем стили полей
+    const fullNameInput = document.getElementById('profileFullName');
+    const emailInput = document.getElementById('profileEmail');
+    const phoneInput = document.getElementById('profilePhone');
+
+    fullNameInput.classList.remove('valid', 'invalid');
+    emailInput.classList.remove('valid', 'invalid');
+    phoneInput.classList.remove('valid', 'invalid');
+}
+
+// Валидация телефона в реальном времени
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('profilePhone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', formatPhoneNumber);
+    }
+});
+
+function formatPhoneNumber() {
+    let value = this.value.replace(/\D/g, '');
+
+    if (value.startsWith('7') || value.startsWith('8')) {
+        value = value.substring(1);
+    }
+
+    let formattedValue = '+7 ';
+
+    if (value.length > 0) {
+        formattedValue += '(' + value.substring(0, 3);
+    }
+    if (value.length > 3) {
+        formattedValue += ') ' + value.substring(3, 6);
+    }
+    if (value.length > 6) {
+        formattedValue += '-' + value.substring(6, 8);
+    }
+    if (value.length > 8) {
+        formattedValue += '-' + value.substring(8, 10);
+    }
+
+    this.value = formattedValue;
+}
+
+function validateProfileForm() {
+    const fullNameInput = document.getElementById('profileFullName');
+    const emailInput = document.getElementById('profileEmail');
+    const phoneInput = document.getElementById('profilePhone');
+
+    const fullName = fullNameInput.value;
+    const email = emailInput.value;
+    const phone = phoneInput.value;
+
+    let isValid = true;
+
+    // Валидация ФИО
+    if (!fullName.trim()) {
+        document.getElementById('fullNameError').textContent = 'Введите ФИО';
+        fullNameInput.classList.add('invalid');
+        isValid = false;
+    } else if (fullName.trim().length < 2) {
+        document.getElementById('fullNameError').textContent = 'ФИО слишком короткое';
+        fullNameInput.classList.add('invalid');
+        isValid = false;
+    } else {
+        document.getElementById('fullNameError').textContent = '';
+        fullNameInput.classList.remove('invalid');
+        fullNameInput.classList.add('valid');
+    }
+
+    // Валидация email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+        document.getElementById('emailError').textContent = 'Введите email';
+        emailInput.classList.add('invalid');
+        isValid = false;
+    } else if (!emailRegex.test(email)) {
+        document.getElementById('emailError').textContent = 'Введите корректный email';
+        emailInput.classList.add('invalid');
+        isValid = false;
+    } else {
+        document.getElementById('emailError').textContent = '';
+        emailInput.classList.remove('invalid');
+        emailInput.classList.add('valid');
+    }
+
+    // Валидация телефона
+    const phoneRegex = /^\+7\s\(\d{3}\)\s\d{3}-\d{2}-\d{2}$/;
+    if (!phone) {
+        document.getElementById('phoneError').textContent = 'Введите телефон';
+        phoneInput.classList.add('invalid');
+        isValid = false;
+    } else if (!phoneRegex.test(phone)) {
+        document.getElementById('phoneError').textContent = 'Введите телефон в формате +7 (XXX) XXX-XX-XX';
+        phoneInput.classList.add('invalid');
+        isValid = false;
+    } else {
+        document.getElementById('phoneError').textContent = '';
+        phoneInput.classList.remove('invalid');
+        phoneInput.classList.add('valid');
+    }
+
+    return isValid;
+}
+
+function updateProfile() {
+    if (!validateProfileForm()) return;
+
+    const fullName = document.getElementById('profileFullName').value;
+    const email = document.getElementById('profileEmail').value;
+    const phone = document.getElementById('profilePhone').value;
+
+    // Преобразуем телефон в компактный формат для БД
+    const compactPhone = phone.replace(/\D/g, ''); // Убираем все не-цифры
+
+    // Показываем спиннер
+    const saveBtn = document.querySelector('#profileModal .btn-primary');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+    saveBtn.disabled = true;
+
+    // Отправляем запрос на обновление профиля
+    fetch('{{ url_for("buyer.update_profile") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            full_name: fullName,
+            email: email,
+            phone: compactPhone // Отправляем компактный формат
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Профиль успешно обновлен!', 'success');
+            setTimeout(() => {
+                closeProfileModal();
+                location.reload(); // Перезагружаем страницу для обновления данных
+            }, 1500);
+        } else {
+            showNotification(data.error || 'Ошибка при обновлении профиля', 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        showNotification('Ошибка подключения к серверу', 'error');
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+        console.error('Error:', error);
+    });
+}
+
 // Закрытие по ESC
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeCompanyModal();
+        closeSecurityModal();
+        closeProfileModal();
     }
 });
+
+// Функции для модального окна безопасности
+function openSecurityModal() {
+    document.getElementById('securityModal').style.display = 'block';
+    document.getElementById('currentPassword').focus();
+    resetPasswordForm();
+}
+
+function closeSecurityModal() {
+    document.getElementById('securityModal').style.display = 'none';
+    resetPasswordForm();
+}
+
+function resetPasswordForm() {
+    // Очищаем поля
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+
+    // Очищаем ошибки
+    document.getElementById('currentPasswordError').textContent = '';
+    document.getElementById('newPasswordError').textContent = '';
+    document.getElementById('confirmPasswordError').textContent = '';
+
+    // Сбрасываем стили
+    const inputs = document.querySelectorAll('#securityModal input');
+    inputs.forEach(input => input.classList.remove('valid', 'invalid'));
+
+    // Сбрасываем требования пароля
+    const requirements = document.querySelectorAll('.password-requirements li');
+    requirements.forEach(req => {
+        req.classList.remove('valid', 'invalid');
+        req.classList.add('invalid');
+    });
+}
+
+// Валидация пароля в реальном времени
+document.addEventListener('DOMContentLoaded', function() {
+    const newPasswordInput = document.getElementById('newPassword');
+    if (newPasswordInput) {
+        newPasswordInput.addEventListener('input', validatePassword);
+    }
+
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', validatePasswordConfirmation);
+    }
+});
+
+function validatePassword() {
+    const password = this.value;
+    const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+
+    // Обновляем визуализацию требований
+    document.getElementById('reqLength').className = requirements.length ? 'valid' : 'invalid';
+    document.getElementById('reqUppercase').className = requirements.uppercase ? 'valid' : 'invalid';
+    document.getElementById('reqLowercase').className = requirements.lowercase ? 'valid' : 'invalid';
+    document.getElementById('reqNumber').className = requirements.number ? 'valid' : 'invalid';
+    document.getElementById('reqSpecial').className = requirements.special ? 'valid' : 'invalid';
+
+    // Проверяем соответствие всем требованиям
+    const isValid = Object.values(requirements).every(req => req);
+    this.classList.toggle('valid', isValid);
+    this.classList.toggle('invalid', !isValid && password.length > 0);
+}
+
+function validatePasswordConfirmation() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = this.value;
+
+    if (confirmPassword.length > 0) {
+        const isValid = newPassword === confirmPassword;
+        this.classList.toggle('valid', isValid);
+        this.classList.toggle('invalid', !isValid);
+    } else {
+        this.classList.remove('valid', 'invalid');
+    }
+}
+
+function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    // Валидация
+    let isValid = true;
+
+    if (!currentPassword) {
+        document.getElementById('currentPasswordError').textContent = 'Введите текущий пароль';
+        isValid = false;
+    } else {
+        document.getElementById('currentPasswordError').textContent = '';
+    }
+
+    if (!newPassword) {
+        document.getElementById('newPasswordError').textContent = 'Введите новый пароль';
+        isValid = false;
+    } else {
+        document.getElementById('newPasswordError').textContent = '';
+    }
+
+    if (newPassword !== confirmPassword) {
+        document.getElementById('confirmPasswordError').textContent = 'Пароли не совпадают';
+        isValid = false;
+    } else {
+        document.getElementById('confirmPasswordError').textContent = '';
+    }
+
+    // Проверка требований к паролю
+    const passwordRequirements = {
+        length: newPassword.length >= 8,
+        uppercase: /[A-Z]/.test(newPassword),
+        lowercase: /[a-z]/.test(newPassword),
+        number: /[0-9]/.test(newPassword),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword)
+    };
+
+    const isPasswordValid = Object.values(passwordRequirements).every(req => req);
+    if (!isPasswordValid) {
+        document.getElementById('newPasswordError').textContent = 'Пароль не соответствует требованиям';
+        isValid = false;
+    }
+
+    if (!isValid) return;
+
+    // Показываем спиннер
+    const saveBtn = document.querySelector('#securityModal .btn-primary');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+    saveBtn.disabled = true;
+
+    // Отправляем запрос на смену пароля
+    fetch('{{ url_for("buyer.change_password") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            current_password: currentPassword,
+            new_password: newPassword
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Пароль успешно изменен!', 'success');
+            setTimeout(() => {
+                closeSecurityModal();
+                // Можно разлогинить пользователя для безопасности
+                // window.location.href = '{{ url_for("buyer.logout") }}';
+            }, 1500);
+        } else {
+            showNotification(data.error || 'Ошибка при смене пароля', 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        showNotification('Ошибка подключения к серверу', 'error');
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+        console.error('Error:', error);
+    });
+}
 </script>
 {% endblock %}
