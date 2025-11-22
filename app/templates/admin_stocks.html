@@ -32,7 +32,7 @@
     }
 
     .stocks-container {
-        display: grid;
+        display: flex;
         grid-template-columns: 1fr 1fr;
         gap: 3rem;
         margin-bottom: 3rem;
@@ -444,8 +444,31 @@
                 </form>
             </div>
 
-            <!-- Список текущих остатков -->
+            <!-- График остатков -->
             <div class="stocks-list-card">
+                <h3 class="stocks-title">
+                    <i class="fas fa-chart-bar"></i>
+                    График остатков по товарам
+                </h3>
+                {% if stock_series %}
+                <div style="height: 400px;">
+                    <canvas id="stockChart"></canvas>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>График недоступен</h4>
+                    <p>Добавьте остатки товаров для отображения графика</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Текущие остатки -->
+        <div class="stocks-container">
+            <div class="stocks-list-card" style="width: 100%;">
                 <h3 class="stocks-title">
                     <i class="fas fa-clipboard-list"></i>
                     Текущие остатки
@@ -487,84 +510,174 @@
                 {% endif %}
             </div>
         </div>
-
-        <!-- Состав заказов -->
-        <div class="stocks-container">
-            <div class="stocks-list-card" style="width: 100%;">
-                <h3 class="stocks-title">
-                    <i class="fas fa-shopping-cart"></i>
-                    Состав заказов
-                </h3>
-
-                {% if orders %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th scope="col">ID Заказа</th>
-                                    <th scope="col">Пользователь</th>
-                                    <th scope="col">Статус</th>
-                                    <th scope="col">Дата создания</th>
-                                    <th scope="col">Товары</th>
-                                    <th scope="col">Общая сумма</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for order in orders %}
-                                    <tr>
-                                        <td>{{ order.id }}</td>
-                                        <td>{{ order.user_id }}</td>
-                                        <td>
-                                            <span class="badge {% if order.status == 'approved' %}bg-success{% elif order.status == 'pending_moderation' %}bg-warning{% else %}bg-secondary{% endif %}">
-                                                {% if order.status == 'approved' %}Одобрен{% elif order.status == 'pending_moderation' %}На модерации{% else %}{{ order.status }}{% endif %}
-                                            </span>
-                                        </td>
-                                        <td>{{ order.created_at[:10] if order.created_at else 'N/A' }}</td>
-                                        <td>
-                                            {% if order['items'] %}
-                                                <ul style="list-style: none; padding: 0; margin: 0;">
-                                                    {% for item in order['items'] %}
-                                                        <li style="margin-bottom: 5px;">
-                                                            {{ item.title }} - {{ item.qty }} шт. ({{ item.price }} ₽)
-                                                        </li>
-                                                    {% endfor %}
-                                                </ul>
-                                            {% else %}
-                                                Нет товаров
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ "%.2f"|format(order.total) }} ₽</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <h4>Заказы не найдены</h4>
-                        <p>Заказы с товарами из product-order и stock-order будут отображаться здесь</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
     </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const products = [
         {% for p in products %}
         {
             id: '{{ p.id }}',
-            title: '{{ p.title }} ({{ p.nomenclature_product }}) - {{ p.price_product }} ₽',
+            title: '{{ p.title }}',
             qty: {{ stocks[p.id].qty if p.id in stocks else 0 }},
             ral: '{{ stocks[p.id].ral if p.id in stocks and stocks[p.id].ral else '' }}',
             date: '{{ stocks[p.id].date.strftime('%Y-%m-%d') if p.id in stocks and stocks[p.id].date else '' }}'
         }{% if not loop.last %},{% endif %}
         {% endfor %}
     ];
+
+    const stockSeries = [
+        {% for item in stock_series %}
+        {
+            nomenclature_ral: '{{ item.nomenclature_ral }}',
+            series_info: '{{ item.series_info }}',
+            remaining_quantity: {{ item.remaining_quantity }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // Chart.js for stock chart
+    if (stockSeries.length > 0) {
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+
+
+
+            // Sort stockSeries by remaining_quantity descending and take top 5 for better visualization
+            const topStockSeries = stockSeries
+                .sort((a, b) => b.remaining_quantity - a.remaining_quantity)
+                .slice(0, 5);
+
+            // Create gradient for bars
+            const gradient1 = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient1.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+            gradient1.addColorStop(1, 'rgba(118, 75, 162, 0.8)');
+
+            const gradient2 = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient2.addColorStop(0, 'rgba(67, 233, 123, 0.8)');
+            gradient2.addColorStop(1, 'rgba(56, 249, 215, 0.8)');
+
+            const gradient3 = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient3.addColorStop(0, 'rgba(255, 193, 7, 0.8)');
+            gradient3.addColorStop(1, 'rgba(255, 87, 34, 0.8)');
+
+            const gradient4 = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient4.addColorStop(0, 'rgba(156, 39, 176, 0.8)');
+            gradient4.addColorStop(1, 'rgba(233, 30, 99, 0.8)');
+
+            const gradient5 = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient5.addColorStop(0, 'rgba(33, 150, 243, 0.8)');
+            gradient5.addColorStop(1, 'rgba(3, 169, 244, 0.8)');
+
+            const gradients = [gradient1, gradient2, gradient3, gradient4, gradient5];
+
+            const solidColors = [
+                'rgba(102, 126, 234, 1)',
+                'rgba(67, 233, 123, 1)',
+                'rgba(255, 193, 7, 1)',
+                'rgba(156, 39, 176, 1)',
+                'rgba(33, 150, 243, 1)'
+            ];
+
+            const chartData = {
+                labels: topStockSeries.map(s => (s.nomenclature_ral + ' ' + s.series_info).length > 25 ? (s.nomenclature_ral + ' ' + s.series_info).substring(0, 25) + '...' : s.nomenclature_ral + ' ' + s.series_info),
+                datasets: [{
+                    label: 'Остатки по сериям (шт.)',
+                    data: topStockSeries.map(s => s.remaining_quantity),
+                    backgroundColor: topStockSeries.map((_, index) => gradients[index % gradients.length]),
+                    borderColor: topStockSeries.map((_, index) => solidColors[index % solidColors.length]),
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    hoverBackgroundColor: topStockSeries.map((_, index) => solidColors[index % solidColors.length]),
+                    hoverBorderColor: '#fff',
+                    hoverBorderWidth: 3,
+                }]
+            };
+
+            const config = {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart',
+                    },
+                    plugins: {
+                        legend: {
+                            display: false, // Hide legend for cleaner look
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    return 'Остаток: ' + context.parsed.y + ' шт.';
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#2c3e50',
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            formatter: function(value) {
+                                return value;
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)',
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                color: '#6c757d',
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                callback: function(value) {
+                                    return value + ' шт.';
+                                }
+                            }
+                        }
+                    },
+                    onHover: (event, activeElements) => {
+                        event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+                    }
+                }
+            };
+
+            new Chart(ctx, config);
+        });
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('product_search');
@@ -576,27 +689,44 @@
 
         // Функция обновления состояния формы
         function updateFormState(value) {
-            const product = products.find(p => p.title === value);
-            if (product) {
-                // Извлекаем номенклатуру из строки value
-                const match = value.match(/\(([^)]+)\)/);
-                const nomenclature = match ? match[1] : '';
+            const options = document.querySelectorAll('#products-list option');
+            let selectedOption = null;
+            for (let option of options) {
+                if (option.value === value) {
+                    selectedOption = option;
+                    break;
+                }
+            }
+            if (selectedOption) {
+                const productId = selectedOption.getAttribute('data-id');
+                const product = products.find(p => p.id == productId);
+                if (product) {
+                    // Извлекаем номенклатуру из строки value
+                    const match = value.match(/\(([^)]+)\)/);
+                    const nomenclature = match ? match[1] : '';
 
-                document.getElementById('nomenclature').value = nomenclature;
-                qtyInput.value = product.qty;
-                document.getElementById('ral').value = product.ral;
-                document.getElementById('date').value = product.date;
-                qtyInput.focus();
-                submitBtn.disabled = false;
+                    document.getElementById('nomenclature').value = nomenclature;
+                    qtyInput.value = product.qty;
+                    document.getElementById('ral').value = product.ral;
+                    document.getElementById('date').value = product.date;
+                    qtyInput.focus();
+                    submitBtn.disabled = false;
 
-                // Подсветка выбранного товара в списке
-                document.querySelectorAll('.stock-item').forEach(item => {
-                    item.style.background = '#f8f9fa';
-                });
-                const selectedItem = document.querySelector(`[data-product-id="${product.id}"]`);
-                if (selectedItem) {
-                    selectedItem.style.background = 'rgba(102, 126, 234, 0.1)';
-                    selectedItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Подсветка выбранного товара в списке
+                    document.querySelectorAll('.stock-item').forEach(item => {
+                        item.style.background = '#f8f9fa';
+                    });
+                    const selectedItem = document.querySelector(`[data-product-id="${product.id}"]`);
+                    if (selectedItem) {
+                        selectedItem.style.background = 'rgba(102, 126, 234, 0.1)';
+                        selectedItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                } else {
+                    document.getElementById('nomenclature').value = '';
+                    qtyInput.value = '';
+                    document.getElementById('ral').value = '';
+                    document.getElementById('date').value = '';
+                    submitBtn.disabled = true;
                 }
             } else {
                 document.getElementById('nomenclature').value = '';

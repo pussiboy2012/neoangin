@@ -128,10 +128,11 @@
     }
 
     .filters-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr auto;
-        gap: 1rem;
-        align-items: end;
+            display: flex;
+    gap: 1rem;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
     }
 
     .search-box {
@@ -245,8 +246,11 @@
     }
 
     .user-info {
-        flex: 1;
-        min-width: 0;
+            display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
     }
 
     .user-main-info {
@@ -1165,6 +1169,7 @@
 <script>
     let isEditMode = false;
     let currentUserType = '';
+    let isSubmitting = false;
 
     // Открытие модального окна выбора типа пользователя
     function openUserTypeModal() {
@@ -1397,6 +1402,12 @@
     });
 
     function submitUserForm(form, type) {
+        // Prevent double submission
+        if (isSubmitting) {
+            return;
+        }
+        isSubmitting = true;
+
         const formData = new FormData(form);
 
         // Для сотрудников устанавливаем фиксированные значения
@@ -1411,7 +1422,7 @@
             formData.append('csrf_token', csrfToken);
         }
 
-    const url = type === 'edit' ? '{{ url_for("admin.update_user") }}' : '{{ url_for("admin.create_user_route") }}';
+        const url = type === 'edit' ? '{{ url_for("admin.update_user") }}' : '{{ url_for("admin.create_user_route") }}';
 
         fetch(url, {
             method: 'POST',
@@ -1432,11 +1443,13 @@
                 location.reload();
             } else {
                 alert('Ошибка: ' + data.error);
+                isSubmitting = false; // Reset flag on error
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Произошла ошибка при сохранении пользователя: ' + error.message);
+            isSubmitting = false; // Reset flag on error
         });
     }
 
