@@ -104,6 +104,7 @@ cubic-bezier(0.175, 0.885, 0.32, 1.275);
     .icon-orders { background: linear-gradient(135deg, var(--admin-accent), #e74c3c); }
     .icon-logout { background: linear-gradient(135deg, var(--admin-warning), #f1c40f); }
     .icon-chats { background: linear-gradient(135deg, var(--admin-accent), #e74c3c); }
+    .icon-analytics { background: linear-gradient(135deg, var(--admin-info), #3498db); }
 
     .card-title {
         font-size: 1.4rem;
@@ -382,6 +383,20 @@ cubic-bezier(0.175, 0.885, 0.32, 1.275);
             </p>
             <a href="{{ url_for('admin.admin_chats') }}" class="btn-admin">
                 <i class="fas fa-comments me-2"></i>Открыть чаты
+            </a>
+        </div>
+
+        <!-- Аналитика -->
+        <div class="admin-card">
+            <div class="card-icon icon-analytics">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="card-title">Аналитика системы</h3>
+            <p class="card-description">
+                Просматривайте подробную статистику продаж, товаров и пользователей для принятия решений
+            </p>
+            <a href="{{ url_for('admin.analytics') }}" class="btn-admin">
+                <i class="fas fa-chart-bar me-2"></i>Открыть аналитику
             </a>
         </div>
 
